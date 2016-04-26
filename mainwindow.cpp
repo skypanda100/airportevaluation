@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     ,sjdrInputWidget(NULL)
     ,sjdrQualityDock(NULL)
     ,sjdrQualityWidget(NULL)
+    ,sjdrMainWidget(NULL)
 {
     this->initData();
     this->initUI();
@@ -27,12 +28,12 @@ MainWindow::~MainWindow()
     if(sjdrQualityDock != NULL){
         delete sjdrQualityDock;
     }
-
-    delete pgdb;
+    if(sjdrMainWidget != NULL){
+        delete sjdrMainWidget;
+    }
 }
 
 void MainWindow::initData(){
-    pgdb = new PgDataBase;
 }
 
 void MainWindow::initUI(){
@@ -41,13 +42,6 @@ void MainWindow::initUI(){
     this->setupSettingActions();
     this->setupHelpActions();
     this->createStatusBar();
-
-    //测试
-    QWidget *mainWidget = new QWidget;
-    mainWidget->setAutoFillBackground(true);
-    QPalette palette(QColor(80, 80, 80));
-    mainWidget->setPalette(palette);
-    this->setCentralWidget(mainWidget);
 }
 
 void MainWindow::initConnect(){
@@ -119,7 +113,7 @@ void MainWindow::onSjdrTriggered(){
         sjdrInputDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         this->addDockWidget(Qt::LeftDockWidgetArea, sjdrInputDock);
         this->viewMenu->addAction(sjdrInputDock->toggleViewAction());
-        this->setupSjdrInputWidget();
+        this->setupSjdr();
     }else{
         sjdrInputDock->setVisible(true);
     }
@@ -134,46 +128,18 @@ void MainWindow::onSjdrTriggered(){
     }
 }
 
+void MainWindow::setupSjdr(){
+    this->setupSjdrInputWidget();
+    this->setupSjdrQualityWidget();
+    this->setupSjdrResultWidget();
+    connect(sjdrInputWidget, SIGNAL(executeSjdr(Airport,QList<QualityControlSource>,QList<QString>)), sjdrMainWidget, SLOT(executeSjdr(Airport,QList<QualityControlSource>,QList<QString>)));
+}
+
 void MainWindow::setupSjdrInputWidget(){
-    //机场
-    queryAirport();
-    QComboBox *airportComboBox = new QComboBox;
-    int airportCount = aiportList.size();
-    for(int i = 0;i < airportCount;i++){
-        airportComboBox->insertItem(i, aiportList[i].name());
-    }
-
-    QVBoxLayout *airportLayout = new QVBoxLayout;
-    airportLayout->addWidget(airportComboBox);
-
-    QGroupBox *airportGroup = new QGroupBox;
-    airportGroup->setTitle("机场");
-    airportGroup->setLayout(airportLayout);
-
-    //数据源
-    querySource();
-
-    QGridLayout *sourceLayout = new QGridLayout;
-    int sourceCount = qualityControlSourceList.size();
-    for(int i = 0;i < sourceCount;i++){
-        QCheckBox *checkBox = new QCheckBox(qualityControlSourceList[i].name());
-        sourceLayout->addWidget(checkBox, i / 2 , i % 2);
-    }
-
-    QGroupBox *sourceGroup = new QGroupBox;
-    sourceGroup->setTitle("数据源");
-    sourceGroup->setLayout(sourceLayout);
-
-    //主界面
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(airportGroup);
-    mainLayout->addWidget(sourceGroup);
-    mainLayout->addStretch(1);
     if(sjdrInputWidget != NULL){
         delete sjdrInputWidget;
     }
-    sjdrInputWidget = new QWidget;
-    sjdrInputWidget->setLayout(mainLayout);
+    sjdrInputWidget = new SjdrInputWidget;
     sjdrInputDock->setWidget(sjdrInputWidget);
 }
 
@@ -181,36 +147,10 @@ void MainWindow::setupSjdrQualityWidget(){
 
 }
 
-void MainWindow::queryAirport(){
-    aiportList.clear();
-    QString queryStr = QString("select * from airport");
-    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
-    int rowCount = plainModel->rowCount();
-    for(int i = 0;i < rowCount;i++){
-        Airport airport;
-        airport.setCode(plainModel->record(i).value(0).toString());
-        airport.setName(plainModel->record(i).value(1).toString());
-        airport.setLongitude(plainModel->record(i).value(2).toFloat());
-        airport.setLatitude(plainModel->record(i).value(3).toFloat());
-        airport.setAltitude(plainModel->record(i).value(4).toFloat());
-        airport.setDirection(plainModel->record(i).value(5).toFloat());
-        airport.setType(plainModel->record(i).value(6).toString());
-        aiportList.append(airport);
+void MainWindow::setupSjdrResultWidget(){
+    if(sjdrMainWidget != NULL){
+        delete sjdrMainWidget;
     }
-    delete plainModel;
-}
-
-void MainWindow::querySource(){
-    qualityControlSourceList.clear();
-    QString queryStr = QString("select * from qualitycontrolsource");
-    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
-    int rowCount = plainModel->rowCount();
-    for(int i = 0;i < rowCount;i++){
-        QualityControlSource qualityControlSource;
-        qualityControlSource.setId(plainModel->record(i).value(0).toInt());
-        qualityControlSource.setName(plainModel->record(i).value(1).toString());
-        qualityControlSource.setFields(plainModel->record(i).value(2).toString());
-        qualityControlSourceList.append(qualityControlSource);
-    }
-    delete plainModel;
+    sjdrMainWidget = new SjdrMainWidget;
+    this->setCentralWidget(sjdrMainWidget);
 }

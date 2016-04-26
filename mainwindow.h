@@ -3,10 +3,8 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
-#include "database/pgdatabase.h"
-#include "bean/airport.h"
-#include "bean/qualitycontrolsource.h"
-
+#include "sjdrinputwidget.h"
+#include "sjdrmainwidget.h"
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -26,23 +24,19 @@ private:
     void setupHelpActions();
     //状态栏
     void createStatusBar();
-    //查询机场表
-    void queryAirport();
-    //查询数据源
-    void querySource();
+    //设置数据导入模块区
+    void setupSjdr();
     //设置数据导入模块的输入控制区
     void setupSjdrInputWidget();
     //设置数据导入模块的质量控制区
     void setupSjdrQualityWidget();
+    //设置数据导入模块的结果区
+    void setupSjdrResultWidget();
 
 private slots:
     void onSjdrTriggered();
 
 private:
-    PgDataBase *pgdb;
-    QList<Airport> aiportList;
-    QList<QualityControlSource> qualityControlSourceList;
-
     QMenu *viewMenu;
 
     QAction *sjdrAction;
@@ -51,9 +45,10 @@ private:
     QAction *fmgAction;
 
     QDockWidget *sjdrInputDock;
-    QWidget *sjdrInputWidget;
+    SjdrInputWidget *sjdrInputWidget;
     QDockWidget *sjdrQualityDock;
     QWidget *sjdrQualityWidget;
+    SjdrMainWidget *sjdrMainWidget;
 };
 
 #endif // MAINWINDOW_H

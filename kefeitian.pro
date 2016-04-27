@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     bean/qualitycontrolsource.cpp \
     sjdrinputwidget.cpp \
     sjdrmainwidget.cpp \
-    database/asdatabase.cpp
+    database/asdatabase.cpp \
+    model/treeitem.cpp \
+    model/treemodel.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -31,7 +33,9 @@ HEADERS  += mainwindow.h \
     bean/qualitycontrolsource.h \
     sjdrinputwidget.h \
     sjdrmainwidget.h \
-    database/asdatabase.h
+    database/asdatabase.h \
+    model/treeitem.h \
+    model/treemodel.h
 
 RESOURCES += \
     res.qrc

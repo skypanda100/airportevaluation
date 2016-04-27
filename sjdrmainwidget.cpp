@@ -1,96 +1,33 @@
 #include "sjdrmainwidget.h"
 #include "database/asdatabase.h"
+#include "model/treemodel.h"
 
-/*** 左边 ***/
-SjdrMainLeftWidget::SjdrMainLeftWidget(QWidget *parent)
-    :QTreeWidget(parent)
-{
-    this->initUI();
-    this->initConnect();
-}
-
-SjdrMainLeftWidget::~SjdrMainLeftWidget(){
-    deleteItems();
-}
-
-void SjdrMainLeftWidget::initUI(){
-    this->setHeaderLabel("数据源");
-}
-
-void SjdrMainLeftWidget::initConnect(){
-
-}
-
-void SjdrMainLeftWidget::addItem(const QString &item, const QString &parentItem){
-    if(parentItem.isEmpty()){
-        QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(this, QStringList(item));
-        Q_UNUSED(treeWidgetItem);
-    }else{
-        int count = this->topLevelItemCount();
-        for(int i = 0;i < count;i++){
-            QTreeWidgetItem *topTreeWidgetItem = this->topLevelItem(i);
-            if(topTreeWidgetItem->text(0).compare(parentItem) == 0){
-                QTreeWidgetItem *subTreeWidgetItem = new QTreeWidgetItem(topTreeWidgetItem);
-                subTreeWidgetItem->setText(0, item);
-                this->expandItem(topTreeWidgetItem);
-                break;
-            }
-        }
-    }
-}
-
-void SjdrMainLeftWidget::deleteItems(){
-    int count = this->topLevelItemCount();
-    for(int i = count - 1;i >= 0;i--){
-        QTreeWidgetItem *topTreeWidgetItem = this->topLevelItem(i);
-        delete topTreeWidgetItem;
-    }
-}
-
-/*** 右边 ***/
-SjdrMainRightWidget::SjdrMainRightWidget(QWidget *parent)
-    :QWidget(parent)
-{
-    this->initUI();
-    this->initConnect();
-}
-
-SjdrMainRightWidget::~SjdrMainRightWidget(){
-
-}
-
-void SjdrMainRightWidget::initUI(){
-
-}
-
-void SjdrMainRightWidget::initConnect(){
-
-}
-
-/*** 主 ***/
 SjdrMainWidget::SjdrMainWidget(QWidget *parent)
-    :QSplitter(parent)
+    :QTreeView(parent)
 {
+    this->initData();
     this->initUI();
     this->initConnect();
 }
 
 SjdrMainWidget::~SjdrMainWidget(){
-    delete sjdrMainLeftWidget;
-    delete sjdrMainRightWidget;
+}
+
+void SjdrMainWidget::initData(){
+    headers << "文件"
+            << "信息"
+            << "类型"
+            << "路径";
 }
 
 void SjdrMainWidget::initUI(){
-    this->setAutoFillBackground(true);
-    QPalette palette(QColor(255, 255, 255));
-    this->setPalette(palette);
 
-    sjdrMainLeftWidget = new SjdrMainLeftWidget;
-    sjdrMainRightWidget = new SjdrMainRightWidget;
-
-    this->setOrientation(Qt::Horizontal);
-    this->addWidget(sjdrMainLeftWidget);
-    this->addWidget(sjdrMainRightWidget);
+    TreeModel *model = new TreeModel(headers, "");
+    this->setModel(model);
+    for (int column = 0; column < model->columnCount(); ++column){
+        this->resizeColumnToContents(column);
+    }
+    this->setAlternatingRowColors(true);
 }
 
 void SjdrMainWidget::initConnect(){
@@ -99,17 +36,10 @@ void SjdrMainWidget::initConnect(){
 
 void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qualityControlSourceList, QList<QString> fileList){
     //清除之前的数据
-    sjdrMainLeftWidget->deleteItems();
+    removeAllRows();
+
     srcHash.clear();
     currentAirport = airport;
-
-    //在右侧显示数据源
-    int qualityControlSourceCount = qualityControlSourceList.size();
-    for(int i = 0;i < qualityControlSourceCount;i++){
-        QualityControlSource qualityControlSource = qualityControlSourceList[i];
-        sjdrMainLeftWidget->addItem(qualityControlSource.name(), "");
-    }
-    sjdrMainLeftWidget->addItem("未知", "");
 
     //给数据源分类
     assortSource(qualityControlSourceList, fileList);
@@ -148,19 +78,19 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                 if(qualityControlSource.id() == 5){
                     if(title.replace(QRegExp("[0-9]+"), "").compare(qualityControlSource.fields().replace(QRegExp("[0-9]+"), "")) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        sjdrMainLeftWidget->addItem(fileInfo.fileName(), qualityControlSource.name());
+                        insertRow(fileInfo.fileName(), "success!", qualityControlSource.name(), fileInfo.absoluteFilePath());
                         break;
                     }
                 }else{
                     if(title.compare(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        sjdrMainLeftWidget->addItem(fileInfo.fileName(), qualityControlSource.name());
+                        insertRow(fileInfo.fileName(), "success!", qualityControlSource.name(), fileInfo.absoluteFilePath());
                         break;
                     }
                 }
             }
             if(j == qualityControlSourceCount){
-                sjdrMainLeftWidget->addItem(fileInfo.fileName(), "未知");
+                insertRow(fileInfo.fileName(), "success!", "未知", fileInfo.absoluteFilePath());
             }
         }else if(path.endsWith(".mdb", Qt::CaseInsensitive)){
             AsDataBase asDb(path);
@@ -174,14 +104,65 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                     QualityControlSource qualityControlSource = qualityControlSourceList[j];
                     if(title.compare(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        sjdrMainLeftWidget->addItem(fileInfo.fileName(), qualityControlSource.name());
+                        insertRow(fileInfo.fileName(), "success!", qualityControlSource.name(), fileInfo.absoluteFilePath());
                         break;
                     }
                 }
                 if(j == qualityControlSourceCount){
-                    sjdrMainLeftWidget->addItem(fileInfo.fileName(), "未知");
+                    insertRow(fileInfo.fileName(), "success!", "未知", fileInfo.absoluteFilePath());
                 }
             }
         }
     }
+
+    QAbstractItemModel *model = this->model();
+    for (int column = 0; column < model->columnCount(); ++column){
+        this->resizeColumnToContents(column);
+    }
 }
+
+void SjdrMainWidget::insertRow(const QString &name, const QString &info, const QString &type, const QString &path){
+    QModelIndex index = this->selectionModel()->currentIndex();
+    QAbstractItemModel *model = this->model();
+
+    if (!model->insertRow(index.row()+1, index.parent()))
+        return;
+
+    updateActions();
+
+    QModelIndex child1 = model->index(index.row()+1, 0, index.parent());
+    model->setData(child1, QVariant(name), Qt::EditRole);
+
+    QModelIndex child2 = model->index(index.row()+1, 1, index.parent());
+    model->setData(child2, QVariant(info), Qt::EditRole);
+
+    QModelIndex child3 = model->index(index.row()+1, 2, index.parent());
+    model->setData(child3, QVariant(type), Qt::EditRole);
+
+    QModelIndex child4 = model->index(index.row()+1, 3, index.parent());
+    model->setData(child4, QVariant(path), Qt::EditRole);
+}
+
+void SjdrMainWidget::removeAllRows(){
+    QAbstractItemModel *model = this->model();
+    if(model->rowCount() > 0){
+        model->removeRows(0, model->rowCount());
+    }
+}
+
+void SjdrMainWidget::updateActions()
+{
+    bool hasCurrent = this->selectionModel()->currentIndex().isValid();
+
+    if (hasCurrent) {
+        this->closePersistentEditor(this->selectionModel()->currentIndex());
+
+        int row = this->selectionModel()->currentIndex().row();
+        int column = this->selectionModel()->currentIndex().column();
+//        if (this->selectionModel()->currentIndex().parent().isValid())
+//            statusBar()->showMessage(tr("Position: (%1,%2)").arg(row).arg(column));
+//        else
+//            statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
+    }
+}
+

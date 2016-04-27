@@ -5,37 +5,7 @@
 #include "bean/airport.h"
 #include "bean/qualitycontrolsource.h"
 
-/*** 左边 ***/
-class SjdrMainLeftWidget : public QTreeWidget{
-    Q_OBJECT
-
-public:
-    SjdrMainLeftWidget(QWidget *parent = 0);
-    ~SjdrMainLeftWidget();
-
-    void addItem(const QString &, const QString &);
-    void deleteItems();
-
-private:
-    void initUI();
-    void initConnect();
-};
-
-/*** 右边 ***/
-class SjdrMainRightWidget : public QWidget{
-    Q_OBJECT
-
-public:
-    SjdrMainRightWidget(QWidget *parent = 0);
-    ~SjdrMainRightWidget();
-
-private:
-    void initUI();
-    void initConnect();
-};
-
-/*** 主 ***/
-class SjdrMainWidget : public QSplitter{
+class SjdrMainWidget : public QTreeView{
     Q_OBJECT
 
 public:
@@ -46,17 +16,22 @@ public slots:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);
 
 private:
+    void initData();
     void initUI();
     void initConnect();
     //判断数据源类型
     void assortSource(QList<QualityControlSource>, QList<QString>);
+    //插入数据
+    void insertRow(const QString &name, const QString &info, const QString &type, const QString &path);
+    //删除数据
+    void removeAllRows();
+    //刷新
+    void updateActions();
 
 private:
     Airport currentAirport;
     QHash< int, QList<QString> > srcHash;
-    SjdrMainLeftWidget *sjdrMainLeftWidget;
-    SjdrMainRightWidget *sjdrMainRightWidget;
-
+    QStringList headers;
 };
 
 #endif // SJDRMAINWIDGET

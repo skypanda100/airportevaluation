@@ -4,6 +4,7 @@
 
 SjdrMainWidget::SjdrMainWidget(QWidget *parent)
     :QTreeView(parent)
+    ,sjdrControl(NULL)
 {
     this->initData();
     this->initUI();
@@ -11,6 +12,10 @@ SjdrMainWidget::SjdrMainWidget(QWidget *parent)
 }
 
 SjdrMainWidget::~SjdrMainWidget(){
+    if(sjdrControl != NULL){
+        sjdrControl->exit(0);
+        delete sjdrControl;
+    }
 }
 
 void SjdrMainWidget::initData(){
@@ -40,6 +45,13 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
 
     srcHash.clear();
     currentAirport = airport;
+
+    if(sjdrControl == NULL){
+        sjdrControl = new SjdrControl;
+        connect(sjdrControl, SIGNAL(sendMessage(QStringList)), this, SLOT(receiveMessage(QStringList)), Qt::QueuedConnection);
+        sjdrControl->setAirport(currentAirport);
+        sjdrControl->start();
+    }
 
     //给数据源分类
     assortSource(qualityControlSourceList, fileList);
@@ -78,19 +90,19 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                 if(qualityControlSource.id() == 5){
                     if(title.replace(QRegExp("[0-9]+"), "").compare(qualityControlSource.fields().replace(QRegExp("[0-9]+"), "")) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        insertRow(fileInfo.fileName(), "success!", qualityControlSource.name(), fileInfo.absoluteFilePath());
+                        dataControl(fileInfo, (SourceType)(qualityControlSource.id()), qualityControlSource.name());
                         break;
                     }
                 }else{
                     if(title.compare(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        insertRow(fileInfo.fileName(), "success!", qualityControlSource.name(), fileInfo.absoluteFilePath());
+                        dataControl(fileInfo, (SourceType)(qualityControlSource.id()), qualityControlSource.name());
                         break;
                     }
                 }
             }
             if(j == qualityControlSourceCount){
-                insertRow(fileInfo.fileName(), "success!", "未知", fileInfo.absoluteFilePath());
+                dataControl(fileInfo);
             }
         }else if(path.endsWith(".mdb", Qt::CaseInsensitive)){
             AsDataBase asDb(path);
@@ -104,21 +116,21 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                     QualityControlSource qualityControlSource = qualityControlSourceList[j];
                     if(title.compare(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        insertRow(fileInfo.fileName(), "success!", qualityControlSource.name(), fileInfo.absoluteFilePath());
+                        dataControl(fileInfo, (SourceType)(qualityControlSource.id()), qualityControlSource.name());
                         break;
                     }
                 }
                 if(j == qualityControlSourceCount){
-                    insertRow(fileInfo.fileName(), "success!", "未知", fileInfo.absoluteFilePath());
+                    dataControl(fileInfo);
                 }
             }
         }
     }
 
-    QAbstractItemModel *model = this->model();
-    for (int column = 0; column < model->columnCount(); ++column){
-        this->resizeColumnToContents(column);
-    }
+//    QAbstractItemModel *model = this->model();
+//    for (int column = 0; column < model->columnCount(); ++column){
+//        this->resizeColumnToContents(column);
+//    }
 }
 
 void SjdrMainWidget::insertRow(const QString &name, const QString &info, const QString &type, const QString &path){
@@ -152,17 +164,24 @@ void SjdrMainWidget::removeAllRows(){
 
 void SjdrMainWidget::updateActions()
 {
-    bool hasCurrent = this->selectionModel()->currentIndex().isValid();
+//    bool hasCurrent = this->selectionModel()->currentIndex().isValid();
 
-    if (hasCurrent) {
-        this->closePersistentEditor(this->selectionModel()->currentIndex());
+//    if (hasCurrent) {
+//        this->closePersistentEditor(this->selectionModel()->currentIndex());
 
-        int row = this->selectionModel()->currentIndex().row();
-        int column = this->selectionModel()->currentIndex().column();
+//        int row = this->selectionModel()->currentIndex().row();
+//        int column = this->selectionModel()->currentIndex().column();
 //        if (this->selectionModel()->currentIndex().parent().isValid())
 //            statusBar()->showMessage(tr("Position: (%1,%2)").arg(row).arg(column));
 //        else
 //            statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
-    }
+//    }
 }
 
+void SjdrMainWidget::dataControl(const QFileInfo &fileInfo, SourceType sourceType, QString type){
+    sjdrControl->addTask(SjdrElement(sourceType, type, fileInfo));
+}
+
+void SjdrMainWidget::receiveMessage(QStringList messages){
+    insertRow(messages[0], messages[1], messages[2], messages[3]);
+}

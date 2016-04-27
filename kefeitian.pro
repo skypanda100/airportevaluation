@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     sjdrmainwidget.cpp \
     database/asdatabase.cpp \
     model/treeitem.cpp \
-    model/treemodel.cpp
+    model/treemodel.cpp \
+    control/sjdrcontrol.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -35,7 +36,9 @@ HEADERS  += mainwindow.h \
     sjdrmainwidget.h \
     database/asdatabase.h \
     model/treeitem.h \
-    model/treemodel.h
+    model/treemodel.h \
+    control/sjdrcontrol.h \
+    control/ctlcons.h
 
 RESOURCES += \
     res.qrc

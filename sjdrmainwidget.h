@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include "bean/airport.h"
 #include "bean/qualitycontrolsource.h"
+#include "control/sjdrcontrol.h"
 
 class SjdrMainWidget : public QTreeView{
     Q_OBJECT
@@ -14,6 +15,7 @@ public:
 
 public slots:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);
+    void receiveMessage(QStringList);
 
 private:
     void initData();
@@ -27,11 +29,14 @@ private:
     void removeAllRows();
     //刷新
     void updateActions();
+    //数据控制
+    void dataControl(const QFileInfo &fileInfo, SourceType sourceType = UNKNOWN, QString type = "未知");
 
 private:
     Airport currentAirport;
     QHash< int, QList<QString> > srcHash;
     QStringList headers;
+    SjdrControl *sjdrControl;
 };
 
 #endif // SJDRMAINWIDGET

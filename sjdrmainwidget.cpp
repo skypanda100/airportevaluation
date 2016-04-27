@@ -13,8 +13,9 @@ SjdrMainWidget::SjdrMainWidget(QWidget *parent)
 
 SjdrMainWidget::~SjdrMainWidget(){
     if(sjdrControl != NULL){
-        sjdrControl->exit(0);
-        delete sjdrControl;
+        sjdrControl->setLoop(false);
+        sjdrControl->quit();
+        sjdrControl->wait();
     }
 }
 
@@ -90,38 +91,44 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                 if(qualityControlSource.id() == 5){
                     if(title.replace(QRegExp("[0-9]+"), "").compare(qualityControlSource.fields().replace(QRegExp("[0-9]+"), "")) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        dataControl(fileInfo, (SourceType)(qualityControlSource.id()), qualityControlSource.name());
+                        dataControl(fileInfo, qualityControlSource);
                         break;
                     }
                 }else{
                     if(title.compare(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        dataControl(fileInfo, (SourceType)(qualityControlSource.id()), qualityControlSource.name());
+                        dataControl(fileInfo, qualityControlSource);
                         break;
                     }
                 }
             }
             if(j == qualityControlSourceCount){
-                dataControl(fileInfo);
+                QualityControlSource qcs;
+                qcs.setId(UNKNOWN);
+                qcs.setName("未知");
+                dataControl(fileInfo, qcs);
             }
         }else if(path.endsWith(".mdb", Qt::CaseInsensitive)){
-            AsDataBase asDb(path);
-            QStringList tables = asDb.queryTables();
+            AsDataBase asdb(path);
+            QStringList tables = asdb.queryTables();
             int tableCount = tables.count();
             for(int k = 0;k < tableCount;k++){
-                QString title = asDb.queryFields(tables[k]).join(",");
+                QString title = asdb.queryFields(tables[k]).join(",");
                 int j = 0;
                 QFileInfo fileInfo(file);
                 for(;j < qualityControlSourceCount;j++){
                     QualityControlSource qualityControlSource = qualityControlSourceList[j];
                     if(title.compare(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
-                        dataControl(fileInfo, (SourceType)(qualityControlSource.id()), qualityControlSource.name());
+                        dataControl(fileInfo, qualityControlSource);
                         break;
                     }
                 }
                 if(j == qualityControlSourceCount){
-                    dataControl(fileInfo);
+                    QualityControlSource qcs;
+                    qcs.setId(UNKNOWN);
+                    qcs.setName("未知");
+                    dataControl(fileInfo, qcs);
                 }
             }
         }
@@ -178,8 +185,8 @@ void SjdrMainWidget::updateActions()
 //    }
 }
 
-void SjdrMainWidget::dataControl(const QFileInfo &fileInfo, SourceType sourceType, QString type){
-    sjdrControl->addTask(SjdrElement(sourceType, type, fileInfo));
+void SjdrMainWidget::dataControl(const QFileInfo &fileInfo, const QualityControlSource &qualityControlSource){
+    sjdrControl->addTask(SjdrElement(qualityControlSource, fileInfo));
 }
 
 void SjdrMainWidget::receiveMessage(QStringList messages){

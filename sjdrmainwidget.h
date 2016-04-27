@@ -30,7 +30,7 @@ private:
     //刷新
     void updateActions();
     //数据控制
-    void dataControl(const QFileInfo &fileInfo, SourceType sourceType = UNKNOWN, QString type = "未知");
+    void dataControl(const QFileInfo &fileInfo, const QualityControlSource &qualityControlSource);
 
 private:
     Airport currentAirport;

@@ -14,8 +14,10 @@ SjdrMainWidget::SjdrMainWidget(QWidget *parent)
 SjdrMainWidget::~SjdrMainWidget(){
     if(sjdrControl != NULL){
         sjdrControl->setLoop(false);
+        qDebug() << "sjdrControl->setLoop(false)";
         sjdrControl->quit();
         sjdrControl->wait();
+        delete sjdrControl;
     }
 }
 
@@ -51,12 +53,16 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
         sjdrControl = new SjdrControl;
         connect(sjdrControl, SIGNAL(sendMessage(QStringList)), this, SLOT(receiveMessage(QStringList)), Qt::QueuedConnection);
         connect(sjdrControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
+        connect(sjdrControl, SIGNAL(singleExecute(bool)), this, SLOT(singleExecute(bool)), Qt::QueuedConnection);
         sjdrControl->setAirport(currentAirport);
         sjdrControl->start();
     }
 
     //给数据源分类
+    emit setProgressValue(0);
     assortSource(qualityControlSourceList, fileList);
+    sumCount = fileList.count();
+    executeCount = 0;
 }
 
 void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSourceList, QList<QString> fileList){
@@ -195,5 +201,17 @@ void SjdrMainWidget::execute(bool isEnd){
         for (int column = 0; column < model->columnCount(); ++column){
             this->resizeColumnToContents(column);
         }
+        emit setProgressValue(100);
+    }
+}
+
+void SjdrMainWidget::singleExecute(bool isEnd){
+    if(isEnd){
+        executeCount += 1;
+        if(executeCount >= sumCount){
+            executeCount = sumCount - 1;
+        }
+        int value = (int)(((qreal)executeCount / (qreal)sumCount) * 100);
+        emit setProgressValue(value);
     }
 }

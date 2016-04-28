@@ -36,6 +36,7 @@ public:
 signals:
     void sendMessage(QStringList);
     void execute(bool isEnd);
+    void singleExecute(bool isEnd);
 
 private:
     void message(const QString &info, const SjdrElement &sjdrElement, ReturnCode code = MSG_UNDEFINE);

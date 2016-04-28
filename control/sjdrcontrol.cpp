@@ -136,7 +136,6 @@ void SjdrControl::setLoop(bool loop){
 }
 
 void SjdrControl::run(){
-
     while(m_loop){
         if(m_tasks.count() > 0){
             m_execute = true;
@@ -154,6 +153,7 @@ void SjdrControl::run(){
             }else{
                 controlUnknown(sjdrEle);
             }
+            emit singleExecute(true);
         }else{
             if(m_execute){
                 m_execute = false;
@@ -161,6 +161,7 @@ void SjdrControl::run(){
             }
         }
     }
+    qDebug() << "thread is end!";
 }
 
 void SjdrControl::message(const QString &info, const SjdrElement &sjdrElement, ReturnCode code){

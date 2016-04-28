@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     ,sjdrQualityDock(NULL)
     ,sjdrQualityWidget(NULL)
     ,sjdrMainWidget(NULL)
+    ,progressBar(NULL)
 {
     this->initData();
     this->initUI();
@@ -30,6 +31,10 @@ MainWindow::~MainWindow()
     }
     if(sjdrMainWidget != NULL){
         delete sjdrMainWidget;
+    }
+
+    if(progressBar != NULL){
+        delete progressBar;
     }
 }
 
@@ -100,8 +105,23 @@ void MainWindow::setupHelpActions(){
 
 void MainWindow::createStatusBar(){
     this->statusBar()->showMessage(tr("Ready"));
+    progressBar = new QProgressBar;
+    progressBar->setTextVisible(false);
+    progressBar->setFixedHeight(18);
+    progressBar->setRange(0, 100);
+    this->statusBar()->addPermanentWidget(progressBar);
 }
 
+void MainWindow::setProgressValue(int value){
+    if(progressBar != NULL){
+        progressBar->setValue(value);
+        if(value < 100){
+            this->statusBar()->showMessage(tr("正在处理......"));
+        }else{
+            this->statusBar()->showMessage(tr("处理完成"));
+        }
+    }
+}
 
 /**
  * @brief MainWindow::onSjdrTriggered
@@ -152,5 +172,6 @@ void MainWindow::setupSjdrResultWidget(){
         delete sjdrMainWidget;
     }
     sjdrMainWidget = new SjdrMainWidget;
+    connect(sjdrMainWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
     this->setCentralWidget(sjdrMainWidget);
 }

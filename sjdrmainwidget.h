@@ -13,10 +13,14 @@ public:
     SjdrMainWidget(QWidget *parent = 0);
     ~SjdrMainWidget();
 
+signals:
+    void setProgressValue(int);
+
 public slots:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);
     void receiveMessage(QStringList);
     void execute(bool isEnd);
+    void singleExecute(bool isEnd);
 
 private:
     void initData();
@@ -38,6 +42,8 @@ private:
     QHash< int, QList<QString> > srcHash;
     QStringList headers;
     SjdrControl *sjdrControl;
+    int executeCount;
+    int sumCount;
 };
 
 #endif // SJDRMAINWIDGET

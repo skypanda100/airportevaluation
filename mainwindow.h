@@ -13,6 +13,9 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void setProgressValue(int);
+
 private:
     void initData();
     void initUI();
@@ -43,6 +46,8 @@ private:
     QAction *kfttjAction;
     QAction *rckqAction;
     QAction *fmgAction;
+
+    QProgressBar *progressBar;
 
     QDockWidget *sjdrInputDock;
     SjdrInputWidget *sjdrInputWidget;

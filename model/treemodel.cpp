@@ -75,21 +75,29 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
+    TreeItem *item = getItem(index);
+    QVariant dataVariant = item->data(index.column());
+    QString dataStr = dataVariant.toString();
+
     if (role == Qt::DecorationRole &&
             index.column() == 0 &&    //第一列的节点
             rowCount(index) == 0       //子节点数为0
             )
     {
-//        return item->iconData(index.column());
-        return QIcon(":/fmg.png");
+        if(dataStr.indexOf("zdt") > 0){
+            QStringList dataList = dataStr.split("zdt");
+            return QIcon(dataList[0]);
+        }
     }
 
     if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
 
-    TreeItem *item = getItem(index);
-
-    return item->data(index.column());
+    if(dataStr.indexOf("zdt") > 0){
+        QStringList dataList = dataStr.split("zdt");
+        return QVariant(dataList[1]);
+    }
+    return dataVariant;
 }
 
 //! [3]

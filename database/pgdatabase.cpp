@@ -36,12 +36,15 @@ void PgDataBase::openDb(){
 }
 
 void PgDataBase::closeDb(){
-    db.close();
+//    db.close();
 }
 
 QSqlQueryModel* PgDataBase::queryModel(const QString &queryStr){
     QSqlQueryModel *plainModel = new QSqlQueryModel;
     plainModel->setQuery(queryStr, db);
+    while(plainModel->canFetchMore()){
+        plainModel->fetchMore();
+    }
     return plainModel;
 }
 

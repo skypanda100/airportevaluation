@@ -23,6 +23,7 @@ class SjdrControl : public QThread{
 
 public:
     explicit SjdrControl(QObject *parent = 0);
+    ~SjdrControl();
 
     void addTask(SjdrElement);
 
@@ -34,8 +35,10 @@ public:
 
 signals:
     void sendMessage(QStringList);
+    void execute(bool isEnd);
 
 private:
+    void message(const QString &info, const SjdrElement &sjdrElement, ReturnCode code = MSG_UNDEFINE);
     void controlSummary(const SjdrElement &);
     void controlExtremum(const SjdrElement &);
     void controlMainlandAutomaticWind(const SjdrElement &);
@@ -44,9 +47,20 @@ private:
     void controlUnknown(const SjdrElement &);
 
 private:
+    QList<QString> monthsummary_fields;
+    QList<QString> extremum_fields;
+    QList<QString> mainland_automaticwind_fields;
+    QList<QString> macao_automaticwind_fields;
+    QList<QString> automatictemperature_fields;
+
+    QString insertMonthsummary;
+    QString insertExtremum;
+
     Airport m_airport;
     QVector<SjdrElement> m_tasks;
     bool m_loop;
+    bool m_execute;
+    PgDataBase *pgdb;
 };
 
 #endif // SJDRCONTROL

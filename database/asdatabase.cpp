@@ -38,6 +38,9 @@ QSqlQueryModel* AsDataBase::queryModel(const QString &queryStr){
     }
     QSqlQueryModel *plainModel = new QSqlQueryModel;
     plainModel->setQuery(queryStr, db);
+    while(plainModel->canFetchMore()){
+        plainModel->fetchMore();
+    }
     return plainModel;
 }
 

@@ -5,5 +5,9 @@
         <file>images/rckq.png</file>
         <file>images/sjdr.png</file>
         <file>images/search.png</file>
+        <file>images/error.png</file>
+        <file>images/success.png</file>
+        <file>images/unknown.png</file>
+        <file>images/warning.png</file>
     </qresource>
 </RCC>

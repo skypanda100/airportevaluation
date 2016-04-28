@@ -16,6 +16,7 @@ public:
 public slots:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);
     void receiveMessage(QStringList);
+    void execute(bool isEnd);
 
 private:
     void initData();

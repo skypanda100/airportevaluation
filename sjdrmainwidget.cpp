@@ -50,6 +50,7 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
     if(sjdrControl == NULL){
         sjdrControl = new SjdrControl;
         connect(sjdrControl, SIGNAL(sendMessage(QStringList)), this, SLOT(receiveMessage(QStringList)), Qt::QueuedConnection);
+        connect(sjdrControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
         sjdrControl->setAirport(currentAirport);
         sjdrControl->start();
     }
@@ -133,11 +134,6 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
             }
         }
     }
-
-//    QAbstractItemModel *model = this->model();
-//    for (int column = 0; column < model->columnCount(); ++column){
-//        this->resizeColumnToContents(column);
-//    }
 }
 
 void SjdrMainWidget::insertRow(const QString &name, const QString &info, const QString &type, const QString &path){
@@ -191,4 +187,13 @@ void SjdrMainWidget::dataControl(const QFileInfo &fileInfo, const QualityControl
 
 void SjdrMainWidget::receiveMessage(QStringList messages){
     insertRow(messages[0], messages[1], messages[2], messages[3]);
+}
+
+void SjdrMainWidget::execute(bool isEnd){
+    if(isEnd){
+        QAbstractItemModel *model = this->model();
+        for (int column = 0; column < model->columnCount(); ++column){
+            this->resizeColumnToContents(column);
+        }
+    }
 }

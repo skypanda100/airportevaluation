@@ -31,5 +31,27 @@ enum SourceType{
      */
     UNKNOWN,
 };
+
+enum ReturnCode{
+    /*
+     * 成功
+     */
+    MSG_SUCCESS = 0,
+
+    /*
+     * 警告
+     */
+    MSG_WARN,
+
+    /*
+     * 错误
+     */
+    MSG_ERROR,
+
+    /*
+     * 未定义
+     */
+    MSG_UNDEFINE,
+};
 #endif // CTLCONS
 

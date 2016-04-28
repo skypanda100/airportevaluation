@@ -86,7 +86,7 @@ SjdrControl::SjdrControl(QObject *parent)
                                << "WSINS (KT)"
                                << "WDINS";
 
-    //自动站温度气压表需要导入的字段(将源文件中的【QFE 27 (HPA)】数字去除掉再比较)
+    //自动站温度气压表需要导入的字段(将源文件中的【QFE 27 (HPA)】的数字去除掉再比较)
     automatictemperature_fields << "CREATEDATE"
                                 << "SITE"
                                 << "QFE  (HPA)"
@@ -108,6 +108,14 @@ SjdrControl::SjdrControl(QObject *parent)
                              "?, ?, ?, ?, ?, ?, "
                              "?, ?, ?, ?)");
 
+    //自动站风表插入语句（大陆）
+    insertMainlandAutomaticWind = QString("insert into %1_automaticwind values(?, ?, ?, ?)");
+
+    //自动站风表插入语句（澳门）
+    insertMacaoAutomaticWind = QString("insert into %1_automaticwind values(?, ?, ?, ?)");
+
+    //自动站温度气压表插入语句
+    insertAutomaticTeperature = QString("insert into %1_automatictemperature values(?, ?, ?, ?, ?, ?)");
 }
 
 SjdrControl::~SjdrControl(){
@@ -215,7 +223,7 @@ void SjdrControl::controlSummary(const SjdrElement &sjdrElement){
                 }
             }
             if(isAllDone){
-                message(QString("数据保存成功"), sjdrElement, MSG_SUCCESS);
+                message(QString("所有数据保存成功"), sjdrElement, MSG_SUCCESS);
             }
             delete plainModel;
             break;
@@ -266,7 +274,7 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
                 }
             }
             if(isAllDone){
-                message(QString("数据保存成功"), sjdrElement, MSG_SUCCESS);
+                message(QString("所有数据保存成功"), sjdrElement, MSG_SUCCESS);
             }
             delete plainModel;
             break;
@@ -280,6 +288,61 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
  * 大陆自动站风
  */
 void SjdrControl::controlMainlandAutomaticWind(const SjdrElement &sjdrElement){
+    QFileInfo fileInfo = sjdrElement.m_fileInfo;
+    QualityControlSource qualityControlSource = sjdrElement.m_qualityControlSource;
+
+    QFile file(fileInfo.absoluteFilePath());
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        message(QString("文件无法打开"), sjdrElement, MSG_ERROR);
+        return;
+    }
+    QTextStream fileInput(&file);
+    QString lineStr;
+    bool isStart = false;
+    int line = 0;
+    QStringList titleList = qualityControlSource.fields().split(",");
+    bool isAllDone = true;
+    while(!fileInput.atEnd())
+    {
+        line++;
+        lineStr = fileInput.readLine();
+        if(!isStart){
+            if(lineStr.replace("	", ",").compare(qualityControlSource.fields()) == 0){
+                isStart = true;
+            }
+        }else{
+            QStringList valueList = lineStr.split(QRegExp("\\t"));
+            int fieldCount = mainland_automaticwind_fields.size();
+            if(fieldCount > valueList.size()){
+                isAllDone = false;
+                message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                continue;
+            }else{
+                QList<QVariant> values;
+                for(int i = 0;i < fieldCount;i++){
+                    int valueIndex = titleList.indexOf(mainland_automaticwind_fields[i]);
+                    if(valueIndex < 0){
+                        isAllDone = false;
+                        message(QString("未找到字段[%1]").arg(mainland_automaticwind_fields[i]), sjdrElement, MSG_ERROR);
+                        break;
+                    }else{
+                        values.append(QVariant(valueList[valueIndex]));
+                    }
+                }
+                if(values.size() == fieldCount){
+                    bool ret = pgdb->save(insertMainlandAutomaticWind.arg(m_airport.code()), values);
+                    if(!ret){
+                        isAllDone = false;
+                        message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                    }
+                }
+            }
+        }
+    }
+    if(isAllDone){
+        message(QString("所有数据保存成功"), sjdrElement, MSG_SUCCESS);
+    }
+    file.close();
 }
 
 /**
@@ -288,7 +351,91 @@ void SjdrControl::controlMainlandAutomaticWind(const SjdrElement &sjdrElement){
  * 澳门自动站风
  */
 void SjdrControl::controlMacaoAutomaticWind(const SjdrElement &sjdrElement){
+    QFileInfo fileInfo = sjdrElement.m_fileInfo;
+    QualityControlSource qualityControlSource = sjdrElement.m_qualityControlSource;
 
+    QFile file(fileInfo.absoluteFilePath());
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        message(QString("文件无法打开"), sjdrElement, MSG_ERROR);
+        return;
+    }
+    QTextStream fileInput(&file);
+    QString lineStr;
+    bool isStart = false;
+    int line = 0;
+    QStringList titleList = qualityControlSource.fields().split(",");
+    bool isAllDone = true;
+    while(!fileInput.atEnd())
+    {
+        line++;
+        lineStr = fileInput.readLine();
+        if(!isStart){
+            if(lineStr.replace("	", ",").compare(qualityControlSource.fields()) == 0){
+                isStart = true;
+            }
+        }else{
+            QStringList valueList = lineStr.split(QRegExp("\\t"));
+            int fieldCount = macao_automaticwind_fields.size();
+            if(fieldCount > valueList.size()){
+                isAllDone = false;
+                message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                continue;
+            }else{
+                //前半部分
+                QList<QVariant> values;
+                for(int i = 0;i < fieldCount;i++){
+                    int valueIndex = titleList.indexOf(macao_automaticwind_fields[i]);
+                    if(valueIndex < 0){
+                        isAllDone = false;
+                        message(QString("未找到字段[%1]").arg(macao_automaticwind_fields[i]), sjdrElement, MSG_ERROR);
+                        break;
+                    }else{
+                        if(macao_automaticwind_fields[i].indexOf("(KT)") >= 0){
+                            float windSpeed = (valueList[valueIndex]).toFloat();
+                            values.append(QVariant(QString("%1").arg(windSpeed * 0.5144)));
+                        }else{
+                            values.append(QVariant(valueList[valueIndex]));
+                        }
+                    }
+                }
+                if(values.size() == fieldCount){
+                    bool ret = pgdb->save(insertMacaoAutomaticWind.arg(m_airport.code()), values);
+                    if(!ret){
+                        isAllDone = false;
+                        message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                    }
+                }
+                //后半部分
+                values.clear();
+                for(int i = 0;i < fieldCount;i++){
+                    int valueIndex = titleList.lastIndexOf(macao_automaticwind_fields[i]);
+                    if(valueIndex < 0){
+                        isAllDone = false;
+                        message(QString("未找到字段[%1]").arg(macao_automaticwind_fields[i]), sjdrElement, MSG_ERROR);
+                        break;
+                    }else{
+                        if(macao_automaticwind_fields[i].indexOf("(KT)") >= 0){
+                            float windSpeed = (valueList[valueIndex]).toFloat();
+                            values.append(QVariant(QString("%1").arg(windSpeed * 0.5144)));
+                        }else{
+                            values.append(QVariant(valueList[valueIndex]));
+                        }
+                    }
+                }
+                if(values.size() == fieldCount){
+                    bool ret = pgdb->save(insertMacaoAutomaticWind.arg(m_airport.code()), values);
+                    if(!ret){
+                        isAllDone = false;
+                        message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                    }
+                }
+            }
+        }
+    }
+    if(isAllDone){
+        message(QString("所有数据保存成功"), sjdrElement, MSG_SUCCESS);
+    }
+    file.close();
 }
 
 /**
@@ -297,7 +444,61 @@ void SjdrControl::controlMacaoAutomaticWind(const SjdrElement &sjdrElement){
  * 大陆自动站温度气压
  */
 void SjdrControl::controlMainlandAutomaticTemperature(const SjdrElement &sjdrElement){
+    QFileInfo fileInfo = sjdrElement.m_fileInfo;
+    QualityControlSource qualityControlSource = sjdrElement.m_qualityControlSource;
 
+    QFile file(fileInfo.absoluteFilePath());
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        message(QString("文件无法打开"), sjdrElement, MSG_ERROR);
+        return;
+    }
+    QTextStream fileInput(&file);
+    QString lineStr;
+    bool isStart = false;
+    int line = 0;
+    QStringList titleList = qualityControlSource.fields().replace(QRegExp("[0-9]+"), "").split(",");
+    bool isAllDone = true;
+    while(!fileInput.atEnd())
+    {
+        line++;
+        lineStr = fileInput.readLine();
+        if(!isStart){
+            if(lineStr.replace("	", ",").replace(QRegExp("[0-9]+"), "").compare(titleList.join(",")) == 0){
+                isStart = true;
+            }
+        }else{
+            QStringList valueList = lineStr.split(QRegExp("\\t"));
+            int fieldCount = automatictemperature_fields.size();
+            if(fieldCount > valueList.size()){
+                isAllDone = false;
+                message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                continue;
+            }else{
+                QList<QVariant> values;
+                for(int i = 0;i < fieldCount;i++){
+                    int valueIndex = titleList.indexOf(automatictemperature_fields[i]);
+                    if(valueIndex < 0){
+                        isAllDone = false;
+                        message(QString("未找到字段[%1]").arg(automatictemperature_fields[i]), sjdrElement, MSG_ERROR);
+                        break;
+                    }else{
+                        values.append(QVariant(valueList[valueIndex]));
+                    }
+                }
+                if(values.size() == fieldCount){
+                    bool ret = pgdb->save(insertAutomaticTeperature.arg(m_airport.code()), values);
+                    if(!ret){
+                        isAllDone = false;
+                        message(QString("第%1行数据保存失败").arg(line), sjdrElement, MSG_ERROR);
+                    }
+                }
+            }
+        }
+    }
+    if(isAllDone){
+        message(QString("所有数据保存成功"), sjdrElement, MSG_SUCCESS);
+    }
+    file.close();
 }
 
 /**

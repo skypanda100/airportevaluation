@@ -55,6 +55,9 @@ private:
 
     QString insertMonthsummary;
     QString insertExtremum;
+    QString insertMainlandAutomaticWind;
+    QString insertMacaoAutomaticWind;
+    QString insertAutomaticTeperature;
 
     Airport m_airport;
     QVector<SjdrElement> m_tasks;

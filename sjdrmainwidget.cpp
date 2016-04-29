@@ -14,7 +14,6 @@ SjdrMainWidget::SjdrMainWidget(QWidget *parent)
 SjdrMainWidget::~SjdrMainWidget(){
     if(sjdrControl != NULL){
         sjdrControl->setLoop(false);
-        qDebug() << "sjdrControl->setLoop(false)";
         sjdrControl->quit();
         sjdrControl->wait();
         delete sjdrControl;

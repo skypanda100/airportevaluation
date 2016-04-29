@@ -160,8 +160,8 @@ void SjdrControl::run(){
                 emit execute(true);
             }
         }
+        this->currentThread()->msleep(10);
     }
-    qDebug() << "thread is end!";
 }
 
 void SjdrControl::message(const QString &info, const SjdrElement &sjdrElement, ReturnCode code){

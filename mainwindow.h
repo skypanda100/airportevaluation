@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include "sjdrinputwidget.h"
+#include "sjdrqualitywidget.h"
 #include "sjdrmainwidget.h"
 class MainWindow : public QMainWindow
 {
@@ -40,6 +41,9 @@ private slots:
     void onSjdrTriggered();
 
 private:
+    bool isSjdrInit;
+
+
     QMenu *viewMenu;
 
     QAction *sjdrAction;
@@ -52,7 +56,7 @@ private:
     QDockWidget *sjdrInputDock;
     SjdrInputWidget *sjdrInputWidget;
     QDockWidget *sjdrQualityDock;
-    QWidget *sjdrQualityWidget;
+    SjdrQualityWidget *sjdrQualityWidget;
     SjdrMainWidget *sjdrMainWidget;
 };
 

@@ -2,6 +2,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    ,isSjdrInit(false)
     ,sjdrInputDock(NULL)
     ,sjdrInputWidget(NULL)
     ,sjdrQualityDock(NULL)
@@ -128,22 +129,21 @@ void MainWindow::setProgressValue(int value){
  * 数据导入模块
  */
 void MainWindow::onSjdrTriggered(){
-    if(sjdrInputDock == NULL){
+    if(!isSjdrInit){
+        isSjdrInit = true;
         sjdrInputDock = new QDockWidget("输入控制", this);
         sjdrInputDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         this->addDockWidget(Qt::LeftDockWidgetArea, sjdrInputDock);
         this->viewMenu->addAction(sjdrInputDock->toggleViewAction());
-        this->setupSjdr();
-    }else{
-        sjdrInputDock->setVisible(true);
-    }
 
-    if(sjdrQualityDock == NULL){
         sjdrQualityDock = new QDockWidget("质量控制", this);
         sjdrQualityDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         this->addDockWidget(Qt::LeftDockWidgetArea, sjdrQualityDock);
         this->viewMenu->addAction(sjdrQualityDock->toggleViewAction());
+
+        this->setupSjdr();
     }else{
+        sjdrInputDock->setVisible(true);
         sjdrQualityDock->setVisible(true);
     }
 }
@@ -164,7 +164,11 @@ void MainWindow::setupSjdrInputWidget(){
 }
 
 void MainWindow::setupSjdrQualityWidget(){
-
+    if(sjdrQualityWidget != NULL){
+        delete sjdrQualityWidget;
+    }
+    sjdrQualityWidget = new SjdrQualityWidget;
+    sjdrQualityDock->setWidget(sjdrQualityWidget);
 }
 
 void MainWindow::setupSjdrResultWidget(){

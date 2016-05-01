@@ -25,7 +25,10 @@ SOURCES += main.cpp\
     model/treeitem.cpp \
     model/treemodel.cpp \
     control/sjdrcontrol.cpp \
-    sjdrqualitywidget.cpp
+    sjdrqualitywidget.cpp \
+    kfttjresultwidget.cpp \
+    bean/monthsummary.cpp \
+    bean/extremum.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -40,7 +43,10 @@ HEADERS  += mainwindow.h \
     model/treemodel.h \
     control/sjdrcontrol.h \
     control/ctlcons.h \
-    sjdrqualitywidget.h
+    sjdrqualitywidget.h \
+    kfttjresultwidget.h \
+    bean/monthsummary.h \
+    bean/extremum.h
 
 RESOURCES += \
     res.qrc

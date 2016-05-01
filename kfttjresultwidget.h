@@ -3,6 +3,8 @@
 
 #include <QtWidgets>
 #include "database/pgdatabase.h"
+#include "bean/monthsummary.h"
+#include "bean/extremum.h"
 
 class KfttjResultWidget : public QWidget{
     Q_OBJECT
@@ -16,6 +18,8 @@ private:
 
 private:
     PgDataBase *pgdb;
+    QList<Monthsummary> summaryList;
+    QList<Extremum> extremumList;
 };
 
 #endif // KFTTJRESULTWIDGET

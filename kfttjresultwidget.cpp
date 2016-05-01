@@ -97,3 +97,7 @@ void KfttjResultWidget::query(){
     }
     delete extremumPlainModel;
 }
+
+void KfttjResultWidget::analysis(){
+
+}

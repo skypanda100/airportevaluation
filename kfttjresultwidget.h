@@ -15,6 +15,7 @@ public:
 private:
     void initData();
     void query();
+    void analysis();
 
 private:
     PgDataBase *pgdb;

@@ -67,9 +67,11 @@ void KfttjResultWidget::initUI(){
     this->addWidget(tableView);
 
     //调整列宽
-    for (int column = 2; column < tableModel->columnCount() - 3; ++column){
-        tableView->resizeColumnToContents(column);
-    }
+    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+//    for (int column = 2; column < tableModel->columnCount() - 3; ++column){
+//        tableView->resizeColumnToContents(column);
+//    }
 ///////////////////////
     //查询月总簿表
     QString summaryStartDatetime = "2012-12-31 17:00:00";

@@ -68,9 +68,9 @@ void KfttjResultWidget::initUI(){
 
     //调整列宽
     tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
 //    for (int column = 2; column < tableModel->columnCount() - 3; ++column){
 //        tableView->resizeColumnToContents(column);
+////        tableView->setColumnWidth(column, 25);
 //    }
 ///////////////////////
     //查询月总簿表

@@ -29,6 +29,10 @@ signals:
 private:
     void query();
     void analysis();
+    void analysisVisibility(const Monthsummary &, int, int);
+    void analysisCloud(const Monthsummary &, int, int);
+    void analysisCrossWind(const Monthsummary &, int, int);
+    void analysisHeadWind(const Monthsummary &, int, int);
 
 private:
     QList<QString> titleList;

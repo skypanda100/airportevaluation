@@ -192,62 +192,292 @@ void KfttjControl::analysis(){
         }
         if(canExecute){
             //能见度
-            QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
-            if(leadingvisibilityStr.compare("///") == 0){
-                emit sendMessage("1", dateCount * 4, titleList.indexOf(QString::number(hour)), 1, 1);
-            }else if(leadingvisibilityStr.compare("") != 0){
-                int leadingvisibility = leadingvisibilityStr.toInt();
-                if(leadingvisibility < 3000){
-                    emit sendMessage("1", dateCount * 4, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
-                    emit sendMessage("2", dateCount * 4, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else if(leadingvisibility >= 5000){
-                    emit sendMessage("3", dateCount * 4, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else{
-
-                }
-            }else{
-
-            }
+            analysisVisibility(monthsummary, dateCount * 4, titleList.indexOf(QString::number(hour)));
             //云
-            //风
-            QString windspeedStr = monthsummary.windspeed().trimmed();
-            QString gustspeedStr = monthsummary.gustspeed().trimmed();
-            QString winddirectionStr = monthsummary.winddirection().trimmed();
-            if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
-                float windspeed = windspeedStr.toFloat();
-                float gustspeed = gustspeedStr.toFloat();
-                float speed = qMax(windspeed, gustspeed);
-                float crossspeed = speed;
-                float headspeed = speed;
-                if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
-                    float winddirection = winddirectionStr.toFloat();
-                    crossspeed = qAbs(qSin(winddirection - 180) * speed);
-                    headspeed = qCos(winddirection - 180) * speed;
-                }
-                //侧风
-                if(crossspeed >= 12){
-                    emit sendMessage("1", dateCount * 4 + 2, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else if(crossspeed < 12 && crossspeed >= 8){
-                    emit sendMessage("2", dateCount * 4 + 2, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else if(crossspeed < 8){
-                    emit sendMessage("3", dateCount * 4 + 2, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else{
-
-                }
-                //逆风
-                if(headspeed >= 15){
-                    emit sendMessage("1", dateCount * 4 + 3, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else if(headspeed < 15 && headspeed >= 10){
-                    emit sendMessage("2", dateCount * 4 + 3, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else if(headspeed < 10){
-                    emit sendMessage("3", dateCount * 4 + 3, titleList.indexOf(QString::number(hour)), 1, 1);
-                }else{
-
-                }
-            }
+            analysisCloud(monthsummary, dateCount * 4 + 1, titleList.indexOf(QString::number(hour)));
+            //侧风
+            analysisCrossWind(monthsummary, dateCount * 4 + 2, titleList.indexOf(QString::number(hour)));
+            //逆风
+            analysisHeadWind(monthsummary, dateCount * 4 + 3, titleList.indexOf(QString::number(hour)));
         }
         //更新进度
         emit setProgressValue((int)(((qreal)(i + 1)/(qreal)summaryCount) * 100));
+    }
+}
+
+/**
+ * @brief KfttjControl::analysisVisibility
+ * 能见度分析
+ * @param monthsummary
+ */
+void KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int row, int col){
+    QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
+    if(leadingvisibilityStr.compare("///") == 0){
+        emit sendMessage("1", row, col, 1, 1);
+    }else if(leadingvisibilityStr.compare("") != 0){
+        int leadingvisibility = leadingvisibilityStr.toInt();
+        if(leadingvisibility < 3000){
+            emit sendMessage("1", row, col, 1, 1);
+        }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
+            emit sendMessage("2", row, col, 1, 1);
+        }else if(leadingvisibility >= 5000){
+            emit sendMessage("3", row, col, 1, 1);
+        }else{
+
+        }
+    }else{
+
+    }
+}
+
+/**
+ * @brief KfttjControl::analysisCloud
+ * 云分析
+ * @param monthsummary
+ */
+void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int col){
+    QString totalcloudcoverStr = monthsummary.totalcloudcover().trimmed();
+    QString lowcloudstate1Str = monthsummary.lowcloudstate1().trimmed();
+    QString lowcloudstate2Str = monthsummary.lowcloudstate2().trimmed();
+    QString lowcloudstate3Str = monthsummary.lowcloudstate3().trimmed();
+    QString lowcloudstate4Str = monthsummary.lowcloudstate4().trimmed();
+    QString lowcloudstate5Str = monthsummary.lowcloudstate5().trimmed();
+    QString middlecloudstate1Str = monthsummary.middlecloudstate1().trimmed();
+    QString middlecloudstate2Str = monthsummary.middlecloudstate2().trimmed();
+    QString middlecloudstate3Str = monthsummary.middlecloudstate3().trimmed();
+    QString highcloudstate1Str = monthsummary.highcloudstate1().trimmed();
+    QString highcloudstate2Str = monthsummary.highcloudstate2().trimmed();
+    QString highcloudstate3Str = monthsummary.highcloudstate3().trimmed();
+
+    QRegExp totalcloudExp("([0-8]{1})");
+    QRegExp cloudstateExp("(.*\\D+)([0-9]+)");
+
+    int totalcloudPos = totalcloudExp.indexIn(totalcloudcoverStr);
+    if(totalcloudPos >= 0){
+        int totalcloudcover = totalcloudExp.capturedTexts()[0].toInt();
+        if(totalcloudcover == 8){
+            int cloudState = -1;
+            if(lowcloudstate1Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate1Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(lowcloudstate2Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate2Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(lowcloudstate3Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate3Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(lowcloudstate4Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate4Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(lowcloudstate5Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate5Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(middlecloudstate1Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(middlecloudstate1Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(middlecloudstate2Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(middlecloudstate2Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(middlecloudstate3Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(middlecloudstate3Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(highcloudstate1Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(highcloudstate1Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(highcloudstate2Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(highcloudstate2Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(highcloudstate3Str.compare("") != 0){
+                int cloudstatePos = cloudstateExp.indexIn(highcloudstate3Str);
+                if(cloudstatePos >= 0){
+                    QStringList texts = cloudstateExp.capturedTexts();
+                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                        cloudState = texts[texts.size() - 1].toInt();
+                    }
+                }else{
+                    emit sendMessage("1", row, col, 1, 1);
+                    return;
+                }
+            }
+
+            if(cloudState > -1){
+                if(cloudState < 600){
+                    emit sendMessage("1", row, col, 1, 1);
+                }else if(cloudState < 2500 && cloudState >= 600){
+                    emit sendMessage("2", row, col, 1, 1);
+                }else if(cloudState >= 2500){
+                    emit sendMessage("3", row, col, 1, 1);
+                }else{
+
+                }
+            }
+
+        }else{
+            emit sendMessage("3", row, col, 1, 1);
+        }
+    }else if(totalcloudcoverStr.compare("-") == 0){
+        emit sendMessage("1", row, col, 1, 1);
+    }
+}
+
+/**
+ * @brief KfttjControl::analysisCrossWind
+ * 侧风分析
+ * @param monthsummary
+ */
+void KfttjControl::analysisCrossWind(const Monthsummary &monthsummary, int row, int col){
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float crossspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            crossspeed = qAbs(qSin(winddirection - 180) * speed);
+        }
+        //侧风
+        if(crossspeed >= 12){
+            emit sendMessage("1", row, col, 1, 1);
+        }else if(crossspeed < 12 && crossspeed >= 8){
+            emit sendMessage("2", row, col, 1, 1);
+        }else if(crossspeed < 8){
+            emit sendMessage("3", row, col, 1, 1);
+        }else{
+
+        }
+    }
+}
+
+/**
+ * @brief KfttjControl::analysisHeadWind
+ * 逆风分析
+ * @param monthsummary
+ */
+void KfttjControl::analysisHeadWind(const Monthsummary &monthsummary, int row, int col){
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float headspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            headspeed = qCos(winddirection - 180) * speed;
+        }
+        //逆风
+        if(headspeed >= 15){
+            emit sendMessage("1", row, col, 1, 1);
+        }else if(headspeed < 15 && headspeed >= 10){
+            emit sendMessage("2", row, col, 1, 1);
+        }else if(headspeed < 10){
+            emit sendMessage("3", row, col, 1, 1);
+        }else{
+
+        }
     }
 }

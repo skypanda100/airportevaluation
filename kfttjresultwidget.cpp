@@ -15,44 +15,50 @@ KfttjResultWidget::~KfttjResultWidget(){
 }
 
 void KfttjResultWidget::initData(){
+    titleList << "日期"
+              << "气象要素"
+              << "17"
+              << "18"
+              << "19"
+              << "20"
+              << "21"
+              << "22"
+              << "23"
+              << "0"
+              << "1"
+              << "2"
+              << "3"
+              << "4"
+              << "5"
+              << "6"
+              << "7"
+              << "8"
+              << "9"
+              << "10"
+              << "11"
+              << "12"
+              << "13"
+              << "14"
+              << "15"
+              << "16";
     pgdb = new PgDataBase;
     this->query();
 }
 
 void KfttjResultWidget::initUI(){
-    tableModel = new QStandardItemModel(1, 26, this);
-    tableModel->setHeaderData(0, Qt::Horizontal, "日期");
-    tableModel->setHeaderData(1, Qt::Horizontal, "气象要素");
-    tableModel->setHeaderData(2, Qt::Horizontal, "17");
-    tableModel->setHeaderData(3, Qt::Horizontal, "18");
-    tableModel->setHeaderData(4, Qt::Horizontal, "19");
-    tableModel->setHeaderData(5, Qt::Horizontal, "20");
-    tableModel->setHeaderData(6, Qt::Horizontal, "21");
-    tableModel->setHeaderData(7, Qt::Horizontal, "22");
-    tableModel->setHeaderData(8, Qt::Horizontal, "23");
-    tableModel->setHeaderData(9, Qt::Horizontal, "0");
-    tableModel->setHeaderData(10, Qt::Horizontal, "1");
-    tableModel->setHeaderData(11, Qt::Horizontal, "2");
-    tableModel->setHeaderData(12, Qt::Horizontal, "3");
-    tableModel->setHeaderData(13, Qt::Horizontal, "4");
-    tableModel->setHeaderData(14, Qt::Horizontal, "5");
-    tableModel->setHeaderData(15, Qt::Horizontal, "6");
-    tableModel->setHeaderData(16, Qt::Horizontal, "7");
-    tableModel->setHeaderData(17, Qt::Horizontal, "8");
-    tableModel->setHeaderData(18, Qt::Horizontal, "9");
-    tableModel->setHeaderData(19, Qt::Horizontal, "10");
-    tableModel->setHeaderData(20, Qt::Horizontal, "11");
-    tableModel->setHeaderData(21, Qt::Horizontal, "12");
-    tableModel->setHeaderData(22, Qt::Horizontal, "13");
-    tableModel->setHeaderData(23, Qt::Horizontal, "14");
-    tableModel->setHeaderData(24, Qt::Horizontal, "15");
-    tableModel->setHeaderData(25, Qt::Horizontal, "16");
+    tableModel = new TableModel(0, 26, this);
+    int titleCount = titleList.size();
+    for(int i = 0;i < titleCount;i++){
+        tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);
+    }
+
     tableView = new QTableView;
     tableView->setModel(tableModel);
 
-
     this->setOrientation(Qt::Vertical);
     this->addWidget(tableView);
+
+    this->analysis();
 }
 
 void KfttjResultWidget::initConnect(){
@@ -62,7 +68,7 @@ void KfttjResultWidget::initConnect(){
 void KfttjResultWidget::query(){
     //查询月总簿表
     QString summaryStartDatetime = "2012-12-31 17:00:00";
-    QString summaryEndDatetime = "2013-02-01 16:00:00";
+    QString summaryEndDatetime = "2013-01-31 16:00:00";
 
     QString summarySql = QString("select * from zsdy_monthsummary where datetime >= '%1' and datetime <= '%2' order by datetime")
             .arg(summaryStartDatetime)
@@ -142,6 +148,88 @@ void KfttjResultWidget::query(){
     delete extremumPlainModel;
 }
 
+//能见度->云->侧风->逆风
 void KfttjResultWidget::analysis(){
+    int summaryCount = summaryList.size();
+    int dateCount = 0;
+    QDateTime lastDateTime_local;
+    for(int i = 0;i < summaryCount;i++){
+        /***表格整体布局***/
+        Monthsummary monthsummary = summaryList[i];
+        QDateTime currentDateTime_local = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss").addSecs(3600 * 8 - 1);
+        QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+        if(i == 0){
+            lastDateTime_local = currentDateTime_local;
+            tableModel->insertRows(dateCount * 4, 4, QModelIndex()); //4为4个气象要素
+            //日期
+            tableModel->setData(tableModel->index(dateCount * 4, 0, QModelIndex()), currentDateTime_local.toString("yyyy年MM月dd日"));
+            tableView->setSpan(dateCount * 4, 0, 4, 1);
+            //能见度
+            tableModel->setData(tableModel->index(dateCount * 4, 1, QModelIndex()), "能见度");
+            //云
+            tableModel->setData(tableModel->index(dateCount * 4 + 1, 1, QModelIndex()), "云");
+            //侧风
+            tableModel->setData(tableModel->index(dateCount * 4 + 2, 1, QModelIndex()), "侧风");
+            //逆风
+            tableModel->setData(tableModel->index(dateCount * 4 + 3, 1, QModelIndex()), "逆风");
+        }else{
+            if(lastDateTime_local.daysTo(currentDateTime_local) >= 1){
+                dateCount += 1;
+                tableModel->insertRows(dateCount * 4, 4, QModelIndex()); //4为4个气象要素
+                //日期
+                tableModel->setData(tableModel->index(dateCount * 4, 0, QModelIndex()), currentDateTime_local.toString("yyyy年MM月dd日"));
+                tableView->setSpan(dateCount * 4, 0, 4, 1);
+                //能见度
+                tableModel->setData(tableModel->index(dateCount * 4, 1, QModelIndex()), "能见度");
+                //云
+                tableModel->setData(tableModel->index(dateCount * 4 + 1, 1, QModelIndex()), "云");
+                //侧风
+                tableModel->setData(tableModel->index(dateCount * 4 + 2, 1, QModelIndex()), "侧风");
+                //逆风
+                tableModel->setData(tableModel->index(dateCount * 4 + 3, 1, QModelIndex()), "逆风");
+            }
+        }
+        lastDateTime_local = currentDateTime_local;
 
+        /***数据分析***/
+        bool canExecute = false;
+        int hour = currentDateTime_utc.toString("h").toInt();
+        if(JAN_DAY_E[0] > JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+            if(hour >= JAN_DAY_E[0] || hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= JAN_DAY_E[0] && hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+        if(canExecute){
+            //能见度
+            QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
+            if(leadingvisibilityStr.compare("///") == 0){
+                tableModel->setData(tableModel->index(dateCount * 4, titleList.indexOf(QString::number(hour)), QModelIndex()), "1");
+            }else if(leadingvisibilityStr.compare("") != 0){
+                int leadingvisibility = leadingvisibilityStr.toInt();
+                if(leadingvisibility < 3000){
+                    tableModel->setData(tableModel->index(dateCount * 4, titleList.indexOf(QString::number(hour)), QModelIndex()), "1");
+                }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
+                    tableModel->setData(tableModel->index(dateCount * 4, titleList.indexOf(QString::number(hour)), QModelIndex()), "2");
+                }else if(leadingvisibility >= 5000){
+                    tableModel->setData(tableModel->index(dateCount * 4, titleList.indexOf(QString::number(hour)), QModelIndex()), "3");
+                }else{
+
+                }
+            }else{
+
+            }
+            //云
+            //侧风
+            //逆风
+        }
+    }
+
+    //调整列宽
+    for (int column = 0; column < tableModel->columnCount(); ++column){
+        tableView->resizeColumnToContents(column);
+    }
 }

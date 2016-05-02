@@ -3,12 +3,15 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     ,isSjdrInit(false)
+    ,isKfttjInit(false)
+    ,resultWidget(NULL)
     ,sjdrInputDock(NULL)
     ,sjdrInputWidget(NULL)
     ,sjdrQualityDock(NULL)
     ,sjdrQualityWidget(NULL)
     ,sjdrMainWidget(NULL)
     ,progressBar(NULL)
+    ,kfttjResultWidget(NULL)
 {
     this->initData();
     this->initUI();
@@ -37,6 +40,14 @@ MainWindow::~MainWindow()
     if(progressBar != NULL){
         delete progressBar;
     }
+
+    if(kfttjResultWidget != NULL){
+        delete kfttjResultWidget;
+    }
+
+    if(resultWidget != NULL){
+        delete resultWidget;
+    }
 }
 
 void MainWindow::initData(){
@@ -47,11 +58,18 @@ void MainWindow::initUI(){
     this->setupViewActions();
     this->setupSettingActions();
     this->setupHelpActions();
+    this->setupCentralWidget();
     this->createStatusBar();
 }
 
 void MainWindow::initConnect(){
     connect(sjdrAction, SIGNAL(triggered()), this, SLOT(onSjdrTriggered()));
+    connect(kfttjAction, SIGNAL(triggered()), this, SLOT(onKfttjTriggered()));
+}
+
+void MainWindow::setupCentralWidget(){
+    resultWidget = new QStackedWidget;
+    this->setCentralWidget(resultWidget);
 }
 
 void MainWindow::setupModuleActions(){
@@ -145,6 +163,20 @@ void MainWindow::onSjdrTriggered(){
     }else{
         sjdrInputDock->setVisible(true);
         sjdrQualityDock->setVisible(true);
+        resultWidget->setCurrentWidget(sjdrMainWidget);
+    }
+}
+
+/**
+ * @brief MainWindow::onKfttjTriggered
+ * 可飞天统计模块
+ */
+void MainWindow::onKfttjTriggered(){
+    if(!isKfttjInit){
+        isKfttjInit = true;
+        this->setupKfttj();
+    }else{
+        resultWidget->setCurrentWidget(kfttjResultWidget);
     }
 }
 
@@ -177,5 +209,19 @@ void MainWindow::setupSjdrResultWidget(){
     }
     sjdrMainWidget = new SjdrMainWidget;
     connect(sjdrMainWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
-    this->setCentralWidget(sjdrMainWidget);
+    resultWidget->addWidget(sjdrMainWidget);
+    resultWidget->setCurrentWidget(sjdrMainWidget);
+}
+
+void MainWindow::setupKfttj(){
+    this->setupKfttjResultWidget();
+}
+
+void MainWindow::setupKfttjResultWidget(){
+    if(kfttjResultWidget != NULL){
+        delete kfttjResultWidget;
+    }
+    kfttjResultWidget = new KfttjResultWidget;
+    resultWidget->addWidget(kfttjResultWidget);
+    resultWidget->setCurrentWidget(kfttjResultWidget);
 }

@@ -1,18 +1,62 @@
 #include "kfttjresultwidget.h"
 
 KfttjResultWidget::KfttjResultWidget(QWidget *parent)
-    :QWidget(parent)
+    :QSplitter(parent)
 {
     this->initData();
+    this->initUI();
+    this->initConnect();
 }
 
 KfttjResultWidget::~KfttjResultWidget(){
     delete pgdb;
+    delete tableModel;
+    delete tableView;
 }
 
 void KfttjResultWidget::initData(){
     pgdb = new PgDataBase;
     this->query();
+}
+
+void KfttjResultWidget::initUI(){
+    tableModel = new QStandardItemModel(1, 26, this);
+    tableModel->setHeaderData(0, Qt::Horizontal, "日期");
+    tableModel->setHeaderData(1, Qt::Horizontal, "气象要素");
+    tableModel->setHeaderData(2, Qt::Horizontal, "17");
+    tableModel->setHeaderData(3, Qt::Horizontal, "18");
+    tableModel->setHeaderData(4, Qt::Horizontal, "19");
+    tableModel->setHeaderData(5, Qt::Horizontal, "20");
+    tableModel->setHeaderData(6, Qt::Horizontal, "21");
+    tableModel->setHeaderData(7, Qt::Horizontal, "22");
+    tableModel->setHeaderData(8, Qt::Horizontal, "23");
+    tableModel->setHeaderData(9, Qt::Horizontal, "0");
+    tableModel->setHeaderData(10, Qt::Horizontal, "1");
+    tableModel->setHeaderData(11, Qt::Horizontal, "2");
+    tableModel->setHeaderData(12, Qt::Horizontal, "3");
+    tableModel->setHeaderData(13, Qt::Horizontal, "4");
+    tableModel->setHeaderData(14, Qt::Horizontal, "5");
+    tableModel->setHeaderData(15, Qt::Horizontal, "6");
+    tableModel->setHeaderData(16, Qt::Horizontal, "7");
+    tableModel->setHeaderData(17, Qt::Horizontal, "8");
+    tableModel->setHeaderData(18, Qt::Horizontal, "9");
+    tableModel->setHeaderData(19, Qt::Horizontal, "10");
+    tableModel->setHeaderData(20, Qt::Horizontal, "11");
+    tableModel->setHeaderData(21, Qt::Horizontal, "12");
+    tableModel->setHeaderData(22, Qt::Horizontal, "13");
+    tableModel->setHeaderData(23, Qt::Horizontal, "14");
+    tableModel->setHeaderData(24, Qt::Horizontal, "15");
+    tableModel->setHeaderData(25, Qt::Horizontal, "16");
+    tableView = new QTableView;
+    tableView->setModel(tableModel);
+
+
+    this->setOrientation(Qt::Vertical);
+    this->addWidget(tableView);
+}
+
+void KfttjResultWidget::initConnect(){
+
 }
 
 void KfttjResultWidget::query(){

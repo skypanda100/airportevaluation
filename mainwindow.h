@@ -6,6 +6,8 @@
 #include "sjdrinputwidget.h"
 #include "sjdrqualitywidget.h"
 #include "sjdrmainwidget.h"
+#include "kfttjresultwidget.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -26,6 +28,8 @@ private:
     void setupViewActions();
     void setupSettingActions();
     void setupHelpActions();
+    //中央区域
+    void setupCentralWidget();
     //状态栏
     void createStatusBar();
     //设置数据导入模块区
@@ -36,13 +40,20 @@ private:
     void setupSjdrQualityWidget();
     //设置数据导入模块的结果区
     void setupSjdrResultWidget();
+    //设置可飞天统计模块区
+    void setupKfttj();
+    //设置可飞天统计模块的结果区
+    void setupKfttjResultWidget();
 
 private slots:
     void onSjdrTriggered();
+    void onKfttjTriggered();
 
 private:
     bool isSjdrInit;
+    bool isKfttjInit;
 
+    QStackedWidget *resultWidget;
 
     QMenu *viewMenu;
 
@@ -58,6 +69,8 @@ private:
     QDockWidget *sjdrQualityDock;
     SjdrQualityWidget *sjdrQualityWidget;
     SjdrMainWidget *sjdrMainWidget;
+
+    KfttjResultWidget *kfttjResultWidget;
 };
 
 #endif // MAINWINDOW_H

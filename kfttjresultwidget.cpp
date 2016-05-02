@@ -40,13 +40,16 @@ void KfttjResultWidget::initData(){
               << "13"
               << "14"
               << "15"
-              << "16";
+              << "16"
+              << "完全可飞"
+              << "限制可飞"
+              << "不可飞";
     pgdb = new PgDataBase;
     this->query();
 }
 
 void KfttjResultWidget::initUI(){
-    tableModel = new TableModel(0, 26, this);
+    tableModel = new TableModel(0, titleList.size(), this);
     int titleCount = titleList.size();
     for(int i = 0;i < titleCount;i++){
         tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);
@@ -172,6 +175,12 @@ void KfttjResultWidget::analysis(){
             tableModel->setData(tableModel->index(dateCount * 4 + 2, 1, QModelIndex()), "侧风");
             //逆风
             tableModel->setData(tableModel->index(dateCount * 4 + 3, 1, QModelIndex()), "逆风");
+            //完全可飞
+            tableView->setSpan(dateCount * 4, titleList.indexOf("完全可飞"), 4, 1);
+            //限制可飞
+            tableView->setSpan(dateCount * 4, titleList.indexOf("限制可飞"), 4, 1);
+            //不可飞
+            tableView->setSpan(dateCount * 4, titleList.indexOf("不可飞"), 4, 1);
         }else{
             if(lastDateTime_local.daysTo(currentDateTime_local) >= 1){
                 dateCount += 1;
@@ -187,6 +196,12 @@ void KfttjResultWidget::analysis(){
                 tableModel->setData(tableModel->index(dateCount * 4 + 2, 1, QModelIndex()), "侧风");
                 //逆风
                 tableModel->setData(tableModel->index(dateCount * 4 + 3, 1, QModelIndex()), "逆风");
+                //完全可飞
+                tableView->setSpan(dateCount * 4, titleList.indexOf("完全可飞"), 4, 1);
+                //限制可飞
+                tableView->setSpan(dateCount * 4, titleList.indexOf("限制可飞"), 4, 1);
+                //不可飞
+                tableView->setSpan(dateCount * 4, titleList.indexOf("不可飞"), 4, 1);
             }
         }
         lastDateTime_local = currentDateTime_local;
@@ -223,13 +238,47 @@ void KfttjResultWidget::analysis(){
 
             }
             //云
-            //侧风
-            //逆风
+            //风
+            QString windspeedStr = monthsummary.windspeed().trimmed();
+            QString gustspeedStr = monthsummary.gustspeed().trimmed();
+            QString winddirectionStr = monthsummary.winddirection().trimmed();
+            if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+                float windspeed = windspeedStr.toFloat();
+                float gustspeed = gustspeedStr.toFloat();
+                float speed = qMax(windspeed, gustspeed);
+                float crossspeed = speed;
+                float headspeed = speed;
+                if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+                    float winddirection = winddirectionStr.toFloat();
+                    crossspeed = qAbs(qSin(winddirection - 180) * speed);
+                    headspeed = qCos(winddirection - 180) * speed;
+                }
+                //侧风
+                if(crossspeed >= 12){
+                    tableModel->setData(tableModel->index(dateCount * 4 + 2, titleList.indexOf(QString::number(hour)), QModelIndex()), "1");
+                }else if(crossspeed < 12 && crossspeed >= 8){
+                    tableModel->setData(tableModel->index(dateCount * 4 + 2, titleList.indexOf(QString::number(hour)), QModelIndex()), "2");
+                }else if(crossspeed < 8){
+                    tableModel->setData(tableModel->index(dateCount * 4 + 2, titleList.indexOf(QString::number(hour)), QModelIndex()), "3");
+                }else{
+
+                }
+                //逆风
+                if(headspeed >= 15){
+                    tableModel->setData(tableModel->index(dateCount * 4 + 3, titleList.indexOf(QString::number(hour)), QModelIndex()), "1");
+                }else if(headspeed < 15 && headspeed >= 10){
+                    tableModel->setData(tableModel->index(dateCount * 4 + 3, titleList.indexOf(QString::number(hour)), QModelIndex()), "2");
+                }else if(headspeed < 10){
+                    tableModel->setData(tableModel->index(dateCount * 4 + 3, titleList.indexOf(QString::number(hour)), QModelIndex()), "3");
+                }else{
+
+                }
+            }
         }
     }
 
     //调整列宽
-    for (int column = 0; column < tableModel->columnCount(); ++column){
+    for (int column = 2; column < tableModel->columnCount() - 3; ++column){
         tableView->resizeColumnToContents(column);
     }
 }

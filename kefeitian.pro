@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     kfttjresultwidget.cpp \
     bean/monthsummary.cpp \
     bean/extremum.cpp \
-    model/tablemodel.cpp
+    model/tablemodel.cpp \
+    control/kfttjcontrol.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -48,7 +49,8 @@ HEADERS  += mainwindow.h \
     kfttjresultwidget.h \
     bean/monthsummary.h \
     bean/extremum.h \
-    model/tablemodel.h
+    model/tablemodel.h \
+    control/kfttjcontrol.h
 
 RESOURCES += \
     res.qrc

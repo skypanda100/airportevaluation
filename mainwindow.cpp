@@ -222,6 +222,7 @@ void MainWindow::setupKfttjResultWidget(){
         delete kfttjResultWidget;
     }
     kfttjResultWidget = new KfttjResultWidget;
+    connect(kfttjResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
     resultWidget->addWidget(kfttjResultWidget);
     resultWidget->setCurrentWidget(kfttjResultWidget);
 }

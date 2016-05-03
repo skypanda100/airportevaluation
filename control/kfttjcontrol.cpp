@@ -33,6 +33,9 @@ KfttjControl::KfttjControl(QObject *parent)
               << "限制可飞"
               << "不可飞";
     pgdb = new PgDataBase;
+
+    //需要统计的气象参数个数
+    elementCount = 4 + 1; ////4:能见度,云,侧风,逆风 1:综合
 }
 
 KfttjControl::~KfttjControl(){
@@ -55,14 +58,7 @@ void KfttjControl::run(){
 
 void KfttjControl::query(){
     //查询月总簿表
-    QString summaryStartDatetime = "2012-12-31 17:00:00";
-    QString summaryEndDatetime = "2013-01-31 16:00:00";
-
-    QString summarySql = QString("select * from zsdy_monthsummary where datetime >= '%1' and datetime <= '%2' order by datetime")
-            .arg(summaryStartDatetime)
-            .arg(summaryEndDatetime);
-
-    QSqlQueryModel *summaryPlainModel = pgdb->queryModel(summarySql);
+    QSqlQueryModel *summaryPlainModel = pgdb->queryModel(m_summarySql);
     int summaryRowCount = summaryPlainModel->rowCount();
     for(int i = 0;i < summaryRowCount;i++){
         Monthsummary monthsummary;
@@ -105,14 +101,7 @@ void KfttjControl::query(){
     delete summaryPlainModel;
 
     //查询极值表
-    QString extremumStartDatetime = "2013-01-01 00:00:00";
-    QString extremumEndDatetime = "2013-01-31 23:59:59";
-
-    QString extremumSql = QString("select * from zsdy_extremum where datetime >= '%1' and datetime <= '%2' order by datetime")
-            .arg(extremumStartDatetime)
-            .arg(extremumEndDatetime);
-
-    QSqlQueryModel *extremumPlainModel = pgdb->queryModel(extremumSql);
+    QSqlQueryModel *extremumPlainModel = pgdb->queryModel(m_extremumSql);
     int extremumRowCount = extremumPlainModel->rowCount();
     for(int i = 0;i < extremumRowCount;i++){
         Extremum extremum;
@@ -136,6 +125,143 @@ void KfttjControl::query(){
     delete extremumPlainModel;
 }
 
+
+/**
+ * @brief KfttjControl::isDayTime
+ * 判断是否为白天时间
+ * @param dateTime 世界时
+ * @return
+ */
+bool KfttjControl::isDayTime(QDateTime currentDateTime_utc){
+    bool canExecute = false;
+    QDateTime currentDateTime_local = currentDateTime_utc.addSecs(3600 * 8 - 1);
+    int month = currentDateTime_local.toString("M").toInt(); //用中国时取得月份
+    int hour = currentDateTime_utc.toString("h").toInt(); //用世界时取得小时
+    if(1 == month){
+        if(JAN_DAY_E[0] > JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+            if(hour >= JAN_DAY_E[0] || hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= JAN_DAY_E[0] && hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(2 == month){
+        if(FEB_DAY_E[0] > FEB_DAY_E[sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]) - 1]){
+            if(hour >= FEB_DAY_E[0] || hour <= FEB_DAY_E[sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= FEB_DAY_E[0] && hour <= FEB_DAY_E[sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(3 == month){
+        if(MAR_DAY_E[0] > MAR_DAY_E[sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]) - 1]){
+            if(hour >= MAR_DAY_E[0] || hour <= MAR_DAY_E[sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= MAR_DAY_E[0] && hour <= MAR_DAY_E[sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(4 == month){
+        if(APR_DAY_E[0] > APR_DAY_E[sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]) - 1]){
+            if(hour >= APR_DAY_E[0] || hour <= APR_DAY_E[sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= APR_DAY_E[0] && hour <= APR_DAY_E[sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(5 == month){
+        if(MAY_DAY_E[0] > MAY_DAY_E[sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]) - 1]){
+            if(hour >= MAY_DAY_E[0] || hour <= MAY_DAY_E[sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= MAY_DAY_E[0] && hour <= MAY_DAY_E[sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(6 == month){
+        if(JUN_DAY_E[0] > JUN_DAY_E[sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]) - 1]){
+            if(hour >= JUN_DAY_E[0] || hour <= JUN_DAY_E[sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= JUN_DAY_E[0] && hour <= JUN_DAY_E[sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(7 == month){
+        if(JUL_DAY_E[0] > JUL_DAY_E[sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]) - 1]){
+            if(hour >= JUL_DAY_E[0] || hour <= JUL_DAY_E[sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= JUL_DAY_E[0] && hour <= JUL_DAY_E[sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(8 == month){
+        if(AUG_DAY_E[0] > AUG_DAY_E[sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]) - 1]){
+            if(hour >= AUG_DAY_E[0] || hour <= AUG_DAY_E[sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= AUG_DAY_E[0] && hour <= AUG_DAY_E[sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(9 == month){
+        if(SEP_DAY_E[0] > SEP_DAY_E[sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]) - 1]){
+            if(hour >= SEP_DAY_E[0] || hour <= SEP_DAY_E[sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= SEP_DAY_E[0] && hour <= SEP_DAY_E[sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(10 == month){
+        if(OCT_DAY_E[0] > OCT_DAY_E[sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]) - 1]){
+            if(hour >= OCT_DAY_E[0] || hour <= OCT_DAY_E[sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= OCT_DAY_E[0] && hour <= OCT_DAY_E[sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else if(11 == month){
+        if(NOV_DAY_E[0] > NOV_DAY_E[sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]) - 1]){
+            if(hour >= NOV_DAY_E[0] || hour <= NOV_DAY_E[sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= NOV_DAY_E[0] && hour <= NOV_DAY_E[sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }else{
+        if(DEC_DAY_E[0] > DEC_DAY_E[sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]) - 1]){
+            if(hour >= DEC_DAY_E[0] || hour <= DEC_DAY_E[sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }else{
+            if(hour >= DEC_DAY_E[0] && hour <= DEC_DAY_E[sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]) - 1]){
+                canExecute = true;
+            }
+        }
+    }
+
+    return canExecute;
+}
+
 //能见度->云->侧风->逆风
 void KfttjControl::analysis(){
     int summaryCount = summaryList.size();
@@ -157,48 +283,44 @@ void KfttjControl::analysis(){
             }
         }
         if(canInsertRows){
-            sendMessage(dateCount * 4, 4);//4为4个气象要素
+            sendMessage(dateCount * elementCount, elementCount);//4为4个气象要素
             //日期
-            emit sendMessage(currentDateTime_local.toString("yyyy年MM月dd日"), dateCount * 4, 0, 4, 1);
+            emit sendMessage(currentDateTime_local.toString("yyyy年MM月dd日"), dateCount * elementCount, 0, elementCount, 1);
             //能见度
-            emit sendMessage("能见度", dateCount * 4, 1, 1, 1);
+            emit sendMessage("能见度", dateCount * elementCount, 1, 1, 1);
             //云
-            emit sendMessage("云", dateCount * 4 + 1, 1, 1, 1);
+            emit sendMessage("云", dateCount * elementCount + 1, 1, 1, 1);
             //侧风
-            emit sendMessage("侧风", dateCount * 4 + 2, 1, 1, 1);
+            emit sendMessage("侧风", dateCount * elementCount + 2, 1, 1, 1);
             //逆风
-            emit sendMessage("逆风", dateCount * 4 + 3, 1, 1, 1);
+            emit sendMessage("逆风", dateCount * elementCount + 3, 1, 1, 1);
+            //综合
+            emit sendMessage("综合", dateCount * elementCount + 4, 1, 1, 1);
             //完全可飞
-            emit sendMessage("", dateCount * 4, titleList.indexOf("完全可飞"), 4, 1);
+            emit sendMessage("", dateCount * elementCount, titleList.indexOf("完全可飞"), elementCount, 1);
             //限制可飞
-            emit sendMessage("", dateCount * 4, titleList.indexOf("限制可飞"), 4, 1);
+            emit sendMessage("", dateCount * elementCount, titleList.indexOf("限制可飞"), elementCount, 1);
             //不可飞
-            emit sendMessage("", dateCount * 4, titleList.indexOf("不可飞"), 4, 1);
+            emit sendMessage("", dateCount * elementCount, titleList.indexOf("不可飞"), elementCount, 1);
         }
 
         lastDateTime_local = currentDateTime_local;
 
         /***数据分析***/
-        bool canExecute = false;
+        bool canExecute = isDayTime(currentDateTime_utc);
         int hour = currentDateTime_utc.toString("h").toInt();
-        if(JAN_DAY_E[0] > JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
-            if(hour >= JAN_DAY_E[0] || hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
-                canExecute = true;
-            }
-        }else{
-            if(hour >= JAN_DAY_E[0] && hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
-                canExecute = true;
-            }
-        }
         if(canExecute){
+            QStringList results;
             //能见度
-            analysisVisibility(monthsummary, dateCount * 4, titleList.indexOf(QString::number(hour)));
+            results.append(analysisVisibility(monthsummary, dateCount * elementCount, titleList.indexOf(QString::number(hour))));
             //云
-            analysisCloud(monthsummary, dateCount * 4 + 1, titleList.indexOf(QString::number(hour)));
+            results.append(analysisCloud(monthsummary, dateCount * elementCount + 1, titleList.indexOf(QString::number(hour))));
             //侧风
-            analysisCrossWind(monthsummary, dateCount * 4 + 2, titleList.indexOf(QString::number(hour)));
+            results.append(analysisCrossWind(monthsummary, dateCount * elementCount + 2, titleList.indexOf(QString::number(hour))));
             //逆风
-            analysisHeadWind(monthsummary, dateCount * 4 + 3, titleList.indexOf(QString::number(hour)));
+            results.append(analysisHeadWind(monthsummary, dateCount * elementCount + 3, titleList.indexOf(QString::number(hour))));
+            //综合
+            analysisAll(results, dateCount * elementCount + 4, titleList.indexOf(QString::number(hour)));
         }
         //更新进度
         emit setProgressValue((int)(((qreal)(i + 1)/(qreal)summaryCount) * 100));
@@ -210,24 +332,29 @@ void KfttjControl::analysis(){
  * 能见度分析
  * @param monthsummary
  */
-void KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int row, int col){
+QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
     QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
     if(leadingvisibilityStr.compare("///") == 0){
-        emit sendMessage("1", row, col, 1, 1);
+        resultStr = QString("1");
     }else if(leadingvisibilityStr.compare("") != 0){
         int leadingvisibility = leadingvisibilityStr.toInt();
         if(leadingvisibility < 3000){
-            emit sendMessage("1", row, col, 1, 1);
+            resultStr = QString("1");
         }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
-            emit sendMessage("2", row, col, 1, 1);
+            resultStr = QString("2");
         }else if(leadingvisibility >= 5000){
-            emit sendMessage("3", row, col, 1, 1);
+            resultStr = QString("3");
         }else{
 
         }
     }else{
 
     }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -235,7 +362,8 @@ void KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int row,
  * 云分析
  * @param monthsummary
  */
-void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int col){
+QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
     QString totalcloudcoverStr = monthsummary.totalcloudcover().trimmed();
     QString lowcloudstate1Str = monthsummary.lowcloudstate1().trimmed();
     QString lowcloudstate2Str = monthsummary.lowcloudstate2().trimmed();
@@ -265,8 +393,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -278,8 +407,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -291,8 +421,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -304,8 +435,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -317,8 +449,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -330,8 +463,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -343,8 +477,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -356,8 +491,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -369,8 +505,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -382,8 +519,9 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
@@ -395,29 +533,35 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
                         cloudState = texts[texts.size() - 1].toInt();
                     }
                 }else{
-                    emit sendMessage("1", row, col, 1, 1);
-                    return;
+                    resultStr = QString("1");
+                    emit sendMessage(resultStr, row, col, 1, 1);
+                    return resultStr;
                 }
             }
 
             if(cloudState > -1){
                 if(cloudState < 600){
-                    emit sendMessage("1", row, col, 1, 1);
+                    resultStr = QString("1");
                 }else if(cloudState < 2500 && cloudState >= 600){
-                    emit sendMessage("2", row, col, 1, 1);
+                    resultStr = QString("2");
                 }else if(cloudState >= 2500){
-                    emit sendMessage("3", row, col, 1, 1);
+                    resultStr = QString("3");
                 }else{
 
                 }
             }
 
         }else{
-            emit sendMessage("3", row, col, 1, 1);
+            resultStr = QString("3");
         }
     }else if(totalcloudcoverStr.compare("-") == 0){
-        emit sendMessage("1", row, col, 1, 1);
+        resultStr = QString("1");
     }
+
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -425,7 +569,8 @@ void KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int 
  * 侧风分析
  * @param monthsummary
  */
-void KfttjControl::analysisCrossWind(const Monthsummary &monthsummary, int row, int col){
+QString KfttjControl::analysisCrossWind(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
     QString windspeedStr = monthsummary.windspeed().trimmed();
     QString gustspeedStr = monthsummary.gustspeed().trimmed();
     QString winddirectionStr = monthsummary.winddirection().trimmed();
@@ -440,15 +585,19 @@ void KfttjControl::analysisCrossWind(const Monthsummary &monthsummary, int row, 
         }
         //侧风
         if(crossspeed >= 12){
-            emit sendMessage("1", row, col, 1, 1);
+            resultStr = QString("1");
         }else if(crossspeed < 12 && crossspeed >= 8){
-            emit sendMessage("2", row, col, 1, 1);
+            resultStr = QString("2");
         }else if(crossspeed < 8){
-            emit sendMessage("3", row, col, 1, 1);
+            resultStr = QString("3");
         }else{
 
         }
     }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -456,7 +605,8 @@ void KfttjControl::analysisCrossWind(const Monthsummary &monthsummary, int row, 
  * 逆风分析
  * @param monthsummary
  */
-void KfttjControl::analysisHeadWind(const Monthsummary &monthsummary, int row, int col){
+QString KfttjControl::analysisHeadWind(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
     QString windspeedStr = monthsummary.windspeed().trimmed();
     QString gustspeedStr = monthsummary.gustspeed().trimmed();
     QString winddirectionStr = monthsummary.winddirection().trimmed();
@@ -471,13 +621,46 @@ void KfttjControl::analysisHeadWind(const Monthsummary &monthsummary, int row, i
         }
         //逆风
         if(headspeed >= 15){
-            emit sendMessage("1", row, col, 1, 1);
+            resultStr = QString("1");
         }else if(headspeed < 15 && headspeed >= 10){
-            emit sendMessage("2", row, col, 1, 1);
+            resultStr = QString("2");
         }else if(headspeed < 10){
-            emit sendMessage("3", row, col, 1, 1);
+            resultStr = QString("3");
         }else{
 
         }
     }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisAll
+ * 综合所有气象要素进行分析
+ * @return
+ */
+QString KfttjControl::analysisAll(QStringList results, int row, int col){
+    QString resultStr("");
+    int resultCount = results.size();
+    for(int i = 0;i < resultCount;i++){
+        QString resStr = results[i];
+        if(resStr.compare("") == 0){
+            resultStr = resStr;
+            break;
+        }else{
+            if(resultStr.compare("") == 0){
+                resultStr = resStr;
+            }else{
+                if(resultStr.compare(resStr) > 0){
+                    resultStr = resStr;
+                }
+            }
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }

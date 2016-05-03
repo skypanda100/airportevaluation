@@ -28,11 +28,13 @@ signals:
 
 private:
     void query();
+    bool isDayTime(QDateTime);
     void analysis();
-    void analysisVisibility(const Monthsummary &, int, int);
-    void analysisCloud(const Monthsummary &, int, int);
-    void analysisCrossWind(const Monthsummary &, int, int);
-    void analysisHeadWind(const Monthsummary &, int, int);
+    QString analysisVisibility(const Monthsummary &, int, int);
+    QString analysisCloud(const Monthsummary &, int, int);
+    QString analysisCrossWind(const Monthsummary &, int, int);
+    QString analysisHeadWind(const Monthsummary &, int, int);
+    QString analysisAll(QStringList, int, int);
 
 private:
     QList<QString> titleList;
@@ -42,6 +44,8 @@ private:
     PgDataBase *pgdb;
     QList<Monthsummary> summaryList;
     QList<Extremum> extremumList;
+
+    int elementCount;
 };
 
 #endif // KFTTJCONTROL

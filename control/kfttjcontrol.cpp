@@ -432,6 +432,8 @@ QString KfttjControl::guessVisibilityEvolution(const Extremum &extremum, int hou
                 }
             }
         }
+    }else{
+        valueStr = resVisibilityStr2;
     }
 
     return valueStr;
@@ -487,6 +489,8 @@ QString KfttjControl::guessCloudEvolution(const Extremum &extremum, int hour){
                 valueStr = resCloudStr2;
             }
         }
+    }else{
+        valueStr = resCloudStr2;
     }
 
     return valueStr;
@@ -627,6 +631,8 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
                         Extremum extremum = extremumList[index];
                         resultStr = guessCloudEvolution(extremum, WHOLE_DAY_E);
                     }
+                }else{
+                    resultStr = QString("3");
                 }
             }
         }else{

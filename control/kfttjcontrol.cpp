@@ -262,6 +262,36 @@ bool KfttjControl::isDayTime(QDateTime currentDateTime_utc){
     return canExecute;
 }
 
+/**
+ * @brief KfttjControl::getHalfOrWholeDay
+ * 判断是否为半天或者整天
+ * @param currentDateTime_utc   0:什么也不是 1:半天 2:整天
+ * @return
+ */
+int KfttjControl::getHalfOrWholeDay(QDateTime currentDateTime_utc){
+    int hour = currentDateTime_utc.toString("h").toInt();
+    if(hour - HALF_DAY_E == 1 || hour - HALF_DAY_E == 2){
+        return 1;
+    }else if(hour - WHOLE_DAY_E == 1 || hour - WHOLE_DAY_E == 2){
+        return 2;
+    }
+    return 0;
+}
+
+int KfttjControl::getExtremumIndex(QDateTime currentDateTime_utc){
+    int index = -1;
+    int extremumCount = extremumList.size();
+    for(int i = 0;i < extremumCount;i++){
+        Extremum extremum = extremumList[i];
+        QDateTime dateTime = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
+        if(dateTime.daysTo(currentDateTime_utc) == 0){
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
 //能见度->云->侧风->逆风
 void KfttjControl::analysis(){
     int summaryCount = summaryList.size();
@@ -328,6 +358,141 @@ void KfttjControl::analysis(){
 }
 
 /**
+ * @brief KfttjControl::guessVisibilityEvolution
+ * 推算能见度
+ * @param extremum
+ * @param hour
+ * @return
+ */
+QString KfttjControl::guessVisibilityEvolution(const Extremum &extremum, int hour){
+    QString valueStr("");
+    QString retStr("");
+    QRegExp regExp("(BR|FG)([\\(\\)\\d\\-]*([\\(\\)\\d]+\\-)$)");
+
+    QStringList evolutionList;
+    evolutionList.append(extremum.evolution1().trimmed());
+    evolutionList.append(extremum.evolution2().trimmed());
+    evolutionList.append(extremum.evolution3().trimmed());
+    evolutionList.append(extremum.evolution4().trimmed());
+    evolutionList.append(extremum.evolution5().trimmed());
+    evolutionList.append(extremum.evolution6().trimmed());
+    evolutionList.append(extremum.evolution7().trimmed());
+    evolutionList.append(extremum.evolution8().trimmed());
+    evolutionList.append(extremum.evolution9().trimmed());
+    evolutionList.append(extremum.evolution10().trimmed());
+
+    int evolutionCount = evolutionList.size();
+    for(int i = 0;i < evolutionCount;i++){
+        QString evolution = evolutionList[i];
+        int pos = regExp.indexIn(evolution);
+        if(pos >= 0){
+            QStringList retList = regExp.capturedTexts();
+            retStr = retList[retList.size() - 1];
+            break;
+        }
+    }
+
+    /*
+     * 1.水平能见度在05时的值为1000，06时的值为2000，能见度与天气现象演变中出现"BR(2500)0525-",则07，08时的能见度均为2000。
+     * 2.水平能见度在05时的值为1000，06时的值为2000，能见度与天气现象演变中出现"BR(2500)0625-",则07，08时的能见度均为2500。
+     * 3.水平能见度在05时的值为1000，06时的值为2000，能见度与天气现象演变中出现"BR(2500)0425-",则07时的能见度均为1000。
+     * 4.如果1，2，3均不满足的话，则07，08时的能见度与06时保持一致。
+     *
+     */
+    if(retStr.compare("") != 0){
+        QString hh1 = QString("0%1\\d{2}\\-").arg(hour - 1);
+        QRegExp regExp1(hh1);
+        int pos1 = regExp1.indexIn(retStr);
+        if(pos1 >= 0){
+            valueStr = resVisibilityStr2;
+        }else{
+            QString hh2 = QString("\\((\\d+)\\)0%1\\d{2}\\-").arg(hour);
+            QRegExp regExp2(hh2);
+            int pos2 = regExp2.indexIn(retStr);
+            if(pos2 >= 0){
+                QStringList resList = regExp2.capturedTexts();
+                int leadingvisibility = resList[resList.size() - 1].toInt();
+                if(leadingvisibility < 3000){
+                    valueStr = QString("1");
+                }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
+                    valueStr = QString("2");
+                }else if(leadingvisibility >= 5000){
+                    valueStr = QString("3");
+                }else{
+
+                }
+            }else{
+                QString hh3 = QString("0%1\\d{2}\\-").arg(hour - 2);
+                QRegExp regExp3(hh3);
+                int pos3 = regExp3.indexIn(retStr);
+                if(pos3 >= 0){
+                    valueStr = resVisibilityStr1;
+                }else{
+                    valueStr = resVisibilityStr2;
+                }
+            }
+        }
+    }
+
+    return valueStr;
+}
+
+QString KfttjControl::guessCloudEvolution(const Extremum &extremum, int hour){
+    QString valueStr("");
+    QString retStr("");
+    QRegExp regExp("(BR|FG)([\\(\\)\\d\\-]*([\\(\\)\\d]+\\-)$)");
+
+    QStringList evolutionList;
+    evolutionList.append(extremum.evolution1().trimmed());
+    evolutionList.append(extremum.evolution2().trimmed());
+    evolutionList.append(extremum.evolution3().trimmed());
+    evolutionList.append(extremum.evolution4().trimmed());
+    evolutionList.append(extremum.evolution5().trimmed());
+    evolutionList.append(extremum.evolution6().trimmed());
+    evolutionList.append(extremum.evolution7().trimmed());
+    evolutionList.append(extremum.evolution8().trimmed());
+    evolutionList.append(extremum.evolution9().trimmed());
+    evolutionList.append(extremum.evolution10().trimmed());
+
+    int evolutionCount = evolutionList.size();
+    for(int i = 0;i < evolutionCount;i++){
+        QString evolution = evolutionList[i];
+        int pos = regExp.indexIn(evolution);
+        if(pos >= 0){
+            QStringList retList = regExp.capturedTexts();
+            retStr = retList[retList.size() - 1];
+            break;
+        }
+    }
+
+    /*
+     * 1.云量在05时的值为1000，06时的值为2000，能见度与天气现象演变中出现"BR(2500)0525-",则07，08时的云量均为2000。
+     * 2.云量在05时的值为1000，06时的值为2000，能见度与天气现象演变中出现"BR(2500)0425-",则07时的云量均为1000。
+     * 3.如果1，2均不满足的话，则07，08时的云量与06时保持一致。
+     *
+     */
+    if(retStr.compare("") != 0){
+        QString hh1 = QString("0%1\\d{2}\\-").arg(hour - 1);
+        QRegExp regExp1(hh1);
+        int pos1 = regExp1.indexIn(retStr);
+        if(pos1 >= 0){
+            valueStr = resCloudStr2;
+        }else{
+            QString hh2 = QString("0%1\\d{2}\\-").arg(hour - 2);
+            QRegExp regExp2(hh2);
+            int pos2 = regExp2.indexIn(retStr);
+            if(pos2 >= 0){
+                valueStr = resCloudStr1;
+            }else{
+                valueStr = resCloudStr2;
+            }
+        }
+    }
+
+    return valueStr;
+}
+
+/**
  * @brief KfttjControl::analysisVisibility
  * 能见度分析
  * @param monthsummary
@@ -335,6 +500,8 @@ void KfttjControl::analysis(){
 QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
     QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int hour = currentDateTime_utc.toString("h").toInt();
     if(leadingvisibilityStr.compare("///") == 0){
         resultStr = QString("1");
     }else if(leadingvisibilityStr.compare("") != 0){
@@ -349,10 +516,39 @@ QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int r
 
         }
     }else{
-
+        //推测
+        int how = getHalfOrWholeDay(currentDateTime_utc);
+        if(how == 1){
+            int index = getExtremumIndex(currentDateTime_utc);
+            if(index > -1){
+                Extremum extremum = extremumList[index];
+                resultStr = guessVisibilityEvolution(extremum, HALF_DAY_E);
+            }
+        }else if(how == 2){
+            int index = getExtremumIndex(currentDateTime_utc);
+            if(index > -1){
+                Extremum extremum = extremumList[index];
+                resultStr = guessVisibilityEvolution(extremum, WHOLE_DAY_E);
+            }
+        }
     }
     if(resultStr.compare("") != 0){
         emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    //
+    if(!(hour - HALF_DAY_E == 1 || hour - HALF_DAY_E == 2 || hour - WHOLE_DAY_E == 1 || hour - WHOLE_DAY_E == 2)){
+        if(hour - HALF_DAY_E == -1){
+            resVisibilityStr1 = resultStr;
+        }else if(hour - HALF_DAY_E == 0){
+            resVisibilityStr2 = resultStr;
+        }else if(hour - WHOLE_DAY_E == -1){
+            resVisibilityStr1 = resultStr;
+        }else if(hour - WHOLE_DAY_E == 0){
+            resVisibilityStr2 = resultStr;
+        }else{
+            resVisibilityStr1 = QString("");
+            resVisibilityStr2 = QString("");
+        }
     }
     return resultStr;
 }
@@ -364,18 +560,21 @@ QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int r
  */
 QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int hour = currentDateTime_utc.toString("h").toInt();
     QString totalcloudcoverStr = monthsummary.totalcloudcover().trimmed();
-    QString lowcloudstate1Str = monthsummary.lowcloudstate1().trimmed();
-    QString lowcloudstate2Str = monthsummary.lowcloudstate2().trimmed();
-    QString lowcloudstate3Str = monthsummary.lowcloudstate3().trimmed();
-    QString lowcloudstate4Str = monthsummary.lowcloudstate4().trimmed();
-    QString lowcloudstate5Str = monthsummary.lowcloudstate5().trimmed();
-    QString middlecloudstate1Str = monthsummary.middlecloudstate1().trimmed();
-    QString middlecloudstate2Str = monthsummary.middlecloudstate2().trimmed();
-    QString middlecloudstate3Str = monthsummary.middlecloudstate3().trimmed();
-    QString highcloudstate1Str = monthsummary.highcloudstate1().trimmed();
-    QString highcloudstate2Str = monthsummary.highcloudstate2().trimmed();
-    QString highcloudstate3Str = monthsummary.highcloudstate3().trimmed();
+    QStringList cloudstateList;
+    cloudstateList.append(monthsummary.lowcloudstate1().trimmed());
+    cloudstateList.append(monthsummary.lowcloudstate2().trimmed());
+    cloudstateList.append(monthsummary.lowcloudstate3().trimmed());
+    cloudstateList.append(monthsummary.lowcloudstate4().trimmed());
+    cloudstateList.append(monthsummary.lowcloudstate5().trimmed());
+    cloudstateList.append(monthsummary.middlecloudstate1().trimmed());
+    cloudstateList.append(monthsummary.middlecloudstate2().trimmed());
+    cloudstateList.append(monthsummary.middlecloudstate3().trimmed());
+    cloudstateList.append(monthsummary.highcloudstate1().trimmed());
+    cloudstateList.append(monthsummary.highcloudstate2().trimmed());
+    cloudstateList.append(monthsummary.highcloudstate3().trimmed());
 
     QRegExp totalcloudExp("([0-8]{1})");
     QRegExp cloudstateExp("(.*\\D+)([0-9]+)");
@@ -385,157 +584,21 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
         int totalcloudcover = totalcloudExp.capturedTexts()[0].toInt();
         if(totalcloudcover == 8){
             int cloudState = -1;
-            if(lowcloudstate1Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate1Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
+            int cloudstateCount = cloudstateList.size();
+            for(int i = 0;i < cloudstateCount;i++){
+                QString cloudstateStr = cloudstateList[i];
+                if(cloudstateStr.compare("") != 0){
+                    int cloudstatePos = cloudstateExp.indexIn(cloudstateStr);
+                    if(cloudstatePos >= 0){
+                        QStringList texts = cloudstateExp.capturedTexts();
+                        if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
+                            cloudState = texts[texts.size() - 1].toInt();
+                        }
+                    }else{
+                        resultStr = QString("1");
+                        emit sendMessage(resultStr, row, col, 1, 1);
+                        return resultStr;
                     }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(lowcloudstate2Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate2Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(lowcloudstate3Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate3Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(lowcloudstate4Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate4Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(lowcloudstate5Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(lowcloudstate5Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(middlecloudstate1Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(middlecloudstate1Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(middlecloudstate2Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(middlecloudstate2Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(middlecloudstate3Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(middlecloudstate3Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(highcloudstate1Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(highcloudstate1Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(highcloudstate2Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(highcloudstate2Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
-                }
-            }
-
-            if(highcloudstate3Str.compare("") != 0){
-                int cloudstatePos = cloudstateExp.indexIn(highcloudstate3Str);
-                if(cloudstatePos >= 0){
-                    QStringList texts = cloudstateExp.capturedTexts();
-                    if(cloudState == -1 || cloudState > texts[texts.size() - 1].toInt()){
-                        cloudState = texts[texts.size() - 1].toInt();
-                    }
-                }else{
-                    resultStr = QString("1");
-                    emit sendMessage(resultStr, row, col, 1, 1);
-                    return resultStr;
                 }
             }
 
@@ -549,18 +612,66 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
                 }else{
 
                 }
+            }else{
+                //推测
+                int how = getHalfOrWholeDay(currentDateTime_utc);
+                if(how == 1){
+                    int index = getExtremumIndex(currentDateTime_utc);
+                    if(index > -1){
+                        Extremum extremum = extremumList[index];
+                        resultStr = guessCloudEvolution(extremum, HALF_DAY_E);
+                    }
+                }else if(how == 2){
+                    int index = getExtremumIndex(currentDateTime_utc);
+                    if(index > -1){
+                        Extremum extremum = extremumList[index];
+                        resultStr = guessCloudEvolution(extremum, WHOLE_DAY_E);
+                    }
+                }
             }
-
         }else{
             resultStr = QString("3");
         }
     }else if(totalcloudcoverStr.compare("-") == 0){
         resultStr = QString("1");
+    }else{
+        //推测
+        int how = getHalfOrWholeDay(currentDateTime_utc);
+        if(how == 1){
+            int index = getExtremumIndex(currentDateTime_utc);
+            if(index > -1){
+                Extremum extremum = extremumList[index];
+                resultStr = guessCloudEvolution(extremum, HALF_DAY_E);
+            }
+        }else if(how == 2){
+            int index = getExtremumIndex(currentDateTime_utc);
+            if(index > -1){
+                Extremum extremum = extremumList[index];
+                resultStr = guessCloudEvolution(extremum, WHOLE_DAY_E);
+            }
+        }
     }
 
     if(resultStr.compare("") != 0){
         emit sendMessage(resultStr, row, col, 1, 1);
     }
+
+    //
+    if(!(hour - HALF_DAY_E == 1 || hour - HALF_DAY_E == 2 || hour - WHOLE_DAY_E == 1 || hour - WHOLE_DAY_E == 2)){
+        if(hour - HALF_DAY_E == -1){
+            resCloudStr1 = resultStr;
+        }else if(hour - HALF_DAY_E == 0){
+            resCloudStr2 = resultStr;
+        }else if(hour - WHOLE_DAY_E == -1){
+            resCloudStr1 = resultStr;
+        }else if(hour - WHOLE_DAY_E == 0){
+            resCloudStr2 = resultStr;
+        }else{
+            resCloudStr1 = QString("");
+            resCloudStr2 = QString("");
+        }
+    }
+
     return resultStr;
 }
 

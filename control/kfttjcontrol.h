@@ -29,12 +29,17 @@ signals:
 private:
     void query();
     bool isDayTime(QDateTime);
+    int getHalfOrWholeDay(QDateTime);
+    int getExtremumIndex(QDateTime);
     void analysis();
     QString analysisVisibility(const Monthsummary &, int, int);
     QString analysisCloud(const Monthsummary &, int, int);
     QString analysisCrossWind(const Monthsummary &, int, int);
     QString analysisHeadWind(const Monthsummary &, int, int);
     QString analysisAll(QStringList, int, int);
+
+    QString guessVisibilityEvolution(const Extremum &, int);
+    QString guessCloudEvolution(const Extremum &, int);
 
 private:
     QList<QString> titleList;
@@ -46,6 +51,12 @@ private:
     QList<Extremum> extremumList;
 
     int elementCount;
+
+    //推测用
+    QString resVisibilityStr1;  //提前2小时的能见度
+    QString resVisibilityStr2;  //提前1小时的能见度
+    QString resCloudStr1;   //提前2小时的云
+    QString resCloudStr2;   //提前1小时的云
 };
 
 #endif // KFTTJCONTROL

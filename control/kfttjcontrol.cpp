@@ -332,6 +332,11 @@ void KfttjControl::analysis(){
             emit sendMessage("", dateCount * elementCount, titleList.indexOf("限制可飞"), elementCount, 1);
             //不可飞
             emit sendMessage("", dateCount * elementCount, titleList.indexOf("不可飞"), elementCount, 1);
+
+            //日可飞天统计
+            if(i > 0){
+                analysisDay(lastDateTime_local, (dateCount - 1) * elementCount);
+            }
         }
 
         lastDateTime_local = currentDateTime_local;
@@ -351,6 +356,8 @@ void KfttjControl::analysis(){
             results.append(analysisHeadWind(monthsummary, dateCount * elementCount + 3, titleList.indexOf(QString::number(hour))));
             //综合
             analysisAll(results, dateCount * elementCount + 4, titleList.indexOf(QString::number(hour)));
+        }else{
+            resAll.append(0);
         }
         //更新进度
         emit setProgressValue((int)(((qreal)(i + 1)/(qreal)summaryCount) * 100));
@@ -779,5 +786,186 @@ QString KfttjControl::analysisAll(QStringList results, int row, int col){
     if(resultStr.compare("") != 0){
         emit sendMessage(resultStr, row, col, 1, 1);
     }
+
+    //日可飞天统计添加
+    resAll.append(resultStr.toInt());
+
     return resultStr;
+}
+
+void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
+    //取得对应月份开始统计的位置
+    int month = lastDateTime_local.toString("M").toInt();
+    int startIndex = 0;
+    switch (month) {
+    case 1:
+        startIndex = titleList.indexOf(QString("%1").arg(JAN_DAY_E[0])) - 2;
+        break;
+    case 2:
+        startIndex = titleList.indexOf(QString("%1").arg(FEB_DAY_E[0])) - 2;
+        break;
+    case 3:
+        startIndex = titleList.indexOf(QString("%1").arg(MAR_DAY_E[0])) - 2;
+        break;
+    case 4:
+        startIndex = titleList.indexOf(QString("%1").arg(APR_DAY_E[0])) - 2;
+        break;
+    case 5:
+        startIndex = titleList.indexOf(QString("%1").arg(MAY_DAY_E[0])) - 2;
+        break;
+    case 6:
+        startIndex = titleList.indexOf(QString("%1").arg(JUN_DAY_E[0])) - 2;
+        break;
+    case 7:
+        startIndex = titleList.indexOf(QString("%1").arg(JUL_DAY_E[0])) - 2;
+        break;
+    case 8:
+        startIndex = titleList.indexOf(QString("%1").arg(AUG_DAY_E[0])) - 2;
+        break;
+    case 9:
+        startIndex = titleList.indexOf(QString("%1").arg(SEP_DAY_E[0])) - 2;
+        break;
+    case 10:
+        startIndex = titleList.indexOf(QString("%1").arg(OCT_DAY_E[0])) - 2;
+        break;
+    case 11:
+        startIndex = titleList.indexOf(QString("%1").arg(NOV_DAY_E[0])) - 2;
+        break;
+    case 12:
+        startIndex = titleList.indexOf(QString("%1").arg(DEC_DAY_E[0])) - 2;
+        break;
+    default:
+        break;
+    }
+    //取得半天及整天所在的位置
+    int halfIndex = titleList.indexOf(QString("%1").arg(HALF_DAY_E)) - 2;
+    int wholeIndex = titleList.indexOf(QString("%1").arg(WHOLE_DAY_E)) - 2;
+
+    //判断是采用半天的统计算法还是整天的统计算法
+    int resCount = resAll.size();
+    QList<int> valueList;
+    QStringList valueStrList;
+    for(int i = startIndex;i < resCount;i++){
+        int val = resAll[i];
+        if(val == 0){
+            break;
+        }else{
+            valueList.append(val);
+            valueStrList.append(QString("%1").arg(val));
+        }
+    }
+    int minHalfCount = halfIndex - startIndex + 1;
+    int minWholeCount = wholeIndex - startIndex + 1;
+    int valueCount = valueList.size();
+    if(valueCount < minHalfCount){
+        //缺测
+    }else if(valueCount >= minHalfCount && valueCount < minWholeCount){
+        //半天统计
+        int wqkfCount = 0;
+        for(int i = 0;i < valueCount;i++){
+            if(valueList[i] == 3){
+                wqkfCount += 1;
+            }else{
+                if(wqkfCount > 0){
+                    break;
+                }
+            }
+        }
+        if(wqkfCount >= 4){
+            emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+        }else{
+            int bkfCount = 0;
+            for(int i = 0;i < valueCount;i++){
+                if(valueList[i] == 1){
+                    bkfCount += 1;
+                    break;
+                }
+            }
+            if(bkfCount > 0){
+                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+            }else{
+                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+            }
+        }
+
+    }else{
+        //整天统计
+        int wqkfCount1 = 0;
+        int wqkfCount2 = 0;
+        bool wqkfChange = false;
+        for(int i = 0;i < valueCount;i++){
+            if(valueList[i] == 3){
+                if(!wqkfChange){
+                    wqkfCount1 += 1;
+                }else{
+                    wqkfCount2 += 1;
+                }
+            }else{
+                if(!wqkfChange){
+                    if(wqkfCount1 > 0){
+                        wqkfChange = true;
+                    }
+                }else{
+                    if(wqkfCount2 > 0){
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(wqkfCount1 >= 7 || (wqkfCount1 >= 4 && wqkfCount2 >= 4)){
+            emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
+        }else{
+            int xzkfCount1 = 0;
+            int xzkfCount2 = 0;
+            bool xzkfChange = false;
+            for(int i = 0;i < valueCount;i++){
+                if(valueList[i] == 3 || valueList[i] == 2){
+                    if(!xzkfChange){
+                        xzkfCount1 += 1;
+                    }else{
+                        xzkfCount2 += 1;
+                    }
+                }else{
+                    if(!xzkfChange){
+                        if(xzkfCount1 > 0){
+                            xzkfChange = true;
+                        }
+                    }else{
+                        if(xzkfCount2 > 0){
+                            break;
+                        }
+                    }
+                }
+            }
+            if(xzkfCount1 >= 7 || (xzkfCount1 >= 4 && xzkfCount2 >= 4)){
+                emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
+            }else if(wqkfCount1 >= 4 && wqkfCount2 < 4 || wqkfCount1 < 4 && wqkfCount2 >= 4){
+                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+            }else if(xzkfCount1 >= 4 && xzkfCount2 < 4 || xzkfCount1 < 4 && xzkfCount2 >= 4){
+                emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+            }else{
+
+                QString valueStr = valueStrList.join("");
+                QRegExp regExp("(3{4,}[1|2|3]*[2|3]{4,}){2}|([2|3]{4,}[1|2|3]*3{4,}){2}");
+                regExp.setMinimal(true);
+                int pos = regExp.indexIn(valueStr);
+                if(pos >= 0){
+                    emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                    emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                }else{
+                    QRegExp regExp("[2|3]{4}");
+                    int pos = regExp.indexIn(valueStr);
+                    if(pos < 0){
+                        emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                    }
+                }
+                qDebug() << valueStr << row;
+            }
+        }
+    }
+    resAll.clear();
 }

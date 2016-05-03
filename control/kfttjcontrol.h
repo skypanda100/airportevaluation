@@ -37,6 +37,7 @@ private:
     QString analysisCrossWind(const Monthsummary &, int, int);
     QString analysisHeadWind(const Monthsummary &, int, int);
     QString analysisAll(QStringList, int, int);
+    void analysisDay(QDateTime, int);
 
     QString guessVisibilityEvolution(const Extremum &, int);
     QString guessCloudEvolution(const Extremum &, int);
@@ -57,6 +58,8 @@ private:
     QString resVisibilityStr2;  //提前1小时的能见度
     QString resCloudStr1;   //提前2小时的云
     QString resCloudStr2;   //提前1小时的云
+    //日可飞天统计
+    QList<int> resAll;  //当前这天中综合要素的集合
 };
 
 #endif // KFTTJCONTROL

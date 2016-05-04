@@ -24,7 +24,10 @@ private:
     void initData();
     void initUI();
     void initConnect();
-    void createImages(QHash< QString, QList<float> >);
+    void createCharts(QHash< QString, QList<float> >);
+    void createNkfttjChart(QHash< QString, QList<float> >, QLayout *);
+    void createKftyfbChart(QHash< QString, QList<float> >, QLayout *);
+    void createZlwzdChart(QHash< QString, QList<float> >, QLayout *);
 
 private:
     QList<QString> titleList;

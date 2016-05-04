@@ -889,8 +889,8 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
          * 5.存在一个连续4~6小时均为“完全可飞”的时段和一个连续4~6小时不出现“不可飞”的时段，记为“0.5个完全可飞天”和“0.5个限制可飞天”
          * 6.没有连续超过4小时不出现“不可飞”的时段，记为“1个不可飞天”
          */
-        QRegExp wholeRegExp1("(3{7,})|((3{4}){2,})");
-        QRegExp wholeRegExp2("([2|3]{7,})|(([2|3]{4}){2,})");
+        QRegExp wholeRegExp1("(3{7,})|(3{4}[1|2|3]*3{4})");
+        QRegExp wholeRegExp2("([2|3]{7,})|([2|3]{4}[1|2|3]*[2|3]{4})");
         QRegExp wholeRegExp3("([1|2]|3{,3})*(3{4,6})([1|2]|3{,3})*");
         QRegExp wholeRegExp4("(1|[2|3]{,3})*([2|3]{4,6})(1|[2|3]{,3})*");
         QRegExp wholeRegExp5("(3{4}[1|2|3]*[2|3]{4})|([2|3]{4}[1|2|3]*3{4})");

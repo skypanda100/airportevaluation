@@ -843,127 +843,88 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
 
     //判断是采用半天的统计算法还是整天的统计算法
     int resCount = resAll.size();
-    QList<int> valueList;
     QStringList valueStrList;
     for(int i = startIndex;i < resCount;i++){
         int val = resAll[i];
         if(val == 0){
             break;
         }else{
-            valueList.append(val);
             valueStrList.append(QString("%1").arg(val));
         }
     }
     int minHalfCount = halfIndex - startIndex + 1;
     int minWholeCount = wholeIndex - startIndex + 1;
-    int valueCount = valueList.size();
+    int valueCount = valueStrList.size();
+    QString valueStr = valueStrList.join("");
+
     if(valueCount < minHalfCount){
         //缺测
     }else if(valueCount >= minHalfCount && valueCount < minWholeCount){
         //半天统计
-        int wqkfCount = 0;
-        for(int i = 0;i < valueCount;i++){
-            if(valueList[i] == 3){
-                wqkfCount += 1;
-            }else{
-                if(wqkfCount > 0){
-                    break;
-                }
-            }
-        }
-        if(wqkfCount >= 4){
+        /*
+         * 1.存在一个连续4~6小时均为“完全可飞”的时段，记“0.5个可飞天”
+         * 2.存在一个连续4~6小时均不出现“不可飞”的时段，同时又不满足“0.5个可飞天”的条件，记“0.5个限制可飞天”
+         * 3.既不满足“0.5个可飞天”的条件，又不满足“0.5个限制可飞天” 的条件，记“0.5个不可飞天”
+         */
+        QRegExp halfRegExp1("(3{4,})");
+        QRegExp halfRegExp2("([2|3]{4,})");
+        int halfPos1 = halfRegExp1.indexIn(valueStr);
+        if(halfPos1 >= 0){
             emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
         }else{
-            int bkfCount = 0;
-            for(int i = 0;i < valueCount;i++){
-                if(valueList[i] == 1){
-                    bkfCount += 1;
-                    break;
-                }
-            }
-            if(bkfCount > 0){
-                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
-            }else{
-                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+            int halfPos2 = halfRegExp2.indexIn(valueStr);
+            if(halfPos2 >= 0){
                 emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+            }else{
+                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
             }
         }
-
     }else{
         //整天统计
-        int wqkfCount1 = 0;
-        int wqkfCount2 = 0;
-        bool wqkfChange = false;
-        for(int i = 0;i < valueCount;i++){
-            if(valueList[i] == 3){
-                if(!wqkfChange){
-                    wqkfCount1 += 1;
-                }else{
-                    wqkfCount2 += 1;
-                }
-            }else{
-                if(!wqkfChange){
-                    if(wqkfCount1 > 0){
-                        wqkfChange = true;
-                    }
-                }else{
-                    if(wqkfCount2 > 0){
-                        break;
-                    }
-                }
-            }
-        }
-
-        if(wqkfCount1 >= 7 || (wqkfCount1 >= 4 && wqkfCount2 >= 4)){
+        /*
+         * 1.连续7个小时以上均为“完全可飞”，或存在两个及以上4~6小时连续的“完全可飞”时段，记为“1个完全可飞天”
+         * 2.连续7个小时以上无“不可飞”，或存在两个以上4~6小时连续不出现“不可飞”的时段，记为“1个限制可飞天”
+         * 3.仅存在一个连续4~6小时均为“完全可飞”的时段，记为“0.5个完全可飞天”和“0.5个不可飞天”
+         * 4.仅存在一个连续4~6小时不出现“不可飞”的时段，记为“0.5个限制可飞天”和“0.5个不可飞天”
+         * 5.存在一个连续4~6小时均为“完全可飞”的时段和一个连续4~6小时不出现“不可飞”的时段，记为“0.5个完全可飞天”和“0.5个限制可飞天”
+         * 6.没有连续超过4小时不出现“不可飞”的时段，记为“1个不可飞天”
+         */
+        QRegExp wholeRegExp1("(3{7,})|((3{4}){2,})");
+        QRegExp wholeRegExp2("([2|3]{7,})|(([2|3]{4}){2,})");
+        QRegExp wholeRegExp3("([1|2]|3{,3})*(3{4,6})([1|2]|3{,3})*");
+        QRegExp wholeRegExp4("(1|[2|3]{,3})*([2|3]{4,6})(1|[2|3]{,3})*");
+        QRegExp wholeRegExp5("(3{4}[1|2|3]*[2|3]{4})|([2|3]{4}[1|2|3]*3{4})");
+        QRegExp wholeRegExp6("[2|3]{4,}");
+        int wholePos1 = wholeRegExp1.indexIn(valueStr);
+        if(wholePos1 >= 0){
             emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
         }else{
-            int xzkfCount1 = 0;
-            int xzkfCount2 = 0;
-            bool xzkfChange = false;
-            for(int i = 0;i < valueCount;i++){
-                if(valueList[i] == 3 || valueList[i] == 2){
-                    if(!xzkfChange){
-                        xzkfCount1 += 1;
-                    }else{
-                        xzkfCount2 += 1;
-                    }
-                }else{
-                    if(!xzkfChange){
-                        if(xzkfCount1 > 0){
-                            xzkfChange = true;
-                        }
-                    }else{
-                        if(xzkfCount2 > 0){
-                            break;
-                        }
-                    }
-                }
-            }
-            if(xzkfCount1 >= 7 || (xzkfCount1 >= 4 && xzkfCount2 >= 4)){
+            int wholePos2 = wholeRegExp2.indexIn(valueStr);
+            if(wholePos2 >= 0){
                 emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
-            }else if(wqkfCount1 >= 4 && wqkfCount2 < 4 || wqkfCount1 < 4 && wqkfCount2 >= 4){
-                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
-                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
-            }else if(xzkfCount1 >= 4 && xzkfCount2 < 4 || xzkfCount1 < 4 && xzkfCount2 >= 4){
-                emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
-                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
             }else{
-
-                QString valueStr = valueStrList.join("");
-                QRegExp regExp("(3{4,}[1|2|3]*[2|3]{4,}){2}|([2|3]{4,}[1|2|3]*3{4,}){2}");
-                regExp.setMinimal(true);
-                int pos = regExp.indexIn(valueStr);
-                if(pos >= 0){
+                int wholePos3 = wholeRegExp3.indexIn(valueStr);
+                if(wholePos3 >= 0){
                     emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
-                    emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                    emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
                 }else{
-                    QRegExp regExp("[2|3]{4}");
-                    int pos = regExp.indexIn(valueStr);
-                    if(pos < 0){
-                        emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                    int wholePos4 = wholeRegExp4.indexIn(valueStr);
+                    if(wholePos4 >= 0){
+                        emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                        emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                    }else{
+                        int wholePos5 = wholeRegExp5.indexIn(valueStr);
+                        if(wholePos5 >= 0){
+                            emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                            emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                        }else{
+                            int wholePos6 = wholeRegExp6.indexIn(valueStr);
+                            if(wholePos6 < 0){
+                                emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                            }
+                        }
                     }
                 }
-                qDebug() << valueStr << row;
             }
         }
     }

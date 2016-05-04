@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     bean/monthsummary.cpp \
     bean/extremum.cpp \
     model/tablemodel.cpp \
-    control/kfttjcontrol.cpp
+    control/kfttjcontrol.cpp \
+    qchartviewer.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -50,7 +51,22 @@ HEADERS  += mainwindow.h \
     bean/monthsummary.h \
     bean/extremum.h \
     model/tablemodel.h \
-    control/kfttjcontrol.h
+    control/kfttjcontrol.h \
+    qchartviewer.h
 
 RESOURCES += \
     res.qrc
+
+INCLUDEPATH += $$PWD/chartdir60/include
+LIBS += $$PWD/chartdir60/lib/chartdir60.lib
+win32 {
+    src_dir = $$PWD\\chartdir60\\lib\\chartdir60.dll
+    CONFIG(debug, debug|release) {
+        dst_dir = $$OUT_PWD\\debug\\
+    } else {
+        dst_dir = $$OUT_PWD\\release\\
+    }
+    src_dir ~= s,/,\\,g
+    dst_dir ~= s,/,\\,g
+    !exists($$dst_dir chartdir60.dll):system(xcopy $$src_dir $$dst_dir /Y)
+}

@@ -11,7 +11,8 @@ KfttjResultWidget::KfttjResultWidget(QWidget *parent)
 KfttjResultWidget::~KfttjResultWidget(){
     delete tableModel;
     delete tableView;
-    delete imageView;
+    delete imageWidget;
+    delete imageArea;
     if(kfttjControl != NULL){
         if(kfttjControl->isRunning()){
             kfttjControl->quit();
@@ -55,6 +56,11 @@ void KfttjResultWidget::initData(){
 }
 
 void KfttjResultWidget::initUI(){
+    QPalette palette;
+    palette.setColor(QPalette::Background, Qt::white);
+    this->setAutoFillBackground(true);
+    this->setPalette(palette);
+
     tableModel = new TableModel(0, titleList.size(), this);
     int titleCount = titleList.size();
     for(int i = 0;i < titleCount;i++){
@@ -69,9 +75,10 @@ void KfttjResultWidget::initUI(){
     //调整列宽
     tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    imageView = new QWidget;
-    this->addWidget(imageView);
-
+    imageArea = new QScrollArea;
+    imageWidget = new QWidget;
+    this->addWidget(imageArea);
+    this->setStretchFactor(0, 1);
 ///////////////////////
     //查询月总簿表
     QString summaryStartDatetime = "2012-12-31 17:00:00";
@@ -120,5 +127,45 @@ void KfttjResultWidget::execute(bool isEnd){
 }
 
 void KfttjResultWidget::createImages(QHash< QString, QList<float> > kfttjHash){
-    qDebug() << kfttjHash.size();
+    //布局
+    QHBoxLayout *imageLayout = new QHBoxLayout;
+    imageLayout->setSpacing(5);
+    //key值
+    QList<QString> keyList = kfttjHash.keys();
+    int keyCount = keyList.size();
+    /***年可飞天统计:采用饼图（要素为完全可飞，限制可飞，不可飞），可以包含几年的数据。***/
+    QChartViewer *pieChartView1 = new QChartViewer;
+    double datas1[] = {0, 0, 0};
+    const char *labels1[] = {"完全可飞", "限制可飞", "不可飞"};
+    int colors1[] = {0x329600, 0xffb400, 0xdc3200};
+    for(int i = 0;i < keyCount;i++){
+        QString key = keyList[i];
+        QList<float> value = kfttjHash[key];
+        datas1[0] += value[0];
+        datas1[1] += value[1];
+        datas1[2] += value[2];
+    }
+    PieChart *pieChart1 = new PieChart(300, 300, 0xccc1da);
+    pieChart1->setDefaultFonts("msyh.ttf");
+    pieChart1->addTitle("年可飞天统计");
+    pieChart1->setPieSize(150, 150, 130);
+    pieChart1->setLabelPos(-40);
+    pieChart1->setData(DoubleArray(datas1, (int)(sizeof(datas1) / sizeof(datas1[0]))), StringArray(labels1, (int)(
+        sizeof(labels1) / sizeof(labels1[0]))));
+    pieChart1->setColors(Chart::DataColor, IntArray(colors1, (int)(sizeof(colors1) / sizeof(colors1[0]))));
+    pieChart1->setSectorStyle(Chart::LocalGradientShading, 0xbb000000, 1);
+    pieChart1->makeChart();
+    pieChartView1->setChart(pieChart1);
+    imageLayout->addWidget(pieChartView1);
+
+
+
+
+
+
+
+
+    //设置滚动区域的widget
+    imageWidget->setLayout(imageLayout);
+    imageArea->setWidget(imageWidget);
 }

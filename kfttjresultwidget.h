@@ -4,6 +4,8 @@
 #include <QtWidgets>
 #include "model/tablemodel.h"
 #include "control/kfttjcontrol.h"
+#include "qchartviewer.h"
+#include "chartdir.h"
 
 class KfttjResultWidget : public QSplitter{
     Q_OBJECT
@@ -29,7 +31,8 @@ private:
 
     TableModel *tableModel;
     QTableView *tableView;
-    QWidget *imageView;
+    QScrollArea *imageArea;
+    QWidget *imageWidget;
 
     KfttjControl *kfttjControl;
 };

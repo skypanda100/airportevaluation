@@ -22,12 +22,14 @@ private:
     void initData();
     void initUI();
     void initConnect();
+    void createImages(QHash< QString, QList<float> >);
 
 private:
     QList<QString> titleList;
 
     TableModel *tableModel;
     QTableView *tableView;
+    QWidget *imageView;
 
     KfttjControl *kfttjControl;
 };

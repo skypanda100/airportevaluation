@@ -11,6 +11,7 @@ KfttjResultWidget::KfttjResultWidget(QWidget *parent)
 KfttjResultWidget::~KfttjResultWidget(){
     delete tableModel;
     delete tableView;
+    delete imageView;
     if(kfttjControl != NULL){
         if(kfttjControl->isRunning()){
             kfttjControl->quit();
@@ -65,13 +66,12 @@ void KfttjResultWidget::initUI(){
 
     this->setOrientation(Qt::Vertical);
     this->addWidget(tableView);
-
     //调整列宽
     tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-//    for (int column = 2; column < tableModel->columnCount() - 3; ++column){
-//        tableView->resizeColumnToContents(column);
-////        tableView->setColumnWidth(column, 25);
-//    }
+
+    imageView = new QWidget;
+    this->addWidget(imageView);
+
 ///////////////////////
     //查询月总簿表
     QString summaryStartDatetime = "2012-12-31 17:00:00";
@@ -115,5 +115,10 @@ void KfttjResultWidget::receiveMessage(int row, int count){
 void KfttjResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
+        this->createImages(kfttjControl->getKfttjHash());
     }
+}
+
+void KfttjResultWidget::createImages(QHash< QString, QList<float> > kfttjHash){
+    qDebug() << kfttjHash.size();
 }

@@ -17,6 +17,7 @@ public:
     void setSummarySql(QString);
     void setExtremumSql(QString);
 
+    QHash< QString, QList<float> > getKfttjHash() const;
     void run() Q_DECL_OVERRIDE;
 
 signals:
@@ -60,6 +61,8 @@ private:
     QString resCloudStr2;   //提前1小时的云
     //日可飞天统计
     QList<int> resAll;  //当前这天中综合要素的集合
+    //出图用
+    QHash< QString, QList<float> > kfttjHash; //QList index0:完全可飞 index1:限制可飞 index2:不可飞
 };
 
 #endif // KFTTJCONTROL

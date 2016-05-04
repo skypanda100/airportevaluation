@@ -50,7 +50,12 @@ void KfttjControl::setExtremumSql(QString extremumSql){
     this->m_extremumSql = extremumSql;
 }
 
+QHash< QString, QList<float> > KfttjControl::getKfttjHash() const {
+    return this->kfttjHash;
+}
+
 void KfttjControl::run(){
+    kfttjHash.clear();
     query();
     analysis();
     emit execute(true);
@@ -362,6 +367,8 @@ void KfttjControl::analysis(){
         //更新进度
         emit setProgressValue((int)(((qreal)(i + 1)/(qreal)summaryCount) * 100));
     }
+    //日可飞天统计
+    analysisDay(lastDateTime_local, (dateCount - 1) * elementCount);
 }
 
 /**
@@ -794,6 +801,12 @@ QString KfttjControl::analysisAll(QStringList results, int row, int col){
 }
 
 void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
+    //初始化出图用的hash表
+    QString kfttjKey = lastDateTime_local.toString("yyyy-MM-dd");
+    QList<float> kfttjValue;
+    kfttjValue.append(0);
+    kfttjValue.append(0);
+    kfttjValue.append(0);
     //取得对应月份开始统计的位置
     int month = lastDateTime_local.toString("M").toInt();
     int startIndex = 0;
@@ -859,6 +872,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
 
     if(valueCount < minHalfCount){
         //缺测
+        kfttjHash[kfttjKey] = kfttjValue;
     }else if(valueCount >= minHalfCount && valueCount < minWholeCount){
         //半天统计
         /*
@@ -871,12 +885,18 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
         int halfPos1 = halfRegExp1.indexIn(valueStr);
         if(halfPos1 >= 0){
             emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+            kfttjValue[0] = 0.5;
+            kfttjHash[kfttjKey] = kfttjValue;
         }else{
             int halfPos2 = halfRegExp2.indexIn(valueStr);
             if(halfPos2 >= 0){
                 emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                kfttjValue[1] = 0.5;
+                kfttjHash[kfttjKey] = kfttjValue;
             }else{
                 emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                kfttjValue[2] = 0.5;
+                kfttjHash[kfttjKey] = kfttjValue;
             }
         }
     }else{
@@ -898,29 +918,44 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
         int wholePos1 = wholeRegExp1.indexIn(valueStr);
         if(wholePos1 >= 0){
             emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
+            kfttjValue[0] = 1;
+            kfttjHash[kfttjKey] = kfttjValue;
         }else{
             int wholePos2 = wholeRegExp2.indexIn(valueStr);
             if(wholePos2 >= 0){
                 emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
+                kfttjValue[1] = 1;
+                kfttjHash[kfttjKey] = kfttjValue;
             }else{
                 int wholePos3 = wholeRegExp3.indexIn(valueStr);
                 if(wholePos3 >= 0){
                     emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
                     emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                    kfttjValue[0] = 0.5;
+                    kfttjValue[2] = 0.5;
+                    kfttjHash[kfttjKey] = kfttjValue;
                 }else{
                     int wholePos4 = wholeRegExp4.indexIn(valueStr);
                     if(wholePos4 >= 0){
                         emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
                         emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                        kfttjValue[1] = 0.5;
+                        kfttjValue[2] = 0.5;
+                        kfttjHash[kfttjKey] = kfttjValue;
                     }else{
                         int wholePos5 = wholeRegExp5.indexIn(valueStr);
                         if(wholePos5 >= 0){
                             emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
                             emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                            kfttjValue[0] = 0.5;
+                            kfttjValue[1] = 0.5;
+                            kfttjHash[kfttjKey] = kfttjValue;
                         }else{
                             int wholePos6 = wholeRegExp6.indexIn(valueStr);
                             if(wholePos6 < 0){
                                 emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                                kfttjValue[2] = 1;
+                                kfttjHash[kfttjKey] = kfttjValue;
                             }
                         }
                     }

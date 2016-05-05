@@ -30,6 +30,7 @@ signals:
     void setProgressValue(int);
 
 private:
+    void initData();
     void query();
     bool isDayTime(QDateTime);
     int getHalfOrWholeDay(QDateTime);
@@ -46,6 +47,36 @@ private:
     QString guessCloudEvolution(const Extremum &, int);
 
 private:
+    //白天
+    const int *jan_day;
+    int jan_day_len;
+    const int *feb_day;
+    int feb_day_len;
+    const int *mar_day;
+    int mar_day_len;
+    const int *apr_day;
+    int apr_day_len;
+    const int *may_day;
+    int may_day_len;
+    const int *jun_day;
+    int jun_day_len;
+    const int *jul_day;
+    int jul_day_len;
+    const int *aug_day;
+    int aug_day_len;
+    const int *sep_day;
+    int sep_day_len;
+    const int *oct_day;
+    int oct_day_len;
+    const int *nov_day;
+    int nov_day_len;
+    const int *dec_day;
+    int dec_day_len;
+    //半天时
+    int half_day;
+    //整天时
+    int whole_day;
+
     QList<QString> titleList;
     QString m_summarySql;
     QString m_extremumSql;

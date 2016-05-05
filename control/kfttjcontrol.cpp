@@ -63,12 +63,44 @@ QHash< QString, QStringList > KfttjControl::getBkfEffectHash() const {
     return this->bkfEffectHash;
 }
 
-void KfttjControl::run(){
+void KfttjControl::initData(){
     kfttjHash.clear();
     xzkfEffectHash.clear();
     bkfEffectHash.clear();
     effectHash.clear();
     resAll.clear();
+
+    jan_day = JAN_DAY_E;
+    jan_day_len = sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]);
+    feb_day = FEB_DAY_E;
+    feb_day_len = sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]);
+    mar_day = MAR_DAY_E;
+    mar_day_len = sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]);
+    apr_day = APR_DAY_E;
+    apr_day_len = sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]);
+    may_day = MAY_DAY_E;
+    may_day_len = sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]);
+    jun_day = JUN_DAY_E;
+    jun_day_len = sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]);
+    jul_day = JUL_DAY_E;
+    jul_day_len = sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]);
+    aug_day = AUG_DAY_E;
+    aug_day_len = sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]);
+    sep_day = SEP_DAY_E;
+    sep_day_len = sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]);
+    oct_day = OCT_DAY_E;
+    oct_day_len = sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]);
+    nov_day = NOV_DAY_E;
+    nov_day_len = sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]);
+    dec_day = DEC_DAY_E;
+    dec_day_len = sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]);
+    half_day = HALF_DAY_E;
+    whole_day = WHOLE_DAY_E;
+    qDebug() << jan_day[3];
+}
+
+void KfttjControl::run(){
+    initData();
     query();
     analysis();
     emit execute(true);
@@ -156,122 +188,122 @@ bool KfttjControl::isDayTime(QDateTime currentDateTime_utc){
     int month = currentDateTime_local.toString("M").toInt(); //用中国时取得月份
     int hour = currentDateTime_utc.toString("h").toInt(); //用世界时取得小时
     if(1 == month){
-        if(JAN_DAY_E[0] > JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
-            if(hour >= JAN_DAY_E[0] || hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+        if(jan_day[0] > jan_day[jan_day_len - 1]){
+            if(hour >= jan_day[0] || hour <= jan_day[jan_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= JAN_DAY_E[0] && hour <= JAN_DAY_E[sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]) - 1]){
+            if(hour >= jan_day[0] && hour <= jan_day[jan_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(2 == month){
-        if(FEB_DAY_E[0] > FEB_DAY_E[sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]) - 1]){
-            if(hour >= FEB_DAY_E[0] || hour <= FEB_DAY_E[sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]) - 1]){
+        if(feb_day[0] > feb_day[feb_day_len - 1]){
+            if(hour >= feb_day[0] || hour <= feb_day[feb_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= FEB_DAY_E[0] && hour <= FEB_DAY_E[sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]) - 1]){
+            if(hour >= feb_day[0] && hour <= feb_day[feb_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(3 == month){
-        if(MAR_DAY_E[0] > MAR_DAY_E[sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]) - 1]){
-            if(hour >= MAR_DAY_E[0] || hour <= MAR_DAY_E[sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]) - 1]){
+        if(mar_day[0] > mar_day[mar_day_len - 1]){
+            if(hour >= mar_day[0] || hour <= mar_day[mar_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= MAR_DAY_E[0] && hour <= MAR_DAY_E[sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]) - 1]){
+            if(hour >= mar_day[0] && hour <= mar_day[mar_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(4 == month){
-        if(APR_DAY_E[0] > APR_DAY_E[sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]) - 1]){
-            if(hour >= APR_DAY_E[0] || hour <= APR_DAY_E[sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]) - 1]){
+        if(apr_day[0] > apr_day[apr_day_len - 1]){
+            if(hour >= apr_day[0] || hour <= apr_day[apr_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= APR_DAY_E[0] && hour <= APR_DAY_E[sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]) - 1]){
+            if(hour >= apr_day[0] && hour <= apr_day[apr_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(5 == month){
-        if(MAY_DAY_E[0] > MAY_DAY_E[sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]) - 1]){
-            if(hour >= MAY_DAY_E[0] || hour <= MAY_DAY_E[sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]) - 1]){
+        if(may_day[0] > may_day[may_day_len - 1]){
+            if(hour >= may_day[0] || hour <= may_day[may_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= MAY_DAY_E[0] && hour <= MAY_DAY_E[sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]) - 1]){
+            if(hour >= may_day[0] && hour <= may_day[may_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(6 == month){
-        if(JUN_DAY_E[0] > JUN_DAY_E[sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]) - 1]){
-            if(hour >= JUN_DAY_E[0] || hour <= JUN_DAY_E[sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]) - 1]){
+        if(jun_day[0] > jun_day[jun_day_len - 1]){
+            if(hour >= jun_day[0] || hour <= jun_day[jun_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= JUN_DAY_E[0] && hour <= JUN_DAY_E[sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]) - 1]){
+            if(hour >= jun_day[0] && hour <= jun_day[jun_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(7 == month){
-        if(JUL_DAY_E[0] > JUL_DAY_E[sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]) - 1]){
-            if(hour >= JUL_DAY_E[0] || hour <= JUL_DAY_E[sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]) - 1]){
+        if(jul_day[0] > jul_day[jul_day_len - 1]){
+            if(hour >= jul_day[0] || hour <= jul_day[jul_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= JUL_DAY_E[0] && hour <= JUL_DAY_E[sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]) - 1]){
+            if(hour >= jul_day[0] && hour <= jul_day[jul_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(8 == month){
-        if(AUG_DAY_E[0] > AUG_DAY_E[sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]) - 1]){
-            if(hour >= AUG_DAY_E[0] || hour <= AUG_DAY_E[sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]) - 1]){
+        if(aug_day[0] > aug_day[aug_day_len - 1]){
+            if(hour >= aug_day[0] || hour <= aug_day[aug_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= AUG_DAY_E[0] && hour <= AUG_DAY_E[sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]) - 1]){
+            if(hour >= aug_day[0] && hour <= aug_day[aug_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(9 == month){
-        if(SEP_DAY_E[0] > SEP_DAY_E[sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]) - 1]){
-            if(hour >= SEP_DAY_E[0] || hour <= SEP_DAY_E[sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]) - 1]){
+        if(sep_day[0] > sep_day[sep_day_len - 1]){
+            if(hour >= sep_day[0] || hour <= sep_day[sep_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= SEP_DAY_E[0] && hour <= SEP_DAY_E[sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]) - 1]){
+            if(hour >= sep_day[0] && hour <= sep_day[sep_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(10 == month){
-        if(OCT_DAY_E[0] > OCT_DAY_E[sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]) - 1]){
-            if(hour >= OCT_DAY_E[0] || hour <= OCT_DAY_E[sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]) - 1]){
+        if(oct_day[0] > oct_day[oct_day_len - 1]){
+            if(hour >= oct_day[0] || hour <= oct_day[oct_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= OCT_DAY_E[0] && hour <= OCT_DAY_E[sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]) - 1]){
+            if(hour >= oct_day[0] && hour <= oct_day[oct_day_len - 1]){
                 canExecute = true;
             }
         }
     }else if(11 == month){
-        if(NOV_DAY_E[0] > NOV_DAY_E[sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]) - 1]){
-            if(hour >= NOV_DAY_E[0] || hour <= NOV_DAY_E[sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]) - 1]){
+        if(nov_day[0] > nov_day[nov_day_len - 1]){
+            if(hour >= nov_day[0] || hour <= nov_day[nov_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= NOV_DAY_E[0] && hour <= NOV_DAY_E[sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]) - 1]){
+            if(hour >= nov_day[0] && hour <= nov_day[nov_day_len - 1]){
                 canExecute = true;
             }
         }
     }else{
-        if(DEC_DAY_E[0] > DEC_DAY_E[sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]) - 1]){
-            if(hour >= DEC_DAY_E[0] || hour <= DEC_DAY_E[sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]) - 1]){
+        if(dec_day[0] > dec_day[dec_day_len - 1]){
+            if(hour >= dec_day[0] || hour <= dec_day[dec_day_len - 1]){
                 canExecute = true;
             }
         }else{
-            if(hour >= DEC_DAY_E[0] && hour <= DEC_DAY_E[sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]) - 1]){
+            if(hour >= dec_day[0] && hour <= dec_day[dec_day_len - 1]){
                 canExecute = true;
             }
         }
@@ -288,9 +320,9 @@ bool KfttjControl::isDayTime(QDateTime currentDateTime_utc){
  */
 int KfttjControl::getHalfOrWholeDay(QDateTime currentDateTime_utc){
     int hour = currentDateTime_utc.toString("h").toInt();
-    if(hour - HALF_DAY_E == 1 || hour - HALF_DAY_E == 2){
+    if(hour - half_day == 1 || hour - half_day == 2){
         return 1;
-    }else if(hour - WHOLE_DAY_E == 1 || hour - WHOLE_DAY_E == 2){
+    }else if(hour - whole_day == 1 || hour - whole_day == 2){
         return 2;
     }
     return 0;
@@ -555,13 +587,13 @@ QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int r
             int index = getExtremumIndex(currentDateTime_utc);
             if(index > -1){
                 Extremum extremum = extremumList[index];
-                resultStr = guessVisibilityEvolution(extremum, HALF_DAY_E);
+                resultStr = guessVisibilityEvolution(extremum, half_day);
             }
         }else if(how == 2){
             int index = getExtremumIndex(currentDateTime_utc);
             if(index > -1){
                 Extremum extremum = extremumList[index];
-                resultStr = guessVisibilityEvolution(extremum, WHOLE_DAY_E);
+                resultStr = guessVisibilityEvolution(extremum, whole_day);
             }
         }
     }
@@ -569,14 +601,14 @@ QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int r
         emit sendMessage(resultStr, row, col, 1, 1);
     }
     //
-    if(!(hour - HALF_DAY_E == 1 || hour - HALF_DAY_E == 2 || hour - WHOLE_DAY_E == 1 || hour - WHOLE_DAY_E == 2)){
-        if(hour - HALF_DAY_E == -1){
+    if(!(hour - half_day == 1 || hour - half_day == 2 || hour - whole_day == 1 || hour - whole_day == 2)){
+        if(hour - half_day == -1){
             resVisibilityStr1 = resultStr;
-        }else if(hour - HALF_DAY_E == 0){
+        }else if(hour - half_day == 0){
             resVisibilityStr2 = resultStr;
-        }else if(hour - WHOLE_DAY_E == -1){
+        }else if(hour - whole_day == -1){
             resVisibilityStr1 = resultStr;
-        }else if(hour - WHOLE_DAY_E == 0){
+        }else if(hour - whole_day == 0){
             resVisibilityStr2 = resultStr;
         }else{
             resVisibilityStr1 = QString("");
@@ -652,13 +684,13 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
                     int index = getExtremumIndex(currentDateTime_utc);
                     if(index > -1){
                         Extremum extremum = extremumList[index];
-                        resultStr = guessCloudEvolution(extremum, HALF_DAY_E);
+                        resultStr = guessCloudEvolution(extremum, half_day);
                     }
                 }else if(how == 2){
                     int index = getExtremumIndex(currentDateTime_utc);
                     if(index > -1){
                         Extremum extremum = extremumList[index];
-                        resultStr = guessCloudEvolution(extremum, WHOLE_DAY_E);
+                        resultStr = guessCloudEvolution(extremum, whole_day);
                     }
                 }else{
                     resultStr = QString("3");
@@ -676,13 +708,13 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
             int index = getExtremumIndex(currentDateTime_utc);
             if(index > -1){
                 Extremum extremum = extremumList[index];
-                resultStr = guessCloudEvolution(extremum, HALF_DAY_E);
+                resultStr = guessCloudEvolution(extremum, half_day);
             }
         }else if(how == 2){
             int index = getExtremumIndex(currentDateTime_utc);
             if(index > -1){
                 Extremum extremum = extremumList[index];
-                resultStr = guessCloudEvolution(extremum, WHOLE_DAY_E);
+                resultStr = guessCloudEvolution(extremum, whole_day);
             }
         }
     }
@@ -692,14 +724,14 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
     }
 
     //
-    if(!(hour - HALF_DAY_E == 1 || hour - HALF_DAY_E == 2 || hour - WHOLE_DAY_E == 1 || hour - WHOLE_DAY_E == 2)){
-        if(hour - HALF_DAY_E == -1){
+    if(!(hour - half_day == 1 || hour - half_day == 2 || hour - whole_day == 1 || hour - whole_day == 2)){
+        if(hour - half_day == -1){
             resCloudStr1 = resultStr;
-        }else if(hour - HALF_DAY_E == 0){
+        }else if(hour - half_day == 0){
             resCloudStr2 = resultStr;
-        }else if(hour - WHOLE_DAY_E == -1){
+        }else if(hour - whole_day == -1){
             resCloudStr1 = resultStr;
-        }else if(hour - WHOLE_DAY_E == 0){
+        }else if(hour - whole_day == 0){
             resCloudStr2 = resultStr;
         }else{
             resCloudStr1 = QString("");
@@ -881,47 +913,47 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
     int startIndex = 0;
     switch (month) {
     case 1:
-        startIndex = titleList.indexOf(QString("%1").arg(JAN_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(jan_day[0])) - 2;
         break;
     case 2:
-        startIndex = titleList.indexOf(QString("%1").arg(FEB_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(feb_day[0])) - 2;
         break;
     case 3:
-        startIndex = titleList.indexOf(QString("%1").arg(MAR_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(mar_day[0])) - 2;
         break;
     case 4:
-        startIndex = titleList.indexOf(QString("%1").arg(APR_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(apr_day[0])) - 2;
         break;
     case 5:
-        startIndex = titleList.indexOf(QString("%1").arg(MAY_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(may_day[0])) - 2;
         break;
     case 6:
-        startIndex = titleList.indexOf(QString("%1").arg(JUN_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(jun_day[0])) - 2;
         break;
     case 7:
-        startIndex = titleList.indexOf(QString("%1").arg(JUL_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(jul_day[0])) - 2;
         break;
     case 8:
-        startIndex = titleList.indexOf(QString("%1").arg(AUG_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(aug_day[0])) - 2;
         break;
     case 9:
-        startIndex = titleList.indexOf(QString("%1").arg(SEP_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(sep_day[0])) - 2;
         break;
     case 10:
-        startIndex = titleList.indexOf(QString("%1").arg(OCT_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(oct_day[0])) - 2;
         break;
     case 11:
-        startIndex = titleList.indexOf(QString("%1").arg(NOV_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(nov_day[0])) - 2;
         break;
     case 12:
-        startIndex = titleList.indexOf(QString("%1").arg(DEC_DAY_E[0])) - 2;
+        startIndex = titleList.indexOf(QString("%1").arg(dec_day[0])) - 2;
         break;
     default:
         break;
     }
     //取得半天及整天所在的位置
-    int halfIndex = titleList.indexOf(QString("%1").arg(HALF_DAY_E)) - 2;
-    int wholeIndex = titleList.indexOf(QString("%1").arg(WHOLE_DAY_E)) - 2;
+    int halfIndex = titleList.indexOf(QString("%1").arg(half_day)) - 2;
+    int wholeIndex = titleList.indexOf(QString("%1").arg(whole_day)) - 2;
 
     //判断是采用半天的统计算法还是整天的统计算法
     int resCount = resAll.size();

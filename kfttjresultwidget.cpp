@@ -174,10 +174,12 @@ void KfttjResultWidget::createNkfttjChart(QHash< QString, QList<float> > kfttjHa
         datas[1] += value[1];
         datas[2] += value[2];
     }
-    PieChart *pieChart = new PieChart(300, 300, 0x646464);
+    PieChart *pieChart = new PieChart(300, 300, Chart::silverColor(), 0x000000, 1);
+    pieChart->setRoundedFrame(0x646464);
     pieChart->setDefaultFonts("msyh.ttf");
-    pieChart->addTitle("年可飞天统计", "msyh.ttf", 10, 0xffffff);
-    pieChart->setPieSize(150, 150, 130);
+    pieChart->addTitle("年可飞天统计", "msyh.ttf", 10, 0x000000)->setBackground(0xa0c8ff, 0x000000,
+                                                                          Chart::glassEffect());
+    pieChart->setPieSize(150, 150, 120);
     pieChart->setLabelPos(-40);
     pieChart->setData(DoubleArray(datas, (int)(sizeof(datas) / sizeof(datas[0]))), StringArray(labels, (int)(
         sizeof(labels) / sizeof(labels[0]))));
@@ -212,12 +214,13 @@ void KfttjResultWidget::createKftyfbChart(QHash< QString, QList<float> > kfttjHa
         data1[month -  1] += value[1];
         data2[month -  1] += value[2];
     }
-    XYChart *xyChart = new XYChart(600, 300, 0x646464);
-    xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
-    xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    XYChart *xyChart = new XYChart(600, 300, Chart::silverColor(), 0x000000, 1);
+    xyChart->setRoundedFrame(0x646464);
+
     xyChart->setDefaultFonts("msyh.ttf");
-    TextBox *title = xyChart->addTitle("可飞天月分布", "msyh.ttf", 10, 0xffffff);
-    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 35, xyChart->getHeight() -
+    TextBox *title = xyChart->addTitle("可飞天月分布", "msyh.ttf", 10, 0x000000);
+    title->setBackground(0xa0c8ff, 0x000000, Chart::glassEffect());
+    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 35, xyChart->getHeight() -
         title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
     BarLayer *layer = xyChart->addBarLayer(Chart::Percentage);
@@ -260,10 +263,12 @@ void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHas
             datas[0] += 1;
         }
     }
-    PieChart *pieChart = new PieChart(300, 300, 0x646464);
+    PieChart *pieChart = new PieChart(300, 300, Chart::silverColor(), 0x000000, 1);
+    pieChart->setRoundedFrame(0x646464);
     pieChart->setDefaultFonts("msyh.ttf");
-    pieChart->addTitle("资料完整度", "msyh.ttf", 10, 0xffffff);
-    pieChart->setPieSize(150, 150, 130);
+    pieChart->addTitle("资料完整度", "msyh.ttf", 10, 0x000000)->setBackground(0xa0c8ff, 0x000000,
+                                                                          Chart::glassEffect());
+    pieChart->setPieSize(150, 150, 120);
     pieChart->setLabelPos(-40);
     pieChart->setData(DoubleArray(datas, (int)(sizeof(datas) / sizeof(datas[0]))), StringArray(labels, (int)(
         sizeof(labels) / sizeof(labels[0]))));
@@ -315,10 +320,12 @@ void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHas
         colors[i] = COLORS[i];
     }
 
-    PieChart *pieChart = new PieChart(300, 300, 0x646464);
+    PieChart *pieChart = new PieChart(300, 300, Chart::silverColor(), 0x000000, 1);
+    pieChart->setRoundedFrame(0x646464);
     pieChart->setDefaultFonts("msyh.ttf");
-    pieChart->addTitle("限制可飞要素的年分布", "msyh.ttf", 10, 0xffffff);
-    pieChart->setPieSize(150, 150, 130);
+    pieChart->addTitle("限制可飞要素的年分布", "msyh.ttf", 10, 0x000000)->setBackground(0xa0c8ff, 0x000000,
+                                                                          Chart::glassEffect());
+    pieChart->setPieSize(150, 150, 120);
     pieChart->setLabelPos(-40);
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
@@ -369,10 +376,12 @@ void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash
         colors[i] = COLORS[i];
     }
 
-    PieChart *pieChart = new PieChart(300, 300, 0x646464);
+    PieChart *pieChart = new PieChart(300, 300, Chart::silverColor(), 0x000000, 1);
+    pieChart->setRoundedFrame(0x646464);
     pieChart->setDefaultFonts("msyh.ttf");
-    pieChart->addTitle("不可飞要素的年分布", "msyh.ttf", 10, 0xffffff);
-    pieChart->setPieSize(150, 150, 130);
+    pieChart->addTitle("不可飞要素的年分布", "msyh.ttf", 10, 0x000000)->setBackground(0xa0c8ff, 0x000000,
+                                                                          Chart::glassEffect());
+    pieChart->setPieSize(150, 150, 120);
     pieChart->setLabelPos(-40);
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
@@ -429,12 +438,13 @@ void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHas
         colors[i] = COLORS[i];
     }
 
-    XYChart *xyChart = new XYChart(700, 300, 0x646464);
-    xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
-    xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    XYChart *xyChart = new XYChart(700, 300, Chart::silverColor(), 0x000000, 1);
+    xyChart->setRoundedFrame(0x646464);
     xyChart->setDefaultFonts("msyh.ttf");
-    TextBox *title = xyChart->addTitle("限制可飞要素的月分布", "msyh.ttf", 10, 0xffffff);
-    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 135, xyChart->getHeight() -
+    TextBox *title = xyChart->addTitle("限制可飞要素的月分布", "msyh.ttf", 10, 0x000000);
+    title->setBackground(0xa0c8ff, 0x000000, Chart::glassEffect());
+
+    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 135, xyChart->getHeight() -
         title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
 
@@ -502,12 +512,13 @@ void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash
         colors[i] = COLORS[i];
     }
 
-    XYChart *xyChart = new XYChart(700, 300, 0x646464);
-    xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
-    xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    XYChart *xyChart = new XYChart(700, 300, Chart::silverColor(), 0x000000, 1);
+    xyChart->setRoundedFrame(0x646464);
     xyChart->setDefaultFonts("msyh.ttf");
-    TextBox *title = xyChart->addTitle("不可飞要素的月分布", "msyh.ttf", 10, 0xffffff);
-    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 135, xyChart->getHeight() -
+    TextBox *title = xyChart->addTitle("不可飞要素的月分布", "msyh.ttf", 10, 0x000000);
+    title->setBackground(0xa0c8ff, 0x000000, Chart::glassEffect());
+
+    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 135, xyChart->getHeight() -
         title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
 

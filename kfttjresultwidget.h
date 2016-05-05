@@ -24,10 +24,14 @@ private:
     void initData();
     void initUI();
     void initConnect();
-    void createCharts(QHash< QString, QList<float> >);
+    void createCharts();
     void createNkfttjChart(QHash< QString, QList<float> >, QLayout *);
     void createKftyfbChart(QHash< QString, QList<float> >, QLayout *);
     void createZlwzdChart(QHash< QString, QList<float> >, QLayout *);
+    void createXzkfNfbChart(QHash< QString, QStringList >, QLayout *);
+    void createBkfNfbChart(QHash< QString, QStringList >, QLayout *);
+    void createXzkfYfbChart(QHash< QString, QStringList >, QLayout *);
+    void createBkfYfbChart(QHash< QString, QStringList >, QLayout *);
 
 private:
     QList<QString> titleList;

@@ -128,11 +128,14 @@ void KfttjResultWidget::receiveMessage(int row, int count){
 void KfttjResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
-        this->createCharts(kfttjControl->getKfttjHash());
+        this->createCharts();
     }
 }
 
-void KfttjResultWidget::createCharts(QHash< QString, QList<float> > kfttjHash){
+void KfttjResultWidget::createCharts(){
+    QHash< QString, QList<float> > kfttjHash = kfttjControl->getKfttjHash();
+    QHash< QString, QStringList > xzkfEffectHash = kfttjControl->getXzkfEffectHash();
+    QHash< QString, QStringList > bkfEffectHash = kfttjControl->getBkfEffectHash();
     //布局
     QHBoxLayout *imageLayout = new QHBoxLayout;
     imageLayout->setSpacing(5);
@@ -140,6 +143,10 @@ void KfttjResultWidget::createCharts(QHash< QString, QList<float> > kfttjHash){
     createNkfttjChart(kfttjHash, imageLayout);
     createKftyfbChart(kfttjHash, imageLayout);
     createZlwzdChart(kfttjHash, imageLayout);
+    createXzkfNfbChart(xzkfEffectHash, imageLayout);
+    createBkfNfbChart(bkfEffectHash, imageLayout);
+    createXzkfYfbChart(xzkfEffectHash, imageLayout);
+    createBkfYfbChart(bkfEffectHash, imageLayout);
 
     //设置滚动区域的widget
     imageWidget->setLayout(imageLayout);
@@ -264,4 +271,248 @@ void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHas
     pieChart->makeChart();
     pieChartView->setChart(pieChart);
     imageLayout->addWidget(pieChartView);
+}
+
+/**
+ * @brief KfttjResultWidget::createXzkfNfbChart
+ * 限制可飞的年分布：采用饼图（要素为影响可飞天的各个要素），可以包含几年数据。
+ * @param effectHash
+ * @param imageLayout
+ */
+void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+    //key值
+    QList<QString> keyList = effectHash.keys();
+    int keyCount = keyList.size();
+    QChartViewer *pieChartView = new QChartViewer;
+    QList<QString> effectElementList;
+    QList<double> effectCountList;
+    for(int i = 0;i < keyCount;i++){
+        QString key = keyList[i];
+        QStringList effectList = effectHash[key];
+        int effectCount = effectList.size();
+        for(int j = 0;j < effectCount;j++){
+            QString effectElement = effectList[j];
+            int index = effectElementList.indexOf(effectElement);
+            if(index >= 0){
+                effectCountList[index] += 1;
+            }else{
+                effectElementList.append(effectElement);
+                effectCountList.append(1);
+            }
+        }
+    }
+
+    double *datas = new double[effectCountList.size()];
+    int dataCount = effectCountList.size();
+    for(int i = 0;i < dataCount;i++){
+        datas[i] = effectCountList[i];
+    }
+    const char **labels = new const char*[effectElementList.size()];
+    int *colors = new int[effectElementList.size()];
+    int labelCount = effectElementList.size();
+    for(int i = 0;i < labelCount;i++){
+        labels[i] = strdup(effectElementList[i].toStdString().c_str());
+        colors[i] = COLORS[i];
+    }
+
+    PieChart *pieChart = new PieChart(300, 300, 0x646464);
+    pieChart->setDefaultFonts("msyh.ttf");
+    pieChart->addTitle("限制可飞要素的年分布", "msyh.ttf", 10, 0xffffff);
+    pieChart->setPieSize(150, 150, 130);
+    pieChart->setLabelPos(-40);
+    pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
+    pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
+    pieChart->makeChart();
+    pieChartView->setChart(pieChart);
+    imageLayout->addWidget(pieChartView);
+}
+
+/**
+ * @brief KfttjResultWidget::createBkfNfbChart
+ * 不可飞的年分布：采用饼图（要素为影响可飞天的各个要素），可以包含几年数据。
+ * @param effectHash
+ * @param imageLayout
+ */
+void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+    //key值
+    QList<QString> keyList = effectHash.keys();
+    int keyCount = keyList.size();
+    QChartViewer *pieChartView = new QChartViewer;
+    QList<QString> effectElementList;
+    QList<double> effectCountList;
+    for(int i = 0;i < keyCount;i++){
+        QString key = keyList[i];
+        QStringList effectList = effectHash[key];
+        int effectCount = effectList.size();
+        for(int j = 0;j < effectCount;j++){
+            QString effectElement = effectList[j];
+            int index = effectElementList.indexOf(effectElement);
+            if(index >= 0){
+                effectCountList[index] += 1;
+            }else{
+                effectElementList.append(effectElement);
+                effectCountList.append(1);
+            }
+        }
+    }
+
+    double *datas = new double[effectCountList.size()];
+    int dataCount = effectCountList.size();
+    for(int i = 0;i < dataCount;i++){
+        datas[i] = effectCountList[i];
+    }
+    const char **labels = new const char*[effectElementList.size()];
+    int *colors = new int[effectElementList.size()];
+    int labelCount = effectElementList.size();
+    for(int i = 0;i < labelCount;i++){
+        labels[i] = strdup(effectElementList[i].toStdString().c_str());
+        colors[i] = COLORS[i];
+    }
+
+    PieChart *pieChart = new PieChart(300, 300, 0x646464);
+    pieChart->setDefaultFonts("msyh.ttf");
+    pieChart->addTitle("不可飞要素的年分布", "msyh.ttf", 10, 0xffffff);
+    pieChart->setPieSize(150, 150, 130);
+    pieChart->setLabelPos(-40);
+    pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
+    pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
+    pieChart->makeChart();
+    pieChartView->setChart(pieChart);
+    imageLayout->addWidget(pieChartView);
+}
+
+/**
+ * @brief KfttjResultWidget::createXzkfYfbChart
+ * 限制可飞的月分布：采用柱状图（要素为影响可飞天的各个要素，横轴为1到12月，纵轴为百分比），可以包含几年数据。
+ * @param effectHash
+ * @param imageLayout
+ */
+void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+    //key值
+    QList<QString> keyList = effectHash.keys();
+    int keyCount = keyList.size();
+    QChartViewer *xyChartView = new QChartViewer;
+    QList<QString> effectElementList;
+    for(int i = 0;i < keyCount;i++){
+        QString key = keyList[i];
+        QStringList effectList = effectHash[key];
+        int effectCount = effectList.size();
+        for(int j = 0;j < effectCount;j++){
+            QString effectElement = effectList[j];
+            int index = effectElementList.indexOf(effectElement);
+            if(index < 0){
+                effectElementList.append(effectElement);
+            }
+        }
+    }
+
+    int effectElementCount = effectElementList.size();
+    double **datas = new double*[effectElementCount];
+    for(int i = 0;i < effectElementCount;i++){
+        datas[i] = new double[12];
+        for(int j = 0;j < 12;j++){
+            datas[i][j] = 0;
+        }
+        for(int j = 0;j < keyCount;j++){
+            QString key = keyList[j];
+            QStringList effectList = effectHash[key];
+            if(effectList.contains(effectElementList[i])){
+                int month = QDateTime::fromString(key, "yyyy-MM-dd").toString("M").toInt();
+                datas[i][month - 1] += 1;
+            }
+        }
+    }
+    const char *labels[] = {"1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"};
+
+    int *colors = new int[effectElementCount];
+    for(int i = 0;i < effectElementCount;i++){
+        colors[i] = COLORS[i];
+    }
+
+    XYChart *xyChart = new XYChart(600, 300, 0x646464);
+    xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    xyChart->setDefaultFonts("msyh.ttf");
+    TextBox *title = xyChart->addTitle("限制可飞要素的月分布", "msyh.ttf", 10, 0xffffff);
+    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 35, xyChart->getHeight() -
+        title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
+    xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
+    BarLayer *layer = xyChart->addBarLayer(Chart::Percentage);
+    for(int i = 0;i < effectElementCount;i++){
+        layer->addDataSet(DoubleArray(datas[i], 12), colors[i],
+            "<*block,valign=absmiddle*><*img=service.png*> Service<*/*>");
+    }
+    layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
+    layer->setDataLabelStyle()->setAlignment(Chart::Center);
+    xyChart->makeChart();
+    xyChartView->setChart(xyChart);
+    imageLayout->addWidget(xyChartView);
+}
+
+/**
+ * @brief KfttjResultWidget::createBkfYfbChart
+ * 不可飞的月分布：采用柱状图（要素为影响可飞天的各个要素，横轴为1到12月，纵轴为百分比），可以包含几年数据。
+ * @param effectHash
+ * @param imageLayout
+ */
+void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+    //key值
+    QList<QString> keyList = effectHash.keys();
+    int keyCount = keyList.size();
+    QChartViewer *xyChartView = new QChartViewer;
+    QList<QString> effectElementList;
+    for(int i = 0;i < keyCount;i++){
+        QString key = keyList[i];
+        QStringList effectList = effectHash[key];
+        int effectCount = effectList.size();
+        for(int j = 0;j < effectCount;j++){
+            QString effectElement = effectList[j];
+            int index = effectElementList.indexOf(effectElement);
+            if(index < 0){
+                effectElementList.append(effectElement);
+            }
+        }
+    }
+
+    int effectElementCount = effectElementList.size();
+    double **datas = new double*[effectElementCount];
+    for(int i = 0;i < effectElementCount;i++){
+        datas[i] = new double[12];
+        for(int j = 0;j < 12;j++){
+            datas[i][j] = 0;
+        }
+        for(int j = 0;j < keyCount;j++){
+            QString key = keyList[j];
+            QStringList effectList = effectHash[key];
+            if(effectList.contains(effectElementList[i])){
+                int month = QDateTime::fromString(key, "yyyy-MM-dd").toString("M").toInt();
+                datas[i][month - 1] += 1;
+            }
+        }
+    }
+    const char *labels[] = {"1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"};
+
+    int *colors = new int[effectElementCount];
+    for(int i = 0;i < effectElementCount;i++){
+        colors[i] = COLORS[i];
+    }
+
+    XYChart *xyChart = new XYChart(600, 300, 0x646464);
+    xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
+    xyChart->setDefaultFonts("msyh.ttf");
+    TextBox *title = xyChart->addTitle("不可飞要素的月分布", "msyh.ttf", 10, 0xffffff);
+    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 35, xyChart->getHeight() -
+        title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
+    xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
+    BarLayer *layer = xyChart->addBarLayer(Chart::Percentage);
+    for(int i = 0;i < effectElementCount;i++){
+        layer->addDataSet(DoubleArray(datas[i], 12), colors[i],
+            "<*block,valign=absmiddle*><*img=service.png*> Service<*/*>");
+    }
+    layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
+    layer->setDataLabelStyle()->setAlignment(Chart::Center);
+    xyChart->makeChart();
+    xyChartView->setChart(xyChart);
+    imageLayout->addWidget(xyChartView);
 }

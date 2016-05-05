@@ -18,6 +18,8 @@ public:
     void setExtremumSql(QString);
 
     QHash< QString, QList<float> > getKfttjHash() const;
+    QHash< QString, QStringList > getXzkfEffectHash() const;
+    QHash< QString, QStringList > getBkfEffectHash() const;
     void run() Q_DECL_OVERRIDE;
 
 signals:
@@ -65,6 +67,8 @@ private:
     QHash< QString, QList<QStringList> > effectHash; //QList index0:限制可飞的气象要素 index1:不可飞的气象要素
     //出图用
     QHash< QString, QList<float> > kfttjHash; //QList index0:完全可飞 index1:限制可飞 index2:不可飞
+    QHash< QString, QStringList > xzkfEffectHash;
+    QHash< QString, QStringList > bkfEffectHash;
 };
 
 #endif // KFTTJCONTROL

@@ -55,8 +55,20 @@ QHash< QString, QList<float> > KfttjControl::getKfttjHash() const {
     return this->kfttjHash;
 }
 
+QHash< QString, QStringList > KfttjControl::getXzkfEffectHash() const {
+    return this->xzkfEffectHash;
+}
+
+QHash< QString, QStringList > KfttjControl::getBkfEffectHash() const {
+    return this->bkfEffectHash;
+}
+
 void KfttjControl::run(){
     kfttjHash.clear();
+    xzkfEffectHash.clear();
+    bkfEffectHash.clear();
+    effectHash.clear();
+    resAll.clear();
     query();
     analysis();
     emit execute(true);
@@ -954,6 +966,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                 if(effectHash.contains(kfttjKey)){
                     QStringList xzkfEffectList = effectHash[kfttjKey][0];
                     emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                    xzkfEffectHash[kfttjKey] = xzkfEffectList;
                 }
             }else{
                 emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
@@ -963,6 +976,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                 if(effectHash.contains(kfttjKey)){
                     QStringList bkfEffectList = effectHash[kfttjKey][1];
                     emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                    bkfEffectHash[kfttjKey] = bkfEffectList;
                 }
             }
         }
@@ -997,6 +1011,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                 if(effectHash.contains(kfttjKey)){
                     QStringList xzkfEffectList = effectHash[kfttjKey][0];
                     emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                    xzkfEffectHash[kfttjKey] = xzkfEffectList;
                 }
             }else{
                 int wholePos3 = wholeRegExp3.indexIn(valueStr);
@@ -1010,6 +1025,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                     if(effectHash.contains(kfttjKey)){
                         QStringList bkfEffectList = effectHash[kfttjKey][1];
                         emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                        bkfEffectHash[kfttjKey] = bkfEffectList;
                     }
                 }else{
                     int wholePos4 = wholeRegExp4.indexIn(valueStr);
@@ -1037,6 +1053,8 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                                 }
                             }
                             emit sendMessage(sumEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                            xzkfEffectHash[kfttjKey] = xzkfEffectList;
+                            bkfEffectHash[kfttjKey] = bkfEffectList;
                         }
                     }else{
                         int wholePos5 = wholeRegExp5.indexIn(valueStr);
@@ -1050,6 +1068,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                             if(effectHash.contains(kfttjKey)){
                                 QStringList xzkfEffectList = effectHash[kfttjKey][0];
                                 emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                                xzkfEffectHash[kfttjKey] = xzkfEffectList;
                             }
                         }else{
                             int wholePos6 = wholeRegExp6.indexIn(valueStr);
@@ -1061,6 +1080,7 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                                 if(effectHash.contains(kfttjKey)){
                                     QStringList bkfEffectList = effectHash[kfttjKey][1];
                                     emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                                    bkfEffectHash[kfttjKey] = bkfEffectList;
                                 }
                             }
                         }

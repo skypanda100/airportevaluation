@@ -429,18 +429,23 @@ void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHas
         colors[i] = COLORS[i];
     }
 
-    XYChart *xyChart = new XYChart(600, 300, 0x646464);
+    XYChart *xyChart = new XYChart(700, 300, 0x646464);
     xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
     xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
     xyChart->setDefaultFonts("msyh.ttf");
     TextBox *title = xyChart->addTitle("限制可飞要素的月分布", "msyh.ttf", 10, 0xffffff);
-    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 35, xyChart->getHeight() -
+    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 135, xyChart->getHeight() -
         title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
+
+    LegendBox *legendBox = xyChart->addLegend(xyChart->getWidth() - 10, title->getHeight(), true, "msyh.ttf", 8);
+    legendBox->setAlignment(Chart::TopRight);
+    legendBox->setBackground(0xeeeeee, 0x000000);
+
     BarLayer *layer = xyChart->addBarLayer(Chart::Percentage);
     for(int i = 0;i < effectElementCount;i++){
         layer->addDataSet(DoubleArray(datas[i], 12), colors[i],
-            "<*block,valign=absmiddle*><*img=service.png*> Service<*/*>");
+                          QString("<*block,valign=absmiddle*>%1<*/*>").arg(effectElementList[i]).toStdString().c_str());
     }
     layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
     layer->setDataLabelStyle()->setAlignment(Chart::Center);
@@ -497,18 +502,23 @@ void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash
         colors[i] = COLORS[i];
     }
 
-    XYChart *xyChart = new XYChart(600, 300, 0x646464);
+    XYChart *xyChart = new XYChart(700, 300, 0x646464);
     xyChart->xAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
     xyChart->yAxis()->setColors(0xffffff, 0xffffff, 0xffffff);
     xyChart->setDefaultFonts("msyh.ttf");
     TextBox *title = xyChart->addTitle("不可飞要素的月分布", "msyh.ttf", 10, 0xffffff);
-    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 35, xyChart->getHeight() -
+    xyChart->setPlotArea(35, title->getHeight(), xyChart->getWidth() - 135, xyChart->getHeight() -
         title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
+
+    LegendBox *legendBox = xyChart->addLegend(xyChart->getWidth() - 10, title->getHeight(), true, "msyh.ttf", 8);
+    legendBox->setAlignment(Chart::TopRight);
+    legendBox->setBackground(0xeeeeee, 0x000000);
+
     BarLayer *layer = xyChart->addBarLayer(Chart::Percentage);
     for(int i = 0;i < effectElementCount;i++){
         layer->addDataSet(DoubleArray(datas[i], 12), colors[i],
-            "<*block,valign=absmiddle*><*img=service.png*> Service<*/*>");
+                          QString("<*block,valign=absmiddle*>%1<*/*>").arg(effectElementList[i]).toStdString().c_str());
     }
     layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
     layer->setDataLabelStyle()->setAlignment(Chart::Center);

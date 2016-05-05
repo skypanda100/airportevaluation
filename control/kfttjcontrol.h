@@ -37,7 +37,7 @@ private:
     QString analysisCloud(const Monthsummary &, int, int);
     QString analysisCrossWind(const Monthsummary &, int, int);
     QString analysisHeadWind(const Monthsummary &, int, int);
-    QString analysisAll(QStringList, int, int);
+    QString analysisAll(QDateTime, QStringList, int, int);
     void analysisDay(QDateTime, int);
 
     QString guessVisibilityEvolution(const Extremum &, int);
@@ -61,6 +61,8 @@ private:
     QString resCloudStr2;   //提前1小时的云
     //日可飞天统计
     QList<int> resAll;  //当前这天中综合要素的集合
+    //影响原因
+    QHash< QString, QList<QStringList> > effectHash; //QList index0:限制可飞的气象要素 index1:不可飞的气象要素
     //出图用
     QHash< QString, QList<float> > kfttjHash; //QList index0:完全可飞 index1:限制可飞 index2:不可飞
 };

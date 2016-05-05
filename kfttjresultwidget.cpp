@@ -51,7 +51,8 @@ void KfttjResultWidget::initData(){
               << "16"
               << "完全可飞"
               << "限制可飞"
-              << "不可飞";
+              << "不可飞"
+              << "影响原因";
     kfttjControl = new KfttjControl;
 }
 

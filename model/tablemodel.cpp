@@ -28,6 +28,8 @@ bool TableModel::setData(const QModelIndex &index, const QVariant &value, int ro
     }else if(m_headerData[index.column()].toString().compare("不可飞") == 0){
         this->item(index.row(), index.column())->setBackground(QColor(220, 50, 0));
         this->item(index.row(), index.column())->setTextAlignment(Qt::AlignCenter);
+    }else if(m_headerData[index.column()].toString().compare("影响原因") == 0){
+        this->item(index.row(), index.column())->setBackground(QColor(178, 161, 199));
     }else{
         if(value.toString().compare("3") == 0){
             this->item(index.row(), index.column())->setBackground(QColor(50, 150, 0));

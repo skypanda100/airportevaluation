@@ -31,7 +31,8 @@ KfttjControl::KfttjControl(QObject *parent)
               << "16"
               << "完全可飞"
               << "限制可飞"
-              << "不可飞";
+              << "不可飞"
+              << "影响原因";
     pgdb = new PgDataBase;
 
     //需要统计的气象参数个数
@@ -337,6 +338,8 @@ void KfttjControl::analysis(){
             emit sendMessage("", dateCount * elementCount, titleList.indexOf("限制可飞"), elementCount, 1);
             //不可飞
             emit sendMessage("", dateCount * elementCount, titleList.indexOf("不可飞"), elementCount, 1);
+            //影响原因
+            emit sendMessage("", dateCount * elementCount, titleList.size() - 1, elementCount, 1);
 
             //日可飞天统计
             if(i > 0){
@@ -360,7 +363,7 @@ void KfttjControl::analysis(){
             //逆风
             results.append(analysisHeadWind(monthsummary, dateCount * elementCount + 3, titleList.indexOf(QString::number(hour))));
             //综合
-            analysisAll(results, dateCount * elementCount + 4, titleList.indexOf(QString::number(hour)));
+            analysisAll(currentDateTime_local, results, dateCount * elementCount + 4, titleList.indexOf(QString::number(hour)));
         }else{
             resAll.append(0);
         }
@@ -772,11 +775,26 @@ QString KfttjControl::analysisHeadWind(const Monthsummary &monthsummary, int row
  * 综合所有气象要素进行分析
  * @return
  */
-QString KfttjControl::analysisAll(QStringList results, int row, int col){
+QString KfttjControl::analysisAll(QDateTime currentDateTime_local, QStringList results, int row, int col){
+    /***简单这样写，这块得做活***/
+    QList<QString> elementList;
+    elementList.append("能见度");
+    elementList.append("云");
+    elementList.append("侧风");
+    elementList.append("逆风");
+    /************************/
+    QString key = currentDateTime_local.toString("yyyy-MM-dd");
+    QStringList xzkfEffectList;
+    QStringList bkfEffectList;
     QString resultStr("");
     int resultCount = results.size();
     for(int i = 0;i < resultCount;i++){
         QString resStr = results[i];
+        if(resStr.compare("2") == 0){
+            xzkfEffectList.append(elementList[i]);
+        }else if(resStr.compare("1") == 0){
+            bkfEffectList.append(elementList[i]);
+        }
         if(resStr.compare("") == 0){
             resultStr = resStr;
             break;
@@ -791,6 +809,45 @@ QString KfttjControl::analysisAll(QStringList results, int row, int col){
         }
     }
     if(resultStr.compare("") != 0){
+        if(resultStr.compare("2") == 0){
+            if(effectHash.contains(key)){
+                QList<QStringList> effectList = effectHash[key];
+                QStringList xzkfEffectList_g = effectList[0];
+                int count = xzkfEffectList.size();
+                for(int i = 0;i < count;i++){
+                    if(xzkfEffectList_g.indexOf(xzkfEffectList[i]) < 0){
+                        xzkfEffectList_g.append(xzkfEffectList[i]);
+                    }
+                }
+                effectList[0] = xzkfEffectList_g;
+                effectHash[key] = effectList;
+            }else{
+                QList<QStringList> effectList;
+                effectList.append(xzkfEffectList);
+                QStringList blankList;
+                effectList.append(blankList);
+                effectHash[key] = effectList;
+            }
+        }else if(resultStr.compare("1") == 0){
+            if(effectHash.contains(key)){
+                QList<QStringList> effectList = effectHash[key];
+                QStringList bkfEffectList_g = effectList[1];
+                int count = bkfEffectList.size();
+                for(int i = 0;i < count;i++){
+                    if(bkfEffectList_g.indexOf(bkfEffectList[i]) < 0){
+                        bkfEffectList_g.append(bkfEffectList[i]);
+                    }
+                }
+                effectList[1] = bkfEffectList_g;
+                effectHash[key] = effectList;
+            }else{
+                QList<QStringList> effectList;
+                QStringList blankList;
+                effectList.append(blankList);
+                effectList.append(bkfEffectList);
+                effectHash[key] = effectList;
+            }
+        }
         emit sendMessage(resultStr, row, col, 1, 1);
     }
 
@@ -893,10 +950,20 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                 emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
                 kfttjValue[1] = 0.5;
                 kfttjHash[kfttjKey] = kfttjValue;
+
+                if(effectHash.contains(kfttjKey)){
+                    QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                    emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                }
             }else{
                 emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
                 kfttjValue[2] = 0.5;
                 kfttjHash[kfttjKey] = kfttjValue;
+
+                if(effectHash.contains(kfttjKey)){
+                    QStringList bkfEffectList = effectHash[kfttjKey][1];
+                    emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                }
             }
         }
     }else{
@@ -926,6 +993,11 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                 emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
                 kfttjValue[1] = 1;
                 kfttjHash[kfttjKey] = kfttjValue;
+
+                if(effectHash.contains(kfttjKey)){
+                    QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                    emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                }
             }else{
                 int wholePos3 = wholeRegExp3.indexIn(valueStr);
                 if(wholePos3 >= 0){
@@ -934,6 +1006,11 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                     kfttjValue[0] = 0.5;
                     kfttjValue[2] = 0.5;
                     kfttjHash[kfttjKey] = kfttjValue;
+
+                    if(effectHash.contains(kfttjKey)){
+                        QStringList bkfEffectList = effectHash[kfttjKey][1];
+                        emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                    }
                 }else{
                     int wholePos4 = wholeRegExp4.indexIn(valueStr);
                     if(wholePos4 >= 0){
@@ -942,6 +1019,25 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                         kfttjValue[1] = 0.5;
                         kfttjValue[2] = 0.5;
                         kfttjHash[kfttjKey] = kfttjValue;
+
+                        if(effectHash.contains(kfttjKey)){
+                            QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                            QStringList bkfEffectList = effectHash[kfttjKey][1];
+                            QStringList sumEffectList;
+                            int xzkfEffectCount = xzkfEffectList.size();
+                            for(int i = 0;i < xzkfEffectCount;i++){
+                                if(!sumEffectList.contains(xzkfEffectList[i])){
+                                    sumEffectList.append(xzkfEffectList[i]);
+                                }
+                            }
+                            int bkfEffectCount = bkfEffectList.size();
+                            for(int i = 0;i < bkfEffectCount;i++){
+                                if(!sumEffectList.contains(bkfEffectList[i])){
+                                    sumEffectList.append(bkfEffectList[i]);
+                                }
+                            }
+                            emit sendMessage(sumEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                        }
                     }else{
                         int wholePos5 = wholeRegExp5.indexIn(valueStr);
                         if(wholePos5 >= 0){
@@ -950,12 +1046,22 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                             kfttjValue[0] = 0.5;
                             kfttjValue[1] = 0.5;
                             kfttjHash[kfttjKey] = kfttjValue;
+
+                            if(effectHash.contains(kfttjKey)){
+                                QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                                emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                            }
                         }else{
                             int wholePos6 = wholeRegExp6.indexIn(valueStr);
                             if(wholePos6 < 0){
                                 emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
                                 kfttjValue[2] = 1;
                                 kfttjHash[kfttjKey] = kfttjValue;
+
+                                if(effectHash.contains(kfttjKey)){
+                                    QStringList bkfEffectList = effectHash[kfttjKey][1];
+                                    emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                                }
                             }
                         }
                     }

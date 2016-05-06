@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     bean/extremum.cpp \
     model/tablemodel.cpp \
     control/kfttjcontrol.cpp \
-    qchartviewer.cpp
+    qchartviewer.cpp \
+    fmginputwidget.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -52,7 +53,8 @@ HEADERS  += mainwindow.h \
     bean/extremum.h \
     model/tablemodel.h \
     control/kfttjcontrol.h \
-    qchartviewer.h
+    qchartviewer.h \
+    fmginputwidget.h
 
 RESOURCES += \
     res.qrc

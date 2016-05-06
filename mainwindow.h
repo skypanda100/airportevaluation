@@ -7,6 +7,7 @@
 #include "sjdrqualitywidget.h"
 #include "sjdrmainwidget.h"
 #include "kfttjresultwidget.h"
+#include "fmginputwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -44,14 +45,20 @@ private:
     void setupKfttj();
     //设置可飞天统计模块的结果区
     void setupKfttjResultWidget();
+    //设置风玫瑰模块区
+    void setupFmg();
+    //设置风玫瑰的输入控制区
+    void setupFmgInputWidget();
 
 private slots:
     void onSjdrTriggered();
     void onKfttjTriggered();
+    void onFmgTriggered();
 
 private:
     bool isSjdrInit;
     bool isKfttjInit;
+    bool isFmgInit;
 
     QStackedWidget *resultWidget;
 
@@ -71,6 +78,9 @@ private:
     SjdrMainWidget *sjdrMainWidget;
 
     KfttjResultWidget *kfttjResultWidget;
+
+    QDockWidget *fmgInputDock;
+    FmgInputWidget *fmgInputWidget;
 };
 
 #endif // MAINWINDOW_H

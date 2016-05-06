@@ -4,6 +4,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     ,isSjdrInit(false)
     ,isKfttjInit(false)
+    ,isFmgInit(false)
     ,resultWidget(NULL)
     ,sjdrInputDock(NULL)
     ,sjdrInputWidget(NULL)
@@ -12,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     ,sjdrMainWidget(NULL)
     ,progressBar(NULL)
     ,kfttjResultWidget(NULL)
+    ,fmgInputDock(NULL)
+    ,fmgInputWidget(NULL)
 {
     this->initData();
     this->initUI();
@@ -48,6 +51,10 @@ MainWindow::~MainWindow()
     if(resultWidget != NULL){
         delete resultWidget;
     }
+
+    if(fmgInputDock != NULL){
+        delete fmgInputDock;
+    }
 }
 
 void MainWindow::initData(){
@@ -65,6 +72,7 @@ void MainWindow::initUI(){
 void MainWindow::initConnect(){
     connect(sjdrAction, SIGNAL(triggered()), this, SLOT(onSjdrTriggered()));
     connect(kfttjAction, SIGNAL(triggered()), this, SLOT(onKfttjTriggered()));
+    connect(fmgAction, SIGNAL(triggered()), this, SLOT(onFmgTriggered()));
 }
 
 void MainWindow::setupCentralWidget(){
@@ -149,12 +157,12 @@ void MainWindow::setProgressValue(int value){
 void MainWindow::onSjdrTriggered(){
     if(!isSjdrInit){
         isSjdrInit = true;
-        sjdrInputDock = new QDockWidget("输入控制", this);
+        sjdrInputDock = new QDockWidget("数据导入输入控制", this);
         sjdrInputDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         this->addDockWidget(Qt::LeftDockWidgetArea, sjdrInputDock);
         this->viewMenu->addAction(sjdrInputDock->toggleViewAction());
 
-        sjdrQualityDock = new QDockWidget("质量控制", this);
+        sjdrQualityDock = new QDockWidget("数据导入质量控制", this);
         sjdrQualityDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         this->addDockWidget(Qt::LeftDockWidgetArea, sjdrQualityDock);
         this->viewMenu->addAction(sjdrQualityDock->toggleViewAction());
@@ -162,8 +170,15 @@ void MainWindow::onSjdrTriggered(){
         this->setupSjdr();
     }else{
         sjdrInputDock->setVisible(true);
+        this->viewMenu->addAction(sjdrInputDock->toggleViewAction());
         sjdrQualityDock->setVisible(true);
+        this->viewMenu->addAction(sjdrQualityDock->toggleViewAction());
         resultWidget->setCurrentWidget(sjdrMainWidget);
+    }
+    //去除其他模块
+    if(isFmgInit){
+        this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
+        fmgInputDock->setVisible(false);
     }
 }
 
@@ -177,6 +192,32 @@ void MainWindow::onKfttjTriggered(){
         this->setupKfttj();
     }else{
         resultWidget->setCurrentWidget(kfttjResultWidget);
+    }
+}
+
+/**
+ * @brief MainWindow::onFmgTriggered
+ * 风玫瑰模块
+ */
+void MainWindow::onFmgTriggered(){
+    if(!isFmgInit){
+        isFmgInit = true;
+        fmgInputDock = new QDockWidget("风玫瑰输入控制", this);
+        fmgInputDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        this->addDockWidget(Qt::LeftDockWidgetArea, fmgInputDock);
+        this->viewMenu->addAction(fmgInputDock->toggleViewAction());
+
+        this->setupFmg();
+    }else{
+        fmgInputDock->setVisible(true);
+        this->viewMenu->addAction(fmgInputDock->toggleViewAction());
+    }
+    //去除其他模块
+    if(isSjdrInit){
+        this->viewMenu->removeAction(sjdrInputDock->toggleViewAction());
+        this->viewMenu->removeAction(sjdrQualityDock->toggleViewAction());
+        sjdrInputDock->setVisible(false);
+        sjdrQualityDock->setVisible(false);
     }
 }
 
@@ -225,4 +266,16 @@ void MainWindow::setupKfttjResultWidget(){
     connect(kfttjResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
     resultWidget->addWidget(kfttjResultWidget);
     resultWidget->setCurrentWidget(kfttjResultWidget);
+}
+
+void MainWindow::setupFmg(){
+    this->setupFmgInputWidget();
+}
+
+void MainWindow::setupFmgInputWidget(){
+    if(fmgInputWidget != NULL){
+        delete fmgInputWidget;
+    }
+    fmgInputWidget = new FmgInputWidget;
+    fmgInputDock->setWidget(fmgInputWidget);
 }

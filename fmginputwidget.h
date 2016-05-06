@@ -11,6 +11,9 @@ public:
     FmgInputWidget(QWidget *parent = 0);
     ~FmgInputWidget();
 
+signals:
+    void executeFmg(QString code, QString runway, QString fspeed, QString tspeed, QList<QString> years);
+
 private slots:
     void onAirportChanged(const QString &);
     void onRunwayChanged(const QString &);

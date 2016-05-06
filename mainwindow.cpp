@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     ,kfttjResultWidget(NULL)
     ,fmgInputDock(NULL)
     ,fmgInputWidget(NULL)
+    ,fmgResultWidget(NULL)
 {
     this->initData();
     this->initUI();
@@ -48,13 +49,20 @@ MainWindow::~MainWindow()
         delete kfttjResultWidget;
     }
 
+    if(fmgInputDock != NULL){
+        delete fmgInputDock;
+    }
+
+    if(fmgResultWidget != NULL){
+        delete fmgResultWidget;
+    }
+
+    //最后析构
     if(resultWidget != NULL){
         delete resultWidget;
     }
 
-    if(fmgInputDock != NULL){
-        delete fmgInputDock;
-    }
+
 }
 
 void MainWindow::initData(){
@@ -211,6 +219,7 @@ void MainWindow::onFmgTriggered(){
     }else{
         fmgInputDock->setVisible(true);
         this->viewMenu->addAction(fmgInputDock->toggleViewAction());
+        resultWidget->setCurrentWidget(fmgResultWidget);
     }
     //去除其他模块
     if(isSjdrInit){
@@ -270,6 +279,7 @@ void MainWindow::setupKfttjResultWidget(){
 
 void MainWindow::setupFmg(){
     this->setupFmgInputWidget();
+    this->setupFmgResultWidget();
 }
 
 void MainWindow::setupFmgInputWidget(){
@@ -278,4 +288,14 @@ void MainWindow::setupFmgInputWidget(){
     }
     fmgInputWidget = new FmgInputWidget;
     fmgInputDock->setWidget(fmgInputWidget);
+}
+
+void MainWindow::setupFmgResultWidget(){
+    if(fmgResultWidget != NULL){
+        delete fmgResultWidget;
+    }
+    fmgResultWidget = new FmgResultWidget;
+    connect(fmgResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+    resultWidget->addWidget(fmgResultWidget);
+    resultWidget->setCurrentWidget(fmgResultWidget);
 }

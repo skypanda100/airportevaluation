@@ -8,6 +8,7 @@
 #include "sjdrmainwidget.h"
 #include "kfttjresultwidget.h"
 #include "fmginputwidget.h"
+#include "fmgresultwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -47,8 +48,10 @@ private:
     void setupKfttjResultWidget();
     //设置风玫瑰模块区
     void setupFmg();
-    //设置风玫瑰的输入控制区
+    //设置风玫瑰模块的输入控制区
     void setupFmgInputWidget();
+    //设置风玫瑰模块的结果区
+    void setupFmgResultWidget();
 
 private slots:
     void onSjdrTriggered();
@@ -81,6 +84,7 @@ private:
 
     QDockWidget *fmgInputDock;
     FmgInputWidget *fmgInputWidget;
+    FmgResultWidget *fmgResultWidget;
 };
 
 #endif // MAINWINDOW_H

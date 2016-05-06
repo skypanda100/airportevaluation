@@ -243,5 +243,20 @@ bool FmgInputWidget::validate(){
  * 开始风玫瑰模块的计算
  */
 void FmgInputWidget::execute(){
-
+    if(!validate()){
+        return;
+    }
+    QString code = aiportList[airportComboBox->currentIndex()].code();
+    QString runway = runwayComboBox->currentText();
+    QString fspeed = fspeedEdit->text();
+    QString tspeed = tspeedEdit->text();
+    QList<QString> years;
+    int dateCheckBoxCount = dateCheckBoxList.size();
+    for(int i = 0;i < dateCheckBoxCount;i++){
+        QCheckBox *checkBox = dateCheckBoxList[i];
+        if(checkBox->isChecked()){
+            years.append(checkBox->text());
+        }
+    }
+    emit executeFmg(code, runway, fspeed, tspeed, years);
 }

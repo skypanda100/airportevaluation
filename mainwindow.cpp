@@ -295,7 +295,6 @@ void MainWindow::setupFmgResultWidget(){
     }
     fmgResultWidget = new FmgResultWidget;
     connect(fmgResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
-
     resultWidget->addWidget(fmgResultWidget);
     resultWidget->setCurrentWidget(fmgResultWidget);
 }

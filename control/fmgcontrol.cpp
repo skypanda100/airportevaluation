@@ -53,10 +53,13 @@ void FmgControl::setData(QString code, QString runway, QString fspeed, QString t
 
 void FmgControl::run(){
     int yearCount = m_years.size();
+    int totalProgress = yearCount * 12;
+    int currentProgress = 0;
     for(int i = 0;i < yearCount;i++){
         QString yearStr = m_years[i];
         emit sendMessage(i * 12, yearStr);
         for(int j = 0;j < 12;j++){
+            currentProgress += 1;
             QString dateWhereStr = QString("and EXTRACT(MONTH from age(datetime, timestamp '%1-%2-01')) = 0")
                     .arg(yearStr)
                     .arg(j + 1);
@@ -71,8 +74,10 @@ void FmgControl::run(){
                 }
             }
             delete plainModel;
-            emit sendMessage(i * 12 + j, windCountArg);
+            emit sendMessage(i * 12 + j, yearStr, windCountArg);
+            emit setProgressValue((int)(((qreal)(currentProgress)/(qreal)totalProgress) * 100));
         }
     }
+    emit execute(true);
 }
 

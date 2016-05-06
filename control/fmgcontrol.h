@@ -17,7 +17,10 @@ public:
 
 signals:
     void sendMessage(int row, QString year);
-    void sendMessage(int row, QList<QString> windCountList);
+    void sendMessage(int row, QString year, QList<QString> windCountList);
+    void execute(bool isEnd);
+    void singleExecute(bool isEnd);
+    void setProgressValue(int);
 
 private:
     QStringList selectList;//最关键的查询语句（将稍复杂的业务逻辑转化为sql语句以减小程序内存的压力：以牺牲速度换取性能的稳定）

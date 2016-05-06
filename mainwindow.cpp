@@ -61,8 +61,6 @@ MainWindow::~MainWindow()
     if(resultWidget != NULL){
         delete resultWidget;
     }
-
-
 }
 
 void MainWindow::initData(){
@@ -280,6 +278,7 @@ void MainWindow::setupKfttjResultWidget(){
 void MainWindow::setupFmg(){
     this->setupFmgInputWidget();
     this->setupFmgResultWidget();
+    connect(fmgInputWidget, SIGNAL(executeFmg(QString,QString,QString,QString,QList<QString>)), fmgResultWidget, SLOT(executeFmg(QString,QString,QString,QString,QList<QString>)));
 }
 
 void MainWindow::setupFmgInputWidget(){
@@ -296,6 +295,7 @@ void MainWindow::setupFmgResultWidget(){
     }
     fmgResultWidget = new FmgResultWidget;
     connect(fmgResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+
     resultWidget->addWidget(fmgResultWidget);
     resultWidget->setCurrentWidget(fmgResultWidget);
 }

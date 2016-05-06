@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     control/kfttjcontrol.cpp \
     qchartviewer.cpp \
     fmginputwidget.cpp \
-    fmgresultwidget.cpp
+    fmgresultwidget.cpp \
+    control/fmgcontrol.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -56,7 +57,8 @@ HEADERS  += mainwindow.h \
     control/kfttjcontrol.h \
     qchartviewer.h \
     fmginputwidget.h \
-    fmgresultwidget.h
+    fmgresultwidget.h \
+    control/fmgcontrol.h
 
 RESOURCES += \
     res.qrc

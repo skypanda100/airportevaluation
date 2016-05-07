@@ -9,6 +9,7 @@
 #include "kfttjresultwidget.h"
 #include "fmginputwidget.h"
 #include "fmgresultwidget.h"
+#include "rckqinputwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -52,16 +53,22 @@ private:
     void setupFmgInputWidget();
     //设置风玫瑰模块的结果区
     void setupFmgResultWidget();
+    //设置日窗口期模块区
+    void setupRckq();
+    //设置日窗口期模块的输入控制区
+    void setupRckqInputWidget();
 
 private slots:
     void onSjdrTriggered();
     void onKfttjTriggered();
     void onFmgTriggered();
+    void onRckqTriggered();
 
 private:
     bool isSjdrInit;
     bool isKfttjInit;
     bool isFmgInit;
+    bool isRckqInit;
 
     QStackedWidget *resultWidget;
 
@@ -85,6 +92,10 @@ private:
     QDockWidget *fmgInputDock;
     FmgInputWidget *fmgInputWidget;
     FmgResultWidget *fmgResultWidget;
+
+    QDockWidget *rckqInputDock;
+    RckqInputWidget *rckqInputWidget;
+
 };
 
 #endif // MAINWINDOW_H

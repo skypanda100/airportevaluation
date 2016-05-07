@@ -234,51 +234,51 @@ void FmgResultWidget::createCharts(){
         //1月
         PolarSplineLineLayer *layer1 = c->addSplineLineLayer(DoubleArray(datas_1, 360), 0x4D7FBC, "1月");
         layer1->setAngles(DoubleArray(angles, 360));
-        layer1->setLineWidth(3);
+        layer1->setLineWidth(2);
         //2月
         PolarSplineLineLayer *layer2 = c->addSplineLineLayer(DoubleArray(datas_2, 360), 0xC0504D, "2月");
         layer2->setAngles(DoubleArray(angles, 360));
-        layer2->setLineWidth(3);
+        layer2->setLineWidth(2);
         //3月
         PolarSplineLineLayer *layer3 = c->addSplineLineLayer(DoubleArray(datas_3, 360), 0x9BBB59, "3月");
         layer3->setAngles(DoubleArray(angles, 360));
-        layer3->setLineWidth(3);
+        layer3->setLineWidth(2);
         //4月
         PolarSplineLineLayer *layer4 = c->addSplineLineLayer(DoubleArray(datas_4, 360), 0x7E62A1, "4月");
         layer4->setAngles(DoubleArray(angles, 360));
-        layer4->setLineWidth(3);
+        layer4->setLineWidth(2);
         //5月
         PolarSplineLineLayer *layer5 = c->addSplineLineLayer(DoubleArray(datas_5, 360), 0x4BACC6, "5月");
         layer5->setAngles(DoubleArray(angles, 360));
-        layer5->setLineWidth(3);
+        layer5->setLineWidth(2);
         //6月
         PolarSplineLineLayer *layer6 = c->addSplineLineLayer(DoubleArray(datas_6, 360), 0xF79646, "6月");
         layer6->setAngles(DoubleArray(angles, 360));
-        layer6->setLineWidth(3);
+        layer6->setLineWidth(2);
         //7月
         PolarSplineLineLayer *layer7 = c->addSplineLineLayer(DoubleArray(datas_7, 360), 0x244670, "7月");
         layer7->setAngles(DoubleArray(angles, 360));
-        layer7->setLineWidth(3);
+        layer7->setLineWidth(2);
         //8月
         PolarSplineLineLayer *layer8 = c->addSplineLineLayer(DoubleArray(datas_8, 360), 0x772C2A, "8月");
         layer8->setAngles(DoubleArray(angles, 360));
-        layer8->setLineWidth(3);
+        layer8->setLineWidth(2);
         //9月
         PolarSplineLineLayer *layer9 = c->addSplineLineLayer(DoubleArray(datas_9, 360), 0x5F7530, "9月");
         layer9->setAngles(DoubleArray(angles, 360));
-        layer9->setLineWidth(3);
+        layer9->setLineWidth(2);
         //10月
         PolarSplineLineLayer *layer10 = c->addSplineLineLayer(DoubleArray(datas_10, 360), 0x46345C, "10月");
         layer10->setAngles(DoubleArray(angles, 360));
-        layer10->setLineWidth(3);
+        layer10->setLineWidth(2);
         //11月
         PolarSplineLineLayer *layer11 = c->addSplineLineLayer(DoubleArray(datas_11, 360), 0x1F6477, "11月");
         layer11->setAngles(DoubleArray(angles, 360));
-        layer11->setLineWidth(3);
+        layer11->setLineWidth(2);
         //12月
         PolarSplineLineLayer *layer12 = c->addSplineLineLayer(DoubleArray(datas_12, 360), 0xC77F42, "12月");
         layer12->setAngles(DoubleArray(angles, 360));
-        layer12->setLineWidth(3);
+        layer12->setLineWidth(2);
 
         c->makeChart();
         polarChartView->setChart(c);

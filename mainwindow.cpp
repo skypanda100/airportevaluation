@@ -5,6 +5,7 @@ MainWindow::MainWindow(QWidget *parent)
     ,isSjdrInit(false)
     ,isKfttjInit(false)
     ,isFmgInit(false)
+    ,isRckqInit(false)
     ,resultWidget(NULL)
     ,sjdrInputDock(NULL)
     ,sjdrInputWidget(NULL)
@@ -16,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     ,fmgInputDock(NULL)
     ,fmgInputWidget(NULL)
     ,fmgResultWidget(NULL)
+    ,rckqInputDock(NULL)
+    ,rckqInputWidget(NULL)
 {
     this->initData();
     this->initUI();
@@ -57,6 +60,10 @@ MainWindow::~MainWindow()
         delete fmgResultWidget;
     }
 
+    if(rckqInputDock != NULL){
+        delete rckqInputDock;
+    }
+
     //最后析构
     if(resultWidget != NULL){
         delete resultWidget;
@@ -79,6 +86,7 @@ void MainWindow::initConnect(){
     connect(sjdrAction, SIGNAL(triggered()), this, SLOT(onSjdrTriggered()));
     connect(kfttjAction, SIGNAL(triggered()), this, SLOT(onKfttjTriggered()));
     connect(fmgAction, SIGNAL(triggered()), this, SLOT(onFmgTriggered()));
+    connect(rckqAction, SIGNAL(triggered()), this, SLOT(onRckqTriggered()));
 }
 
 void MainWindow::setupCentralWidget(){
@@ -142,6 +150,7 @@ void MainWindow::createStatusBar(){
     progressBar->setTextVisible(false);
     progressBar->setFixedHeight(18);
     progressBar->setRange(0, 100);
+    progressBar->setVisible(false);
     this->statusBar()->addPermanentWidget(progressBar);
 }
 
@@ -152,6 +161,13 @@ void MainWindow::setProgressValue(int value){
             this->statusBar()->showMessage(tr("正在处理......"));
         }else{
             this->statusBar()->showMessage(tr("处理完成"));
+        }
+        if(value <= 0){
+            progressBar->setVisible(false);
+        }else if(value > 0 && value < 100){
+            progressBar->setVisible(true);
+        }else{
+            progressBar->setVisible(false);
         }
     }
 }
@@ -185,6 +201,10 @@ void MainWindow::onSjdrTriggered(){
     if(isFmgInit){
         this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
         fmgInputDock->setVisible(false);
+    }
+    if(isRckqInit){
+       this->viewMenu->removeAction(rckqInputDock->toggleViewAction());
+        rckqInputDock->setVisible(false);
     }
 }
 
@@ -225,6 +245,40 @@ void MainWindow::onFmgTriggered(){
         this->viewMenu->removeAction(sjdrQualityDock->toggleViewAction());
         sjdrInputDock->setVisible(false);
         sjdrQualityDock->setVisible(false);
+    }
+    if(isRckqInit){
+       this->viewMenu->removeAction(rckqInputDock->toggleViewAction());
+        rckqInputDock->setVisible(false);
+    }
+}
+
+/**
+ * @brief MainWindow::onRckqTriggered
+ * 日窗口期模块
+ */
+void MainWindow::onRckqTriggered(){
+    if(!isRckqInit){
+        isRckqInit = true;
+        rckqInputDock = new QDockWidget("日窗口期输入控制", this);
+        rckqInputDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        this->addDockWidget(Qt::LeftDockWidgetArea, rckqInputDock);
+        this->viewMenu->addAction(rckqInputDock->toggleViewAction());
+
+        this->setupRckq();
+    }else{
+        rckqInputDock->setVisible(true);
+        this->viewMenu->addAction(rckqInputDock->toggleViewAction());
+    }
+    //去除其他模块
+    if(isSjdrInit){
+        this->viewMenu->removeAction(sjdrInputDock->toggleViewAction());
+        this->viewMenu->removeAction(sjdrQualityDock->toggleViewAction());
+        sjdrInputDock->setVisible(false);
+        sjdrQualityDock->setVisible(false);
+    }
+    if(isFmgInit){
+        this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
+        fmgInputDock->setVisible(false);
     }
 }
 
@@ -297,4 +351,16 @@ void MainWindow::setupFmgResultWidget(){
     connect(fmgResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
     resultWidget->addWidget(fmgResultWidget);
     resultWidget->setCurrentWidget(fmgResultWidget);
+}
+
+void MainWindow::setupRckq(){
+    this->setupRckqInputWidget();
+}
+
+void MainWindow::setupRckqInputWidget(){
+    if(rckqInputWidget != NULL){
+        delete rckqInputWidget;
+    }
+    rckqInputWidget = new RckqInputWidget;
+    rckqInputDock->setWidget(rckqInputWidget);
 }

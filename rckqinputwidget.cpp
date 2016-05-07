@@ -74,9 +74,10 @@ void RckqInputWidget::initUI(){
     QGroupBox *airportGroup = new QGroupBox;
     airportGroup->setTitle("机场");
     airportGroup->setLayout(airportLayout);
-    //类型（单日两要素，多日单要素）
+    //类型（单日多要素，多日单要素）
     typeComboBox = new QComboBox;
-    typeComboBox->insertItem(0, "单日两要素");
+    typeComboBox->setFixedWidth(170);
+    typeComboBox->insertItem(0, "单日多要素");
     typeComboBox->insertItem(1, "多日单要素");
 
     QHBoxLayout *typeLayout = new QHBoxLayout;
@@ -98,6 +99,7 @@ void RckqInputWidget::initUI(){
     for(int i = 0;i < 24;i++){
         thourComboBox->insertItem(i, QString("%1").arg(i));
     }
+    thourComboBox->setCurrentIndex(23);
 
     QHBoxLayout *hourLayout = new QHBoxLayout;
     hourLayout->addWidget(fhourComboBox);
@@ -115,7 +117,7 @@ void RckqInputWidget::initUI(){
     addDateButton->setFixedSize(25, 25);
 
     dateGLayout = new QGridLayout;
-    dateGLayout->addLayout(hourLayout, 0, 0);
+    dateGLayout->addLayout(hourLayout, 0, 0, 1, 2);
     dateGLayout->addWidget(dateEdit, 1, 0);
     dateGLayout->addWidget(addDateButton, 1, 1);
 
@@ -299,9 +301,106 @@ QList<QString> RckqInputWidget::queryRunway(QString codeStr){
  * @return
  */
 bool RckqInputWidget::validate(){
+    int fhour = fhourComboBox->currentIndex();
+    int thour = thourComboBox->currentIndex();
+    if(fhour == thour){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须小于24小时!");
+        return false;
+    }
+    if(typeComboBox->currentIndex() == 0){
+        if(dateEditList[0]->text().isEmpty()){
+            QMessageBox::critical(0, QObject::tr("错误提示"), "请输入日期!");
+            return false;
+        }
+    }else{
+        bool isOk = false;
+        int dateEditCount = dateEditList.size();
+        for(int i = 0;i < dateEditCount;i++){
+            QString dateStr = dateEditList[i]->text();
+            if(!dateStr.isEmpty()){
+               isOk = true;
+               break;
+            }
+        }
+        if(!isOk){
+            QMessageBox::critical(0, QObject::tr("错误提示"), "请至少输入一个日期!");
+            return false;
+        }
+    }
+    if(typeComboBox->currentIndex() == 0){
+        bool isOk = false;
+        int weatherCheckBoxCount = weatherCheckBoxList.size();
+        for(int i = 0;i < weatherCheckBoxCount;i++){
+            QCheckBox *checkBox = weatherCheckBoxList[i];
+            if(checkBox->isChecked()){
+                isOk = true;
+                break;
+            }
+        }
+        if(!isOk){
+            QMessageBox::critical(0, QObject::tr("错误提示"), "请至少选择一个气象要素!");
+            return false;
+        }
+    }else{
+        bool isOk = false;
+        int weatherRadioButtonCount = weatherRadioButtonList.size();
+        for(int i = 0;i < weatherRadioButtonCount;i++){
+            QRadioButton *radioButton = weatherRadioButtonList[i];
+            if(radioButton->isChecked()){
+                isOk = true;
+                break;
+            }
+        }
+        if(!isOk){
+            QMessageBox::critical(0, QObject::tr("错误提示"), "请选择一个气象要素!");
+            return false;
+        }
+    }
     return true;
 }
 
 void RckqInputWidget::execute(){
+    if(!validate()){
+        return;
+    }
+    QString code = aiportList[airportComboBox->currentIndex()].code();
+    QString runway = runwayComboBox->currentText();
+    int type = typeComboBox->currentIndex();
+    int fhour = fhourComboBox->currentIndex();
+    int thour = thourComboBox->currentIndex();
+    QList<QString> dateList;
+    if(type == 0){
+        dateList.append(dateEditList[0]->text());
+    }else{
+        int dateEditCount = dateEditList.size();
+        for(int i = 0;i < dateEditCount;i++){
+            QString dateStr = dateEditList[i]->text();
+            if(!dateStr.isEmpty()){
+                if(!dateList.contains(dateStr)){
+                    dateList.append(dateStr);
+                }
+            }
+        }
+    }
+    QList<QString> weatherList;
+    if(type == 0){
+        int weatherCheckBoxCount = weatherCheckBoxList.size();
+        for(int i = 0;i < weatherCheckBoxCount;i++){
+            QCheckBox *checkBox = weatherCheckBoxList[i];
+            if(checkBox->isChecked()){
+                weatherList.append(checkBox->text());
+            }
+        }
+    }else{
+        int weatherRadioButtonCount = weatherRadioButtonList.size();
+        for(int i = 0;i < weatherRadioButtonCount;i++){
+            QRadioButton *radioButton = weatherRadioButtonList[i];
+            if(radioButton->isChecked()){
+                weatherList.append(radioButton->text());
+                break;
+            }
+        }
+    }
 
+    emit executeRckq(code, runway, type, fhour, thour, dateList, weatherList);
 }

@@ -11,6 +11,9 @@ public:
     RckqInputWidget(QWidget *parent = 0);
     ~RckqInputWidget();
 
+signals:
+    void executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList);
+
 private slots:
     void onAirportChanged(const QString &);
     void onTypeChanged(int index);

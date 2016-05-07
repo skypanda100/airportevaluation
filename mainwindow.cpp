@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     ,fmgResultWidget(NULL)
     ,rckqInputDock(NULL)
     ,rckqInputWidget(NULL)
+    ,rckqResultWidget(NULL)
 {
     this->initData();
     this->initUI();
@@ -62,6 +63,10 @@ MainWindow::~MainWindow()
 
     if(rckqInputDock != NULL){
         delete rckqInputDock;
+    }
+
+    if(rckqResultWidget != NULL){
+        delete rckqResultWidget;
     }
 
     //最后析构
@@ -268,6 +273,7 @@ void MainWindow::onRckqTriggered(){
     }else{
         rckqInputDock->setVisible(true);
         this->viewMenu->addAction(rckqInputDock->toggleViewAction());
+        resultWidget->setCurrentWidget(rckqResultWidget);
     }
     //去除其他模块
     if(isSjdrInit){
@@ -355,6 +361,11 @@ void MainWindow::setupFmgResultWidget(){
 
 void MainWindow::setupRckq(){
     this->setupRckqInputWidget();
+    this->setupRckqResultWidget();
+    connect(rckqInputWidget
+            , SIGNAL(executeRckq(QString,QString,int,int,int,QList<QString>,QList<QString>))
+            , rckqResultWidget
+            , SLOT(executeRckq(QString,QString,int,int,int,QList<QString>,QList<QString>)));
 }
 
 void MainWindow::setupRckqInputWidget(){
@@ -363,4 +374,15 @@ void MainWindow::setupRckqInputWidget(){
     }
     rckqInputWidget = new RckqInputWidget;
     rckqInputDock->setWidget(rckqInputWidget);
+}
+
+void MainWindow::setupRckqResultWidget(){
+    if(rckqResultWidget != NULL){
+        delete rckqResultWidget;
+    }
+    rckqResultWidget = new RckqResultWidget;
+    connect(rckqResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+    resultWidget->addWidget(rckqResultWidget);
+    resultWidget->setCurrentWidget(rckqResultWidget);
+
 }

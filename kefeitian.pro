@@ -35,7 +35,9 @@ SOURCES += main.cpp\
     fmginputwidget.cpp \
     fmgresultwidget.cpp \
     control/fmgcontrol.cpp \
-    rckqinputwidget.cpp
+    rckqinputwidget.cpp \
+    rckqresultwidget.cpp \
+    control/rckqcontrol.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -60,7 +62,9 @@ HEADERS  += mainwindow.h \
     fmginputwidget.h \
     fmgresultwidget.h \
     control/fmgcontrol.h \
-    rckqinputwidget.h
+    rckqinputwidget.h \
+    rckqresultwidget.h \
+    control/rckqcontrol.h
 
 RESOURCES += \
     res.qrc

@@ -10,6 +10,7 @@
 #include "fmginputwidget.h"
 #include "fmgresultwidget.h"
 #include "rckqinputwidget.h"
+#include "rckqresultwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -57,6 +58,8 @@ private:
     void setupRckq();
     //设置日窗口期模块的输入控制区
     void setupRckqInputWidget();
+    //设置日窗口期模块的结果区
+    void setupRckqResultWidget();
 
 private slots:
     void onSjdrTriggered();
@@ -95,6 +98,7 @@ private:
 
     QDockWidget *rckqInputDock;
     RckqInputWidget *rckqInputWidget;
+    RckqResultWidget *rckqResultWidget;
 
 };
 

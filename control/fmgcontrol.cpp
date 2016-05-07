@@ -60,9 +60,8 @@ void FmgControl::run(){
         emit sendMessage(i * 12, yearStr);
         for(int j = 0;j < 12;j++){
             currentProgress += 1;
-            QString dateWhereStr = QString("and EXTRACT(MONTH from age(datetime, timestamp '%1-%2-01')) = 0")
-                    .arg(yearStr)
-                    .arg(j + 1);
+            QString dateWhereStr = QString("and (extract(year from datetime) * 12 + extract(month from datetime) - %1) = 0")
+                    .arg(yearStr.toInt() * 12 + j + 1);
             QString tempQueryStr = QString("%1 %2").arg(queryStr).arg(dateWhereStr);
 
             QList<QString> windCountArg;

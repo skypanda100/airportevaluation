@@ -66,7 +66,7 @@ void FmgResultWidget::initUI(){
     //添加控件
     this->addWidget(tableView);
     this->addWidget(imageArea);
-    this->setStretchFactor(0, 1);
+//    this->setStretchFactor(0, 1);
 }
 
 void FmgResultWidget::initConnect(){
@@ -82,6 +82,7 @@ void FmgResultWidget::executeFmg(QString code, QString runway, QString fspeed, Q
         tableModel->removeRow(i);
     }
     windHash.clear();
+    windCountHash.clear();
     fmgControl->setData(code, runway, fspeed, tspeed, years);
     fmgControl->start();
 }
@@ -97,8 +98,15 @@ void FmgResultWidget::receiveMessage(int row, QString year){
 
 void FmgResultWidget::receiveMessage(int row, QString year, QList<QString> windCountList){
     int windCount = windCountList.size();
+    int sumWind = 0;
     for(int i = 0;i < windCount;i++){
         tableModel->setData(tableModel->index(row, i + 2, QModelIndex()), windCountList[i]);
+        sumWind += windCountList[i].toInt();
+    }
+    if(windCountHash.contains(year)){
+        windCountHash[year] += sumWind;
+    }else{
+        windCountHash[year] = sumWind;
     }
     if(windHash.contains(year)){
         QList< QList<QString> > windList = windHash[year];
@@ -119,6 +127,12 @@ void FmgResultWidget::execute(bool isEnd){
 }
 
 void FmgResultWidget::createCharts(){
+    //销毁之前的imageWidget
+    if(imageWidget != NULL){
+        delete imageWidget;
+        imageWidget = NULL;
+        imageWidget = new QWidget;
+    }
     //布局
     QHBoxLayout *imageLayout = new QHBoxLayout;
     imageLayout->setSpacing(5);
@@ -128,6 +142,7 @@ void FmgResultWidget::createCharts(){
     int keyCount = keyList.size();
     for(int i = 0;i < keyCount;i++){
         QString key = keyList[i];
+        int sumWind = windCountHash[key];
         QList< QList<QString> > windList = windHash[key];
         double *datas_1 = new double[360];
         double *datas_2 = new double[360];
@@ -149,118 +164,119 @@ void FmgResultWidget::createCharts(){
         //1月数据
         QList<QString> wLst_1 = windList[0];
         for(int j = 0;j < 360;j++){
-            datas_1[j] = wLst_1[j].toDouble();
+            datas_1[j] = wLst_1[j].toDouble() / sumWind;
         }
         //2月数据
         QList<QString> wLst_2 = windList[1];
         for(int j = 0;j < 360;j++){
-            datas_2[j] = wLst_2[j].toDouble();
+            datas_2[j] = wLst_2[j].toDouble() / sumWind;
         }
         //3月数据
         QList<QString> wLst_3 = windList[2];
         for(int j = 0;j < 360;j++){
-            datas_3[j] = wLst_3[j].toDouble();
+            datas_3[j] = wLst_3[j].toDouble() / sumWind;
         }
         //4月数据
         QList<QString> wLst_4 = windList[3];
         for(int j = 0;j < 360;j++){
-            datas_4[j] = wLst_4[j].toDouble();
+            datas_4[j] = wLst_4[j].toDouble() / sumWind;
         }
         //5月数据
         QList<QString> wLst_5 = windList[4];
         for(int j = 0;j < 360;j++){
-            datas_5[j] = wLst_5[j].toDouble();
+            datas_5[j] = wLst_5[j].toDouble() / sumWind;
         }
         //6月数据
         QList<QString> wLst_6 = windList[5];
         for(int j = 0;j < 360;j++){
-            datas_6[j] = wLst_6[j].toDouble();
+            datas_6[j] = wLst_6[j].toDouble() / sumWind;
         }
         //7月数据
         QList<QString> wLst_7 = windList[6];
         for(int j = 0;j < 360;j++){
-            datas_7[j] = wLst_7[j].toDouble();
+            datas_7[j] = wLst_7[j].toDouble() / sumWind;
         }
         //8月数据
         QList<QString> wLst_8 = windList[7];
         for(int j = 0;j < 360;j++){
-            datas_8[j] = wLst_8[j].toDouble();
+            datas_8[j] = wLst_8[j].toDouble() / sumWind;
         }
         //9月数据
         QList<QString> wLst_9 = windList[8];
         for(int j = 0;j < 360;j++){
-            datas_9[j] = wLst_9[j].toDouble();
+            datas_9[j] = wLst_9[j].toDouble() / sumWind;
         }
         //10月数据
         QList<QString> wLst_10 = windList[9];
         for(int j = 0;j < 360;j++){
-            datas_10[j] = wLst_10[j].toDouble();
+            datas_10[j] = wLst_10[j].toDouble() / sumWind;
         }
         //11月数据
         QList<QString> wLst_11 = windList[10];
         for(int j = 0;j < 360;j++){
-            datas_11[j] = wLst_11[j].toDouble();
+            datas_11[j] = wLst_11[j].toDouble() / sumWind;
         }
         //12月数据
         QList<QString> wLst_12 = windList[11];
         for(int j = 0;j < 360;j++){
-            datas_12[j] = wLst_12[j].toDouble();
+            datas_12[j] = wLst_12[j].toDouble() / sumWind;
         }
 
-        PolarChart *c = new PolarChart(460, 460);
-        c->addTitle(QString("%1年").arg(key).toStdString().c_str(), "msyh.ttf", 10, 0x000000)->setBackground(0xa0c8ff, 0x000000,
-                                                                           Chart::glassEffect());
-        c->setPlotArea(230, 240, 180);
+        PolarChart *c = new PolarChart(600, 500);
+        c->setRoundedFrame(0x646464);
+        TextBox *title = c->addTitle(QString("%1年").arg(key).toStdString().c_str(), "msyh.ttf", 10, 0x000000);
+        title->setBackground(0xa0c8ff, 0x000000, Chart::glassEffect());
+        c->setPlotArea(300, 250, 200);
         c->setGridStyle(false);
-        c->addLegend(459, 0, true, "msyh.ttf", 9)->setAlignment(Chart::TopRight);
-        c->angularAxis()->setLinearScale(0, 360, 30);
+        c->addLegend(590, title->getHeight() + 5, true, "msyh.ttf", 9)->setAlignment(Chart::TopRight);
+        c->angularAxis()->setLinearScale(0, 360, 10);
 
         //1月
-        PolarSplineLineLayer *layer1 = c->addSplineLineLayer(DoubleArray(datas_1, 360), 0x0000ff, "1月");
+        PolarSplineLineLayer *layer1 = c->addSplineLineLayer(DoubleArray(datas_1, 360), 0x4D7FBC, "1月");
         layer1->setAngles(DoubleArray(angles, 360));
         layer1->setLineWidth(3);
         //2月
-        PolarSplineLineLayer *layer2 = c->addSplineLineLayer(DoubleArray(datas_2, 360), 0x0000ff, "2月");
+        PolarSplineLineLayer *layer2 = c->addSplineLineLayer(DoubleArray(datas_2, 360), 0xC0504D, "2月");
         layer2->setAngles(DoubleArray(angles, 360));
         layer2->setLineWidth(3);
         //3月
-        PolarSplineLineLayer *layer3 = c->addSplineLineLayer(DoubleArray(datas_3, 360), 0x0000ff, "3月");
+        PolarSplineLineLayer *layer3 = c->addSplineLineLayer(DoubleArray(datas_3, 360), 0x9BBB59, "3月");
         layer3->setAngles(DoubleArray(angles, 360));
         layer3->setLineWidth(3);
         //4月
-        PolarSplineLineLayer *layer4 = c->addSplineLineLayer(DoubleArray(datas_4, 360), 0x0000ff, "4月");
+        PolarSplineLineLayer *layer4 = c->addSplineLineLayer(DoubleArray(datas_4, 360), 0x7E62A1, "4月");
         layer4->setAngles(DoubleArray(angles, 360));
         layer4->setLineWidth(3);
         //5月
-        PolarSplineLineLayer *layer5 = c->addSplineLineLayer(DoubleArray(datas_5, 360), 0x0000ff, "5月");
+        PolarSplineLineLayer *layer5 = c->addSplineLineLayer(DoubleArray(datas_5, 360), 0x4BACC6, "5月");
         layer5->setAngles(DoubleArray(angles, 360));
         layer5->setLineWidth(3);
         //6月
-        PolarSplineLineLayer *layer6 = c->addSplineLineLayer(DoubleArray(datas_6, 360), 0x0000ff, "6月");
+        PolarSplineLineLayer *layer6 = c->addSplineLineLayer(DoubleArray(datas_6, 360), 0xF79646, "6月");
         layer6->setAngles(DoubleArray(angles, 360));
         layer6->setLineWidth(3);
         //7月
-        PolarSplineLineLayer *layer7 = c->addSplineLineLayer(DoubleArray(datas_7, 360), 0x0000ff, "7月");
+        PolarSplineLineLayer *layer7 = c->addSplineLineLayer(DoubleArray(datas_7, 360), 0x244670, "7月");
         layer7->setAngles(DoubleArray(angles, 360));
         layer7->setLineWidth(3);
         //8月
-        PolarSplineLineLayer *layer8 = c->addSplineLineLayer(DoubleArray(datas_8, 360), 0x0000ff, "8月");
+        PolarSplineLineLayer *layer8 = c->addSplineLineLayer(DoubleArray(datas_8, 360), 0x772C2A, "8月");
         layer8->setAngles(DoubleArray(angles, 360));
         layer8->setLineWidth(3);
         //9月
-        PolarSplineLineLayer *layer9 = c->addSplineLineLayer(DoubleArray(datas_9, 360), 0x0000ff, "9月");
+        PolarSplineLineLayer *layer9 = c->addSplineLineLayer(DoubleArray(datas_9, 360), 0x5F7530, "9月");
         layer9->setAngles(DoubleArray(angles, 360));
         layer9->setLineWidth(3);
         //10月
-        PolarSplineLineLayer *layer10 = c->addSplineLineLayer(DoubleArray(datas_10, 360), 0x0000ff, "10月");
+        PolarSplineLineLayer *layer10 = c->addSplineLineLayer(DoubleArray(datas_10, 360), 0x46345C, "10月");
         layer10->setAngles(DoubleArray(angles, 360));
         layer10->setLineWidth(3);
         //11月
-        PolarSplineLineLayer *layer11 = c->addSplineLineLayer(DoubleArray(datas_11, 360), 0x0000ff, "11月");
+        PolarSplineLineLayer *layer11 = c->addSplineLineLayer(DoubleArray(datas_11, 360), 0x1F6477, "11月");
         layer11->setAngles(DoubleArray(angles, 360));
         layer11->setLineWidth(3);
         //12月
-        PolarSplineLineLayer *layer12 = c->addSplineLineLayer(DoubleArray(datas_12, 360), 0x0000ff, "12月");
+        PolarSplineLineLayer *layer12 = c->addSplineLineLayer(DoubleArray(datas_12, 360), 0xC77F42, "12月");
         layer12->setAngles(DoubleArray(angles, 360));
         layer12->setLineWidth(3);
 

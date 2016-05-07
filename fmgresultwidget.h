@@ -28,6 +28,7 @@ private:
     void createCharts();
 
 private:
+    QHash<QString, int> windCountHash;
     QHash< QString, QList< QList<QString> > > windHash;
     QList<QString> titleList;
     FmgControl *fmgControl;

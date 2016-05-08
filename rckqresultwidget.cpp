@@ -23,6 +23,8 @@ RckqResultWidget::~RckqResultWidget(){
 }
 
 void RckqResultWidget::initData(){
+    qRegisterMetaType< QList<QString> >("QList<QString>");
+
     titleList << "气象要素"
               << "日期";
     for(int i = 0;i < 60;i++){
@@ -70,10 +72,28 @@ void RckqResultWidget::initUI(){
 }
 
 void RckqResultWidget::initConnect(){
-
+    connect(rckqControl
+            , SIGNAL(sendMessage(int,QString,QString,QList<QString>))
+            , this
+            , SLOT(receiveMessage(int,QString,QString,QList<QString>))
+            , Qt::QueuedConnection);
 }
 
 void RckqResultWidget::executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList){
+    int rowCount = tableModel->rowCount();
+    for(int i = rowCount - 1;i >= 0;i--){
+        tableModel->removeRow(i);
+    }
     rckqControl->setData(code, runway, type, fhour, thour, dateList, weatherList);
     rckqControl->start();
+}
+
+void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList){
+    tableModel->insertRows(row, 1, QModelIndex());
+    tableModel->setData(tableModel->index(row, 0, QModelIndex()), weather);
+    tableModel->setData(tableModel->index(row, 1, QModelIndex()), dateStr);
+    int valueCount = valueList.size();
+    for(int i = 0;i < valueCount;i++){
+        tableModel->setData(tableModel->index(row, 2 + i, QModelIndex()), valueList[i]);
+    }
 }

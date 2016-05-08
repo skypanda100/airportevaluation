@@ -44,6 +44,12 @@ QList<QString> RckqControl::createDatetimeSql(QString dateStr, int fhour, int th
 
 void RckqControl::run(){
     int weatherCount = m_weatherList.size();
+    int sumCount = 0;
+    if(m_fhour > m_thour){
+        sumCount = weatherCount * m_dateList.size() * (24 - m_fhour + 1 + m_thour);
+    }else{
+        sumCount = weatherCount * m_dateList.size() * (m_thour - m_fhour + 1);
+    }
     int row = 0;
     for(int i = 0;i < weatherCount;i++){
         QString weatherStr = m_weatherList[i];
@@ -85,10 +91,9 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    if(rowCount > 0){
-                        emit sendMessage(row, weatherStr, ymdhStr, valueList);
-                        row += 1;
-                    }
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    row += 1;
+                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
             }
         }else if(weatherStr.compare("侧风速") == 0){
@@ -135,10 +140,9 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    if(rowCount > 0){
-                        emit sendMessage(row, weatherStr, ymdhStr, valueList);
-                        row += 1;
-                    }
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    row += 1;
+                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
             }
         }else if(weatherStr.compare("顺风速") == 0){
@@ -185,10 +189,9 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    if(rowCount > 0){
-                        emit sendMessage(row, weatherStr, ymdhStr, valueList);
-                        row += 1;
-                    }
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    row += 1;
+                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
             }
         }else if(weatherStr.compare("逆风速") == 0){
@@ -235,16 +238,58 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    if(rowCount > 0){
-                        emit sendMessage(row, weatherStr, ymdhStr, valueList);
-                        row += 1;
-                    }
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    row += 1;
+                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
             }
         }else if(weatherStr.compare("气温") == 0){
+            int dateCount = m_dateList.size();
+            for(int j = 0;j < dateCount;j++){
+                QString dateStr = m_dateList[j];
+                QList<QString> datetimeSqlList = createDatetimeSql(dateStr, m_fhour, m_thour);
+                int count = datetimeSqlList.size();
+                for(int k = 0;k < count;k++){
+                    QString datetimeSql = datetimeSqlList[k];
+                    QString queryStr = QString("select * from %1_automatictemperature where runwayno = '%2' and %3 order by datetime")
+                            .arg(m_code)
+                            .arg(m_runway)
+                            .arg(datetimeSql);
 
+                    //初始化列0~59的值
+                    QList<QString> valueList;
+                    for(int value_i = 0;value_i < 60;value_i++){
+                        valueList.append("");
+                    }
+                    //初始化列日期
+                    QString ymdhStr("");
+                    //查询数据
+                    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
+                    int rowCount = plainModel->rowCount();
+                    for(int row_i = 0;row_i < rowCount;row_i++){
+                        QString dateTimeStr = plainModel->record(row_i).value(0).toString();
+                        float temperature = plainModel->record(row_i).value(3).toFloat();
+
+                        QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
+                        int min = dateTime.toString("m").toInt();
+                        valueList[min] = QString("%1").arg(temperature);
+
+                        if(ymdhStr.compare("") == 0){
+                            ymdhStr = dateTime.toString("yyyy年MM月dd日 hh时");
+                        }
+                    }
+                    delete plainModel;
+
+                    //通知显示信息
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    row += 1;
+                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                }
+            }
         }else if(weatherStr.compare("比湿") == 0){
 
         }
     }
+
+    emit execute(true);
 }

@@ -222,10 +222,10 @@ void FmgResultWidget::createCharts(){
             datas_12[j] = wLst_12[j].toDouble() / sumWind;
         }
 
-        PolarChart *c = new PolarChart(600, 500);
+        PolarChart *c = new PolarChart(600, 500, Chart::brushedSilverColor(), Chart::Transparent, 2);
         c->setRoundedFrame(0x646464);
         TextBox *title = c->addTitle(QString("%1年").arg(key).toStdString().c_str(), "msyh.ttf", 10, 0x000000);
-        title->setBackground(0xa0c8ff, 0x000000, Chart::glassEffect());
+        c->addLine(10, title->getHeight(), c->getWidth() - 11, title->getHeight(), Chart::LineColor);
         c->setPlotArea(300, 250, 200);
         c->setGridStyle(false);
         c->addLegend(590, title->getHeight() + 5, true, "msyh.ttf", 9)->setAlignment(Chart::TopRight);

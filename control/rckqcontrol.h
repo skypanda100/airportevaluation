@@ -18,6 +18,7 @@ public:
 signals:
     void sendMessage(int row, QString weather, QString dateStr, QList<QString>);
     void setProgressValue(int);
+    void execute(bool isEnd);
 
 private:
     QList<QString> createDatetimeSql(QString dateStr, int fhour, int thour);

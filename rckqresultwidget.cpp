@@ -63,12 +63,11 @@ void RckqResultWidget::initUI(){
     imageArea->setContentsMargins(5, 5, 5, 5);
     imageWidget = new QWidget;
 
-
     //纵向布局
     this->setOrientation(Qt::Vertical);
     //添加控件
     this->addWidget(tableView);
-
+    this->addWidget(imageArea);
 }
 
 void RckqResultWidget::initConnect(){
@@ -77,15 +76,24 @@ void RckqResultWidget::initConnect(){
             , this
             , SLOT(receiveMessage(int,QString,QString,QList<QString>))
             , Qt::QueuedConnection);
+    connect(rckqControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
+    connect(rckqControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
 }
 
 void RckqResultWidget::executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList){
+    dataHash.clear();
     int rowCount = tableModel->rowCount();
     for(int i = rowCount - 1;i >= 0;i--){
         tableModel->removeRow(i);
     }
     rckqControl->setData(code, runway, type, fhour, thour, dateList, weatherList);
     rckqControl->start();
+
+    this->m_type = type;
+    this->m_fhour = fhour;
+    this->m_thour = thour;
+    this->m_dateList = dateList;
+    this->m_weatherList = weatherList;
 }
 
 void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList){
@@ -96,4 +104,131 @@ void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr,
     for(int i = 0;i < valueCount;i++){
         tableModel->setData(tableModel->index(row, 2 + i, QModelIndex()), valueList[i]);
     }
+
+    if(m_type == 0){
+        if(dataHash.contains(weather)){
+            QList<QString> dataList = dataHash[weather];
+            dataList.append(valueList);
+            dataHash[weather] = dataList;
+        }else{
+            dataHash[weather] = valueList;
+        }
+    }else{
+        QDateTime dateTime = QDateTime::fromString(dateStr, "yyyy年MM月dd日 hh时");
+        QString keyStr = dateTime.toString("yyyy-MM-dd");
+        if(dataHash.contains(keyStr)){
+            QList<QString> dataList = dataHash[keyStr];
+            dataList.append(valueList);
+            dataHash[keyStr] = dataList;
+        }else{
+            dataHash[keyStr] = valueList;
+        }
+    }
+}
+
+void RckqResultWidget::execute(bool isEnd){
+    if(isEnd){
+        emit setProgressValue(100);
+        createCharts();
+    }
+}
+
+void RckqResultWidget::createCharts(){
+    //颜色
+    int colors[] = {0x4D7FBC, 0xC0504D, 0x9BBB59, 0x7E62A1, 0x4BACC6, 0xF79646, 0x244670, 0x772C2A, 0x5F7530, 0x46345C, 0x1F6477, 0xC77F42};
+    //销毁之前的imageWidget
+    if(imageWidget != NULL){
+        delete imageWidget;
+        imageWidget = NULL;
+        imageWidget = new QWidget;
+    }
+    //布局
+    QHBoxLayout *imageLayout = new QHBoxLayout;
+    imageLayout->setSpacing(5);
+    //计算x轴上应有的数据数量
+    int xDataCount = 0;
+    if(m_fhour > m_thour){
+        xDataCount =  (24 - m_fhour + 1 + m_thour) * 60;
+    }else{
+        xDataCount = (m_thour - m_fhour + 1) * 60;
+    }
+    double *dataX = new double[xDataCount];
+    QDateTime dateTime = QDateTime::fromString("2016-05-08", "yyyy-MM-dd");
+    QDateTime tdateTime = QDateTime::fromString(QString("2016-05-08 %1:00:00").arg(m_thour), "yyyy-MM-dd h:mm:ss");
+    if(m_fhour > m_thour){
+        dateTime = dateTime.addDays(-1);
+    }
+    QString datetimeStr = QString("%1 %2:00:00")
+            .arg(dateTime.toString("yyyy-MM-dd"))
+            .arg(m_fhour);
+    dateTime = QDateTime::fromString(datetimeStr, "yyyy-MM-dd h:mm:ss");
+    int hourIndex = 0;
+    do{
+        int year = dateTime.toString("yyyy").toInt();
+        int month = dateTime.toString("M").toInt();
+        int day = dateTime.toString("d").toInt();
+        int hour = dateTime.toString("h").toInt();
+        for(int i = 0;i < 60;i++){
+            dataX[hourIndex * 60 + i] = Chart::chartTime(year, month, day, hour, i, 0);
+        }
+        dateTime = dateTime.addSecs(3600);
+        hourIndex++;
+    }while(dateTime.secsTo(tdateTime) >= 0);
+
+    //make chart
+    QChartViewer *lineChartView = new QChartViewer;
+    XYChart *c = new XYChart(1200, 360, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    c->setRoundedFrame(0x646464);
+    LegendBox *legendBox;
+    if(m_type == 0){
+        TextBox *title = c->addTitle(m_dateList[0].toStdString().c_str(), "msyh.ttf", 10, 0x000000);
+        title->setMargin(0, 0, 6, 6);
+        c->addLine(10, title->getHeight(), c->getWidth() - 11, title->getHeight(), Chart::LineColor);
+        legendBox = c->addLegend(c->getWidth() / 2, title->getHeight(), false, "msyh.ttf", 10);
+    }else{
+        TextBox *title = c->addTitle(m_weatherList[0].toStdString().c_str(), "msyh.ttf", 10, 0x000000);
+        title->setMargin(0, 0, 6, 6);
+        c->addLine(10, title->getHeight(), c->getWidth() - 11, title->getHeight(), Chart::LineColor);
+        legendBox = c->addLegend(c->getWidth() / 2, title->getHeight(), false, "msyh.ttf", 10);
+    }
+    legendBox->setAlignment(Chart::TopCenter);
+    legendBox->setBackground(Chart::Transparent, Chart::Transparent);
+    c->setPlotArea(70, 75, 1200, 240, -1, -1, Chart::Transparent, 0x000000, -1);
+    c->xAxis()->setColors(Chart::Transparent);
+    c->yAxis()->setColors(Chart::Transparent);
+
+    c->xAxis()->setMultiFormat(Chart::StartOfDayFilter(), "<*font=msyh.ttf*>{value|hh:nn}",
+        Chart::AllPassFilter(), "{value|hh:nn}");
+
+    QList<QString> keyList = dataHash.keys();
+    int keyCount = keyList.size();
+    for(int i = 0;i < keyCount;i++){
+        QString key = keyList[i];
+        QList<QString> valueList = dataHash[key];
+        double *datas = new double[xDataCount];
+        for(int j = 0;j < xDataCount;j++){
+            double value = Chart::NoValue;
+            if(valueList[j].compare("") != 0){
+                value = valueList[j].toDouble();
+            }
+            datas[j] = value;
+        }
+        LineLayer *layer = c->addLineLayer();
+        layer->setXData(DoubleArray(dataX, xDataCount));
+
+        layer->addDataSet(DoubleArray(datas, xDataCount), colors[i], key.toStdString().c_str())->setDataSymbol(Chart::NoShape);
+        layer->setLineWidth(2);
+        layer->setGapColor(c->dashLineColor(colors[i]));
+    }
+    c->layoutLegend();
+    c->packPlotArea(15, legendBox->getTopY() + legendBox->getHeight(), c->getWidth() - 16,
+        c->getHeight() - 25);
+    c->makeChart();
+    lineChartView->setChart(c);
+    imageLayout->addStretch(1);
+    imageLayout->addWidget(lineChartView);
+    imageLayout->addStretch(1);
+    //设置滚动区域的widget
+    imageWidget->setLayout(imageLayout);
+    imageArea->setWidget(imageWidget);
 }

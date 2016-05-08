@@ -17,7 +17,7 @@ signals:
 
 public slots:
     void executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList);
-    void receiveMessage(int row, QString weather, QString dateStr, QList<QString>);
+    void receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr);
     void execute(bool);
 
 private:

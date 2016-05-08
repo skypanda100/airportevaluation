@@ -91,7 +91,7 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
                     emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
@@ -140,7 +140,7 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
                     emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
@@ -189,7 +189,7 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
                     emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
@@ -238,7 +238,7 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
                     emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
@@ -281,7 +281,7 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
                     emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }
@@ -355,7 +355,7 @@ void RckqControl::run(){
                     delete plainModel;
 
                     //通知显示信息
-                    emit sendMessage(row, weatherStr, ymdhStr, valueList);
+                    emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
                     emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
                 }

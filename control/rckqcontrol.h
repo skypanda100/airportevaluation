@@ -16,7 +16,7 @@ public:
     void setData(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList);
 
 signals:
-    void sendMessage(int row, QString weather, QString dateStr, QList<QString>);
+    void sendMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr);
     void setProgressValue(int);
     void execute(bool isEnd);
 

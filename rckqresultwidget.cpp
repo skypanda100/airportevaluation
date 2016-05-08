@@ -72,9 +72,9 @@ void RckqResultWidget::initUI(){
 
 void RckqResultWidget::initConnect(){
     connect(rckqControl
-            , SIGNAL(sendMessage(int,QString,QString,QList<QString>))
+            , SIGNAL(sendMessage(int,QString,QString,QList<QString>,QString))
             , this
-            , SLOT(receiveMessage(int,QString,QString,QList<QString>))
+            , SLOT(receiveMessage(int,QString,QString,QList<QString>,QString))
             , Qt::QueuedConnection);
     connect(rckqControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
     connect(rckqControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
@@ -96,7 +96,7 @@ void RckqResultWidget::executeRckq(QString code, QString runway, int type, int f
     this->m_weatherList = weatherList;
 }
 
-void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList){
+void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr){
     tableModel->insertRows(row, 1, QModelIndex());
     tableModel->setData(tableModel->index(row, 0, QModelIndex()), weather);
     tableModel->setData(tableModel->index(row, 1, QModelIndex()), dateStr);
@@ -114,8 +114,6 @@ void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr,
             dataHash[weather] = valueList;
         }
     }else{
-        QDateTime dateTime = QDateTime::fromString(dateStr, "yyyy年MM月dd日 hh时");
-        QString keyStr = dateTime.toString("yyyy-MM-dd");
         if(dataHash.contains(keyStr)){
             QList<QString> dataList = dataHash[keyStr];
             dataList.append(valueList);

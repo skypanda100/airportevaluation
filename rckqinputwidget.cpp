@@ -308,9 +308,61 @@ bool RckqInputWidget::validate(){
         return false;
     }
     if(typeComboBox->currentIndex() == 0){
-        if(dateEditList[0]->text().isEmpty()){
+        QString dateStr = dateEditList[0]->text();
+        if(dateStr.isEmpty()){
             QMessageBox::critical(0, QObject::tr("错误提示"), "请输入日期!");
             return false;
+        }else{
+            //检查日期
+            QRegExp regExp("(\\d{4})-(\\d{2})-(\\d{2})");
+            int pos = regExp.indexIn(dateStr);
+            if(pos < 0){
+                QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                return false;
+            }else{
+                QStringList texts = regExp.capturedTexts();
+                int year = texts[1].toInt();
+                int month = texts[2].toInt();
+                int day = texts[3].toInt();
+                bool isLeapYear = false;
+                if((year % 4 == 0 && year % 100 != 0) || year % 400 == 0){
+                    isLeapYear = true;
+                }
+                if(month >= 1 && month <= 12){
+                    if(month == 1
+                            || month == 3
+                            || month == 5
+                            || month == 7
+                            || month == 8
+                            || month == 10
+                            || month == 12){
+                        if(!(day >= 1 && day <= 31)){
+                            QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                            return false;
+                        }
+                    }else if(month == 2){
+                        if(isLeapYear){
+                            if(!(day >= 1 && day <= 29)){
+                                QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                                return false;
+                            }
+                        }else{
+                            if(!(day >= 1 && day <= 28)){
+                                QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                                return false;
+                            }
+                        }
+                    }else{
+                        if(!(day >= 1 && day <= 30)){
+                            QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                            return false;
+                        }
+                    }
+                }else{
+                    QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                    return false;
+                }
+            }
         }
     }else{
         bool isOk = false;
@@ -325,6 +377,61 @@ bool RckqInputWidget::validate(){
         if(!isOk){
             QMessageBox::critical(0, QObject::tr("错误提示"), "请至少输入一个日期!");
             return false;
+        }
+        for(int i = 0;i < dateEditCount;i++){
+            QString dateStr = dateEditList[i]->text();
+            if(!dateStr.isEmpty()){
+                //检查日期
+                QRegExp regExp("(\\d{4})-(\\d{2})-(\\d{2})");
+                int pos = regExp.indexIn(dateStr);
+                if(pos < 0){
+                    QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                    return false;
+                }else{
+                    QStringList texts = regExp.capturedTexts();
+                    int year = texts[1].toInt();
+                    int month = texts[2].toInt();
+                    int day = texts[3].toInt();
+                    bool isLeapYear = false;
+                    if((year % 4 == 0 && year % 100 != 0) || year % 400 == 0){
+                        isLeapYear = true;
+                    }
+                    if(month >= 1 && month <= 12){
+                        if(month == 1
+                                || month == 3
+                                || month == 5
+                                || month == 7
+                                || month == 8
+                                || month == 10
+                                || month == 12){
+                            if(!(day >= 1 && day <= 31)){
+                                QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                                return false;
+                            }
+                        }else if(month == 2){
+                            if(isLeapYear){
+                                if(!(day >= 1 && day <= 29)){
+                                    QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                                    return false;
+                                }
+                            }else{
+                                if(!(day >= 1 && day <= 28)){
+                                    QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                                    return false;
+                                }
+                            }
+                        }else{
+                            if(!(day >= 1 && day <= 30)){
+                                QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                                return false;
+                            }
+                        }
+                    }else{
+                        QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的日期(yyyy-mm-dd)!");
+                        return false;
+                    }
+                }
+            }
         }
     }
     if(typeComboBox->currentIndex() == 0){
@@ -356,6 +463,7 @@ bool RckqInputWidget::validate(){
             return false;
         }
     }
+
     return true;
 }
 
@@ -382,6 +490,7 @@ void RckqInputWidget::execute(){
             }
         }
     }
+
     QList<QString> weatherList;
     if(type == 0){
         int weatherCheckBoxCount = weatherCheckBoxList.size();

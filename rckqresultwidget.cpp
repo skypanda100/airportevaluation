@@ -225,9 +225,7 @@ void RckqResultWidget::createCharts(){
         c->getHeight() - 25);
     c->makeChart();
     lineChartView->setChart(c);
-    imageLayout->addStretch(1);
-    imageLayout->addWidget(lineChartView);
-    imageLayout->addStretch(1);
+    imageLayout->addWidget(lineChartView, 1, Qt::AlignHCenter);
     //设置滚动区域的widget
     imageWidget->setLayout(imageLayout);
     imageArea->setWidget(imageWidget);

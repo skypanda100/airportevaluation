@@ -308,7 +308,7 @@ bool RckqInputWidget::validate(){
         return false;
     }
     if(typeComboBox->currentIndex() == 0){
-        QString dateStr = dateEditList[0]->text();
+        QString dateStr = dateEditList[0]->text().trimmed();
         if(dateStr.isEmpty()){
             QMessageBox::critical(0, QObject::tr("错误提示"), "请输入日期!");
             return false;
@@ -368,7 +368,7 @@ bool RckqInputWidget::validate(){
         bool isOk = false;
         int dateEditCount = dateEditList.size();
         for(int i = 0;i < dateEditCount;i++){
-            QString dateStr = dateEditList[i]->text();
+            QString dateStr = dateEditList[i]->text().trimmed();
             if(!dateStr.isEmpty()){
                isOk = true;
                break;
@@ -379,7 +379,7 @@ bool RckqInputWidget::validate(){
             return false;
         }
         for(int i = 0;i < dateEditCount;i++){
-            QString dateStr = dateEditList[i]->text();
+            QString dateStr = dateEditList[i]->text().trimmed();
             if(!dateStr.isEmpty()){
                 //检查日期
                 QRegExp regExp("(\\d{4})-(\\d{2})-(\\d{2})");
@@ -478,11 +478,11 @@ void RckqInputWidget::execute(){
     int thour = thourComboBox->currentIndex();
     QList<QString> dateList;
     if(type == 0){
-        dateList.append(dateEditList[0]->text());
+        dateList.append(dateEditList[0]->text().trimmed());
     }else{
         int dateEditCount = dateEditList.size();
         for(int i = 0;i < dateEditCount;i++){
-            QString dateStr = dateEditList[i]->text();
+            QString dateStr = dateEditList[i]->text().trimmed();
             if(!dateStr.isEmpty()){
                 if(!dateList.contains(dateStr)){
                     dateList.append(dateStr);

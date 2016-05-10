@@ -137,10 +137,10 @@ void FmgResultWidget::createCharts(){
     QHBoxLayout *imageLayout = new QHBoxLayout;
     imageLayout->setSpacing(5);
     //make chart
-    QChartViewer *polarChartView = new QChartViewer;
     QList<QString> keyList = windHash.keys();
     int keyCount = keyList.size();
     for(int i = 0;i < keyCount;i++){
+        QChartViewer *polarChartView = new QChartViewer;
         QString key = keyList[i];
         int sumWind = windCountHash[key];
         QList< QList<QString> > windList = windHash[key];

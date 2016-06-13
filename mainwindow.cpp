@@ -79,6 +79,7 @@ void MainWindow::initData(){
 }
 
 void MainWindow::initUI(){
+    this->setWindowTitle("民机试飞气象条件统计与评价研究系统");
     this->setupModuleActions();
     this->setupViewActions();
     this->setupSettingActions();

@@ -10,5 +10,7 @@
         <file>images/unknown.png</file>
         <file>images/warning.png</file>
         <file>images/plus.png</file>
+        <file>images/airport_setup.png</file>
+        <file>images/weather_setup.png</file>
     </qresource>
 </RCC>

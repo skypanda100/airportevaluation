@@ -105,6 +105,7 @@ void MainWindow::setupModuleActions(){
     this->menuBar()->addMenu(menu);
     QToolBar *toolBar = new QToolBar(this);
     toolBar->setWindowTitle("模块");
+    toolBar->setIconSize(QSize(30, 30));
     this->addToolBar(toolBar);
 
     //数据导入模块
@@ -142,7 +143,19 @@ void MainWindow::setupSettingActions(){
     this->menuBar()->addMenu(menu);
     QToolBar *toolBar = new QToolBar(this);
     toolBar->setWindowTitle("设置");
+    toolBar->setIconSize(QSize(30, 30));
     this->addToolBar(toolBar);
+
+    //机场设置
+    QIcon airportSetupIcon = QIcon(":/images/airport_setup.png");
+    QAction *airportAction = new QAction(airportSetupIcon, "机场设置", this);
+    menu->addAction(airportAction);
+    toolBar->addAction(airportAction);
+    //气象要素阀值设置
+    QIcon weatherSetupIcon = QIcon(":/images/weather_setup.png");
+    QAction *weatherAction = new QAction(weatherSetupIcon, "阀值设置", this);
+    menu->addAction(weatherAction);
+    toolBar->addAction(weatherAction);
 }
 
 void MainWindow::setupHelpActions(){

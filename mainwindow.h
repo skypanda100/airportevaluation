@@ -11,6 +11,7 @@
 #include "fmgresultwidget.h"
 #include "rckqinputwidget.h"
 #include "rckqresultwidget.h"
+#include "airportsetupwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -66,6 +67,7 @@ private slots:
     void onKfttjTriggered();
     void onFmgTriggered();
     void onRckqTriggered();
+    void onAirportSetupTriggered();
 
 private:
     bool isSjdrInit;
@@ -81,6 +83,8 @@ private:
     QAction *kfttjAction;
     QAction *rckqAction;
     QAction *fmgAction;
+    QAction *airportAction;
+    QAction *weatherAction;
 
     QProgressBar *progressBar;
 

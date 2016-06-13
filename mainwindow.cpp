@@ -32,6 +32,8 @@ MainWindow::~MainWindow()
     delete kfttjAction;
     delete rckqAction;
     delete fmgAction;
+    delete airportAction;
+    delete weatherAction;
 
     delete viewMenu;
 
@@ -93,6 +95,7 @@ void MainWindow::initConnect(){
     connect(kfttjAction, SIGNAL(triggered()), this, SLOT(onKfttjTriggered()));
     connect(fmgAction, SIGNAL(triggered()), this, SLOT(onFmgTriggered()));
     connect(rckqAction, SIGNAL(triggered()), this, SLOT(onRckqTriggered()));
+    connect(airportAction, SIGNAL(triggered()), this, SLOT(onAirportSetupTriggered()));
 }
 
 void MainWindow::setupCentralWidget(){
@@ -148,12 +151,13 @@ void MainWindow::setupSettingActions(){
 
     //机场设置
     QIcon airportSetupIcon = QIcon(":/images/airport_setup.png");
-    QAction *airportAction = new QAction(airportSetupIcon, "机场设置", this);
+    airportAction = new QAction(airportSetupIcon, "机场设置", this);
     menu->addAction(airportAction);
     toolBar->addAction(airportAction);
+
     //气象要素阀值设置
     QIcon weatherSetupIcon = QIcon(":/images/weather_setup.png");
-    QAction *weatherAction = new QAction(weatherSetupIcon, "阀值设置", this);
+    weatherAction = new QAction(weatherSetupIcon, "阀值设置", this);
     menu->addAction(weatherAction);
     toolBar->addAction(weatherAction);
 }
@@ -300,6 +304,15 @@ void MainWindow::onRckqTriggered(){
         this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
         fmgInputDock->setVisible(false);
     }
+}
+
+/**
+ * @brief MainWindow::onAirportSetupTriggered
+ * 机场设置模块
+ */
+void MainWindow::onAirportSetupTriggered(){
+    AirportSetupWidget *airportSetupWidget = new AirportSetupWidget;
+    airportSetupWidget->exec();
 }
 
 void MainWindow::setupSjdr(){

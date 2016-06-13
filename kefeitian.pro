@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     control/fmgcontrol.cpp \
     rckqinputwidget.cpp \
     rckqresultwidget.cpp \
-    control/rckqcontrol.cpp
+    control/rckqcontrol.cpp \
+    airportsetupwidget.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -64,7 +65,8 @@ HEADERS  += mainwindow.h \
     control/fmgcontrol.h \
     rckqinputwidget.h \
     rckqresultwidget.h \
-    control/rckqcontrol.h
+    control/rckqcontrol.h \
+    airportsetupwidget.h
 
 RESOURCES += \
     res.qrc

@@ -48,11 +48,15 @@ private:
     void initData();
     void initUI();
     void initConnect();
+    bool validate();
 
 private slots:
     void onCodeChanged(int);
+    void onConfirmClicked();
 
 private:
+    PgDataBase *pgDb;
+
     QList<Airport> airportList;
     QStringList typeList;
     QStringList codeList;

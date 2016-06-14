@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "common/sharedmemory.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -9,6 +10,8 @@ int main(int argc, char *argv[])
     QFont font;
     font.setFamily("Microsoft Yahei");
     a.setFont(font);
+    //共享区初始化
+    SharedMemory::getInstance()->queryAirportInfomation();
 
     MainWindow w;
     w.resize(1100,600);

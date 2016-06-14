@@ -27,14 +27,17 @@ private:
     void querySource();
     //递归查找文件
     int findFiles(QString);
+    //重置机场列表
+    void resetAirportComboBox(QList<Airport> airportList, bool isSave = false);
 
 private slots:
     void browse();
     void execute();
+    void onAirportInfoChanged(QList<Airport>, QHash< QString, QList<QString> >);
 
 private:
     PgDataBase *pgdb;
-    QList<Airport> aiportList;
+    QList<Airport> airportList;
     QList<QualityControlSource> qualityControlSourceList;
     QList<QString> sourceFileList;
 

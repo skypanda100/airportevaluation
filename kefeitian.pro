@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     rckqinputwidget.cpp \
     rckqresultwidget.cpp \
     control/rckqcontrol.cpp \
-    airportsetupwidget.cpp
+    airportsetupwidget.cpp \
+    common/sharedmemory.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -66,7 +67,8 @@ HEADERS  += mainwindow.h \
     rckqinputwidget.h \
     rckqresultwidget.h \
     control/rckqcontrol.h \
-    airportsetupwidget.h
+    airportsetupwidget.h \
+    common/sharedmemory.h
 
 RESOURCES += \
     res.qrc

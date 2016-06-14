@@ -313,6 +313,7 @@ void MainWindow::onRckqTriggered(){
 void MainWindow::onAirportSetupTriggered(){
     AirportSetupWidget *airportSetupWidget = new AirportSetupWidget;
     airportSetupWidget->exec();
+    delete airportSetupWidget;
 }
 
 void MainWindow::setupSjdr(){

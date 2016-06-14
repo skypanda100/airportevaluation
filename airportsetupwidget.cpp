@@ -1,4 +1,5 @@
 #include "airportsetupwidget.h"
+#include "common/sharedmemory.h"
 
 /*** 机场添加widget ***/
 AirportAddWidget::AirportAddWidget(QList<Airport> airportList, QWidget *parent)
@@ -180,6 +181,7 @@ void AirportAddWidget::onConfirmClicked(){
         bool ret = pgDb->save(saveAirportSql, values);
         if(ret){
             QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
+            SharedMemory::getInstance()->queryAirportInfomation();
         }else{
             QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
         }
@@ -206,9 +208,12 @@ AirportModifyWidget::~AirportModifyWidget(){
     delete dirEdit;
     delete typeComboBox;
     delete confirmButton;
+    delete pgDb;
 }
 
 void AirportModifyWidget::initData(){
+    //初始化DB
+    pgDb = new PgDataBase;
     //机场类型
     typeList.clear();
     typeList.append("普通民用");
@@ -282,6 +287,42 @@ void AirportModifyWidget::initUI(){
 
 void AirportModifyWidget::initConnect(){
     connect(codeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCodeChanged(int)));
+    connect(confirmButton, SIGNAL(clicked()), this, SLOT(onConfirmClicked()));
+}
+
+bool AirportModifyWidget::validate(){
+    //check机场名称
+    QString nameStr = nameEdit->text().trimmed();
+    if(nameStr.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "机场名称不能为空!");
+        return false;
+    }
+    //check经度
+    QString longitudeStr = lonEdit->text().trimmed();
+    if(longitudeStr.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "经度不能为空!");
+        return false;
+    }
+    //check纬度
+    QString latitudeStr = latEdit->text().trimmed();
+    if(latitudeStr.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "纬度不能为空!");
+        return false;
+    }
+    //check海拔
+    QString altitudeStr = altEdit->text().trimmed();
+    if(altitudeStr.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "海拔不能为空!");
+        return false;
+    }
+    //check跑道方向
+    QString directionStr = dirEdit->text().trimmed();
+    if(directionStr.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "跑道方向不能为空!");
+        return false;
+    }
+
+    return true;
 }
 
 void AirportModifyWidget::onCodeChanged(int index){
@@ -294,6 +335,43 @@ void AirportModifyWidget::onCodeChanged(int index){
     typeComboBox->setCurrentText(airport.type());
 }
 
+void AirportModifyWidget::onConfirmClicked(){
+    if(validate()){
+        //机场code
+        QString code = codeComboBox->currentText();
+        //机场名称
+        QString name = nameEdit->text().trimmed();
+        //经度
+        QString longitude = lonEdit->text();
+        //纬度
+        QString latitude = latEdit->text();
+        //海拔
+        QString altitude = altEdit->text();
+        //跑道方向
+        QString direction = dirEdit->text();
+        //机场类型
+        QString type = typeComboBox->currentText();
+        //构造插入语句
+        QString saveAirportSql("update airport set name=?,longitude=?,latitude=?,altitude=?,direction=?,type=? where code=?");
+        QList<QVariant> values;
+        values.append(name);
+        values.append(longitude);
+        values.append(latitude);
+        values.append(altitude);
+        values.append(direction);
+        values.append(type);
+        values.append(code);
+
+        bool ret = pgDb->save(saveAirportSql, values);
+        if(ret){
+            QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
+            SharedMemory::getInstance()->queryAirportInfomation();
+        }else{
+            QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
+        }
+    }
+}
+
 /*** 机场设置widget ***/
 AirportSetupWidget::AirportSetupWidget(QWidget *parent)
     :QDialog(parent)
@@ -304,9 +382,9 @@ AirportSetupWidget::AirportSetupWidget(QWidget *parent)
 }
 
 AirportSetupWidget::~AirportSetupWidget(){
-    delete tabWidget;
     delete airportAddWidget;
     delete airportModifyWidget;
+    delete tabWidget;
     delete pgDb;
 }
 

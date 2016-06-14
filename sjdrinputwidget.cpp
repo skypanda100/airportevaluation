@@ -1,4 +1,5 @@
 #include "sjdrinputwidget.h"
+#include "common/sharedmemory.h"
 
 SjdrInputWidget::SjdrInputWidget(QWidget *parent)
     :QWidget(parent)
@@ -28,12 +29,8 @@ void SjdrInputWidget::initData(){
 
 void SjdrInputWidget::initUI(){
     //机场
-    queryAirport();
     airportComboBox = new QComboBox;
-    int airportCount = aiportList.size();
-    for(int i = 0;i < airportCount;i++){
-        airportComboBox->insertItem(i, aiportList[i].name());
-    }
+    queryAirport();
 
     QVBoxLayout *airportLayout = new QVBoxLayout;
     airportLayout->addWidget(airportComboBox);
@@ -94,6 +91,10 @@ void SjdrInputWidget::initUI(){
 void SjdrInputWidget::initConnect(){
     connect(browseButton, SIGNAL(clicked()), this, SLOT(browse()));
     connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
+    connect(SharedMemory::getInstance()
+            , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
+            , this
+            , SLOT(onAirportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >)));
 }
 
 /**
@@ -110,22 +111,7 @@ bool SjdrInputWidget::validate(){
  * 查找机场
  */
 void SjdrInputWidget::queryAirport(){
-    aiportList.clear();
-    QString queryStr = QString("select * from airport");
-    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
-    int rowCount = plainModel->rowCount();
-    for(int i = 0;i < rowCount;i++){
-        Airport airport;
-        airport.setCode(plainModel->record(i).value(0).toString());
-        airport.setName(plainModel->record(i).value(1).toString());
-        airport.setLongitude(plainModel->record(i).value(2).toFloat());
-        airport.setLatitude(plainModel->record(i).value(3).toFloat());
-        airport.setAltitude(plainModel->record(i).value(4).toFloat());
-        airport.setDirection(plainModel->record(i).value(5).toFloat());
-        airport.setType(plainModel->record(i).value(6).toString());
-        aiportList.append(airport);
-    }
-    delete plainModel;
+    resetAirportComboBox(SharedMemory::getInstance()->getAirportList(), false);
 }
 
 /**
@@ -227,7 +213,48 @@ void SjdrInputWidget::execute(){
                 qualityControlSourceChkedList.append(qualityControlSourceList[i]);
             }
         }
-        emit executeSjdr(aiportList[airportComboBox->currentIndex()], qualityControlSourceChkedList, sourceFileList);
+        emit executeSjdr(airportList[airportComboBox->currentIndex()], qualityControlSourceChkedList, sourceFileList);
     }
     executeButton->setText("开始");
+}
+
+/**
+ * @brief SjdrInputWidget::onAirportInfoChanged
+ * @param airportList
+ */
+void SjdrInputWidget::onAirportInfoChanged(QList<Airport> airportList, QHash< QString, QList<QString> >){
+    resetAirportComboBox(airportList, true);
+}
+
+void SjdrInputWidget::resetAirportComboBox(QList<Airport> apList, bool isSave){
+    QString currentAirportCode;
+    if(airportList.count() > 0){
+        QString currentAirportText = airportComboBox->currentText();
+        for(Airport airport : airportList){
+            if(currentAirportText.compare(airport.name()) == 0){
+                currentAirportCode = airport.code();
+                break;
+            }
+        }
+    }
+
+    for(int i = airportComboBox->count() - 1;i >= 0;i--){
+        airportComboBox->removeItem(i);
+    }
+
+    this->airportList = apList;
+    int airportCount = airportList.size();
+    for(int i = 0;i < airportCount;i++){
+        airportComboBox->insertItem(i, airportList[i].name());
+    }
+    if(isSave){
+        if(!currentAirportCode.isEmpty()){
+            for(Airport airport : airportList){
+                if(currentAirportCode.compare(airport.code()) == 0){
+                    airportComboBox->setCurrentText(airport.name());
+                    break;
+                }
+            }
+        }
+    }
 }

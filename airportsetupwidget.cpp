@@ -2,9 +2,8 @@
 #include "common/sharedmemory.h"
 
 /*** 机场添加widget ***/
-AirportAddWidget::AirportAddWidget(QList<Airport> airportList, QWidget *parent)
+AirportAddWidget::AirportAddWidget(QWidget *parent)
     :QWidget(parent)
-    ,airportList(airportList)
 {
     this->initData();
     this->initUI();
@@ -111,6 +110,7 @@ bool AirportAddWidget::validate(){
         QMessageBox::critical(0, QObject::tr("错误提示"), "机场四字码应该为四个字母!");
         return false;
     }
+    QList<Airport> airportList = SharedMemory::getInstance()->getAirportList();
     for(Airport airport : airportList){
         if(airport.code().compare(codeStr) == 0){
             QMessageBox::critical(0, QObject::tr("错误提示"), "已经存在该机场四字码!");
@@ -182,6 +182,7 @@ void AirportAddWidget::onConfirmClicked(){
         if(ret){
             QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
             SharedMemory::getInstance()->queryAirportInfomation();
+            emit airportChanged();
         }else{
             QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
         }
@@ -189,9 +190,8 @@ void AirportAddWidget::onConfirmClicked(){
 }
 
 /*** 机场修改widget ***/
-AirportModifyWidget::AirportModifyWidget(QList<Airport> airportList, QWidget *parent)
+AirportModifyWidget::AirportModifyWidget(QWidget *parent)
     :QWidget(parent)
-    ,airportList(airportList)
 {
     this->initData();
     this->initUI();
@@ -222,6 +222,7 @@ void AirportModifyWidget::initData(){
     typeList.append("其他类型");
     //机场code
     codeList.clear();
+    airportList = SharedMemory::getInstance()->getAirportList();
     int airportCount = airportList.size();
     for(int i = 0;i < airportCount;i++){
         Airport airport = airportList[i];
@@ -372,6 +373,24 @@ void AirportModifyWidget::onConfirmClicked(){
     }
 }
 
+void AirportModifyWidget::onAirportChanged(){
+    //删除codeComboBox(解决comboBox在clear时的bug,先断开信号槽,再连接信号槽)
+    disconnect(codeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCodeChanged(int)));
+    codeComboBox->clear();
+    connect(codeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCodeChanged(int)));
+    //机场code
+    codeList.clear();
+    airportList = SharedMemory::getInstance()->getAirportList();
+    int airportCount = airportList.size();
+    for(int i = 0;i < airportCount;i++){
+        Airport airport = airportList[i];
+        codeList.append(airport.code());
+    }
+    //重置codeComboBox
+    codeComboBox->addItems(codeList);
+    this->onCodeChanged(this->codeComboBox->currentIndex());
+}
+
 /*** 机场设置widget ***/
 AirportSetupWidget::AirportSetupWidget(QWidget *parent)
     :QDialog(parent)
@@ -385,41 +404,9 @@ AirportSetupWidget::~AirportSetupWidget(){
     delete airportAddWidget;
     delete airportModifyWidget;
     delete tabWidget;
-    delete pgDb;
 }
 
 void AirportSetupWidget::initData(){
-    //初始化DB
-    pgDb = new PgDataBase;
-    //获取所有机场
-    QString tempQueryStr("select * from airport");
-    QSqlQueryModel *plainModel = pgDb->queryModel(tempQueryStr);
-    int rowCount = plainModel->rowCount();
-    if(rowCount > 0){
-        for(int i = 0;i < rowCount;i++){
-            QString code = plainModel->record(i).value(0).toString();
-            QString name = plainModel->record(i).value(1).toString();
-            float longitude = plainModel->record(i).value(2).toFloat();
-            float latitude = plainModel->record(i).value(3).toFloat();
-            float altitude = plainModel->record(i).value(4).toFloat();
-            float direction = plainModel->record(i).value(5).toFloat();
-            QString type = plainModel->record(i).value(6).toString();
-
-            Airport airport;
-            airport.setCode(code);
-            airport.setName(name);
-            airport.setLongitude(longitude);
-            airport.setLatitude(latitude);
-            airport.setAltitude(altitude);
-            airport.setDirection(direction);
-            airport.setType(type);
-
-            airportList.append(airport);
-        }
-    }else{
-        airportList.clear();
-    }
-    delete plainModel;
 }
 
 void AirportSetupWidget::initUI(){
@@ -428,9 +415,9 @@ void AirportSetupWidget::initUI(){
 
     //设置标签
     tabWidget = new QTabWidget;
-    airportAddWidget = new AirportAddWidget(this->airportList);
+    airportAddWidget = new AirportAddWidget;
     tabWidget->addTab(airportAddWidget, "增加机场");
-    airportModifyWidget = new AirportModifyWidget(this->airportList);
+    airportModifyWidget = new AirportModifyWidget;
     tabWidget->addTab(airportModifyWidget, "修改机场");
 
     //布局
@@ -440,5 +427,5 @@ void AirportSetupWidget::initUI(){
 }
 
 void AirportSetupWidget::initConnect(){
-
+    connect(airportAddWidget, SIGNAL(airportChanged()), airportModifyWidget, SLOT(onAirportChanged()));
 }

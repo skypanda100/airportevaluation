@@ -9,8 +9,11 @@
 class AirportAddWidget : public QWidget{
     Q_OBJECT
 public:
-    AirportAddWidget(QList<Airport> airportList, QWidget *parent = 0);
+    AirportAddWidget(QWidget *parent = 0);
     ~AirportAddWidget();
+
+signals:
+    void airportChanged();
 
 private:
     void initData();
@@ -24,7 +27,6 @@ private slots:
 private:
     PgDataBase *pgDb;
 
-    QList<Airport> airportList;
     QStringList typeList;
 
     QLineEdit *codeEdit;
@@ -41,8 +43,11 @@ private:
 class AirportModifyWidget : public QWidget{
     Q_OBJECT
 public:
-    AirportModifyWidget(QList<Airport> airportList, QWidget *parent = 0);
+    AirportModifyWidget(QWidget *parent = 0);
     ~AirportModifyWidget();
+
+public slots:
+    void onAirportChanged();
 
 private:
     void initData();
@@ -57,9 +62,9 @@ private slots:
 private:
     PgDataBase *pgDb;
 
-    QList<Airport> airportList;
     QStringList typeList;
     QStringList codeList;
+    QList<Airport> airportList;
 
     QComboBox *codeComboBox;
     QLineEdit *nameEdit;
@@ -85,11 +90,8 @@ private:
 
 private:
     QTabWidget *tabWidget;
-    QWidget *airportAddWidget;
-    QWidget *airportModifyWidget;
-
-    PgDataBase *pgDb;
-    QList<Airport> airportList;
+    AirportAddWidget *airportAddWidget;
+    AirportModifyWidget *airportModifyWidget;
 };
 
 #endif // AIRPORTSETUPWIDGET

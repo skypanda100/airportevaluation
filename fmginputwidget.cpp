@@ -1,4 +1,5 @@
 #include "fmginputwidget.h"
+#include "common/sharedmemory.h"
 
 FmgInputWidget::FmgInputWidget(QWidget *parent)
     :QWidget(parent)
@@ -31,22 +32,7 @@ void FmgInputWidget::initUI(){
     //机场(机场和跑道)
     queryAirport();
     airportComboBox = new QComboBox;
-    int airportCount = aiportList.size();
-    for(int i = 0;i < airportCount;i++){
-        airportComboBox->insertItem(i, aiportList[i].name());
-    }
-
     runwayComboBox = new QComboBox;
-    if(airportCount > 0){
-        QString key = aiportList[0].name();
-        if(runwayHash.contains(key)){
-            QList<QString> runwayList = runwayHash[key];
-            int runwayCount = runwayList.size();
-            for(int i = 0;i < runwayCount;i++){
-                runwayComboBox->insertItem(i, runwayList[i]);
-            }
-        }
-    }
 
     QHBoxLayout *airportLayout = new QHBoxLayout;
     airportLayout->addWidget(airportComboBox, 1);
@@ -77,11 +63,8 @@ void FmgInputWidget::initUI(){
     speedGroup->setTitle("风速");
     speedGroup->setLayout(speedLayout);
 
-    //日期
-    queryDate();
 
     dateLayout = new QGridLayout;
-    resetDateArea();
 
     QGroupBox *dateGroup = new QGroupBox;
     dateGroup->setTitle("日期");
@@ -103,14 +86,20 @@ void FmgInputWidget::initUI(){
     mainLayout->addLayout(executeLayout);
     mainLayout->addStretch(1);
     this->setLayout(mainLayout);
+
+    //最后执行
+    resetAirportComboBox(this->airportList, this->runwayHash, false);
 }
 
 void FmgInputWidget::initConnect(){
    connect(airportComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onAirportChanged(const QString &)));
    connect(runwayComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onRunwayChanged(const QString &)));
    connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
+   connect(SharedMemory::getInstance()
+           , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
+           , this
+           , SLOT(onAirportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >)));
 }
-
 
 /**
  * @brief FmgInputWidget::onAirportChanged
@@ -170,44 +159,8 @@ void FmgInputWidget::resetDateArea(){
  * 查找机场
  */
 void FmgInputWidget::queryAirport(){
-    aiportList.clear();
-    runwayHash.clear();
-    QString queryStr = QString("select * from airport");
-    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
-    int rowCount = plainModel->rowCount();
-    for(int i = 0;i < rowCount;i++){
-        Airport airport;
-        airport.setCode(plainModel->record(i).value(0).toString());
-        airport.setName(plainModel->record(i).value(1).toString());
-        airport.setLongitude(plainModel->record(i).value(2).toFloat());
-        airport.setLatitude(plainModel->record(i).value(3).toFloat());
-        airport.setAltitude(plainModel->record(i).value(4).toFloat());
-        airport.setDirection(plainModel->record(i).value(5).toFloat());
-        airport.setType(plainModel->record(i).value(6).toString());
-        aiportList.append(airport);
-
-        //查找跑道
-        QList<QString> runwayList = queryRunway(airport.code().toLower());
-        runwayHash[airport.name()] = runwayList;
-    }
-    delete plainModel;
-}
-
-/**
- * @brief FmgInputWidget::queryRunway
- * 查找机场跑道
- * @param codeStr
- * @return
- */
-QList<QString> FmgInputWidget::queryRunway(QString codeStr){
-    QList<QString> runwayList;
-    QString queryStr = QString("select distinct runwayno from %1_automaticwind").arg(codeStr);
-    QList<QVariant> resList = pgdb->queryVariant(queryStr);
-    int resCount = resList.size();
-    for(int i = 0;i < resCount;i++){
-        runwayList.append(resList[i].toString());
-    }
-    return runwayList;
+    airportList = SharedMemory::getInstance()->getAirportList();
+    runwayHash = SharedMemory::getInstance()->getRunwayHash();
 }
 
 /**
@@ -217,7 +170,7 @@ QList<QString> FmgInputWidget::queryRunway(QString codeStr){
 void FmgInputWidget::queryDate(){
     dateList.clear();
     int airportIndex = airportComboBox->currentIndex();
-    QString codeStr = aiportList[airportIndex].code();
+    QString codeStr = airportList[airportIndex].code();
     QString runwayStr = runwayComboBox->currentText();
     if(!codeStr.isEmpty() && !runwayStr.isEmpty()){
         QString queryStr = QString("select distinct to_char(datetime, 'yyyy') as year from %1_automaticwind where runwayno = '%2' order by year desc").arg(codeStr).arg(runwayStr);
@@ -239,6 +192,76 @@ bool FmgInputWidget::validate(){
 }
 
 /**
+ * @brief FmgInputWidget::resetAirportComboBox
+ * @param airportList
+ * @param isSave
+ */
+void FmgInputWidget::resetAirportComboBox(QList<Airport> apList, QHash< QString, QList<QString> > rwHash, bool isSave){
+    if(isSave){
+        disconnect(airportComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onAirportChanged(const QString &)));
+        disconnect(runwayComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onRunwayChanged(const QString &)));
+
+        QString currentCode("");
+        QString currentRunway("");
+        if(airportList.count() > 0){
+            currentCode = airportList[airportComboBox->currentIndex()].code();
+            currentRunway = runwayComboBox->currentText();
+        }
+
+        airportComboBox->clear();
+        runwayComboBox->clear();
+
+        this->airportList = apList;
+        this->runwayHash = rwHash;
+
+        int airportCount = airportList.size();
+        int currentIndex = 0;
+        for(int i = 0;i < airportCount;i++){
+            airportComboBox->insertItem(i, airportList[i].name());
+            if(airportList[i].code().compare(currentCode) == 0){
+               currentIndex = i;
+            }
+        }
+
+        if(airportCount > 0){
+            QString key = airportList[currentIndex].name();
+            if(runwayHash.contains(key)){
+                QList<QString> runwayList = runwayHash[key];
+                int runwayCount = runwayList.size();
+                for(int i = 0;i < runwayCount;i++){
+                    runwayComboBox->insertItem(i, runwayList[i]);
+                }
+                runwayComboBox->setCurrentText(currentRunway);
+            }
+        }
+
+        connect(airportComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onAirportChanged(const QString &)));
+        connect(runwayComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onRunwayChanged(const QString &)));
+    }else{
+        this->airportList = apList;
+        this->runwayHash = rwHash;
+
+        int airportCount = airportList.size();
+        for(int i = 0;i < airportCount;i++){
+            airportComboBox->insertItem(i, airportList[i].name());
+        }
+
+        if(airportCount > 0){
+            QString key = airportList[0].name();
+            if(runwayHash.contains(key)){
+                QList<QString> runwayList = runwayHash[key];
+                int runwayCount = runwayList.size();
+                for(int i = 0;i < runwayCount;i++){
+                    runwayComboBox->insertItem(i, runwayList[i]);
+                }
+            }
+        }
+    }
+    this->onRunwayChanged("");
+}
+
+
+/**
  * @brief FmgInputWidget::execute
  * 开始风玫瑰模块的计算
  */
@@ -246,7 +269,7 @@ void FmgInputWidget::execute(){
     if(!validate()){
         return;
     }
-    QString code = aiportList[airportComboBox->currentIndex()].code();
+    QString code = airportList[airportComboBox->currentIndex()].code();
     QString runway = runwayComboBox->currentText();
     QString fspeed = fspeedEdit->text();
     QString tspeed = tspeedEdit->text();
@@ -259,4 +282,8 @@ void FmgInputWidget::execute(){
         }
     }
     emit executeFmg(code, runway, fspeed, tspeed, years);
+}
+
+void FmgInputWidget::onAirportInfoChanged(QList<Airport> airportList, QHash< QString, QList<QString> > runwayHash){
+    resetAirportComboBox(airportList, runwayHash, true);
 }

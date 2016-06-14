@@ -19,9 +19,12 @@ AirportAddWidget::~AirportAddWidget(){
     delete dirEdit;
     delete typeComboBox;
     delete confirmButton;
+    delete pgDb;
 }
 
 void AirportAddWidget::initData(){
+    //初始化DB
+    pgDb = new PgDataBase;
     //机场类型
     typeList.append("普通民用");
     typeList.append("普通军用");
@@ -149,7 +152,37 @@ bool AirportAddWidget::validate(){
 
 void AirportAddWidget::onConfirmClicked(){
     if(validate()){
+        //机场code
+        QString code = codeEdit->text().trimmed().toUpper();
+        //机场名称
+        QString name = nameEdit->text().trimmed();
+        //经度
+        QString longitude = lonEdit->text();
+        //纬度
+        QString latitude = latEdit->text();
+        //海拔
+        QString altitude = altEdit->text();
+        //跑道方向
+        QString direction = dirEdit->text();
+        //机场类型
+        QString type = typeComboBox->currentText();
+        //构造插入语句
+        QString saveAirportSql("insert into airport values(?,?,?,?,?,?,?)");
+        QList<QVariant> values;
+        values.append(code);
+        values.append(name);
+        values.append(longitude);
+        values.append(latitude);
+        values.append(altitude);
+        values.append(direction);
+        values.append(type);
 
+        bool ret = pgDb->save(saveAirportSql, values);
+        if(ret){
+            QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
+        }else{
+            QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
+        }
     }
 }
 

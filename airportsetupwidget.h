@@ -22,6 +22,8 @@ private slots:
     void onConfirmClicked();
 
 private:
+    PgDataBase *pgDb;
+
     QList<Airport> airportList;
     QStringList typeList;
 

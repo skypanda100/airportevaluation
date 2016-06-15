@@ -222,6 +222,7 @@ void FmgInputWidget::resetAirportComboBox(QList<Airport> apList, QHash< QString,
                currentIndex = i;
             }
         }
+        airportComboBox->setCurrentIndex(currentIndex);
 
         if(airportCount > 0){
             QString key = airportList[currentIndex].name();

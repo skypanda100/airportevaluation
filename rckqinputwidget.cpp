@@ -1,4 +1,5 @@
 #include "rckqinputwidget.h"
+#include "common/sharedmemory.h"
 
 RckqInputWidget::RckqInputWidget(QWidget *parent)
     :QWidget(parent)
@@ -50,22 +51,8 @@ void RckqInputWidget::initUI(){
     //机场(机场和跑道)
     queryAirport();
     airportComboBox = new QComboBox;
-    int airportCount = aiportList.size();
-    for(int i = 0;i < airportCount;i++){
-        airportComboBox->insertItem(i, aiportList[i].name());
-    }
-
     runwayComboBox = new QComboBox;
-    if(airportCount > 0){
-        QString key = aiportList[0].name();
-        if(runwayHash.contains(key)){
-            QList<QString> runwayList = runwayHash[key];
-            int runwayCount = runwayList.size();
-            for(int i = 0;i < runwayCount;i++){
-                runwayComboBox->insertItem(i, runwayList[i]);
-            }
-        }
-    }
+    resetAirportComboBox(this->airportList, this->runwayHash, false);
 
     QHBoxLayout *airportLayout = new QHBoxLayout;
     airportLayout->addWidget(airportComboBox, 1);
@@ -167,6 +154,10 @@ void RckqInputWidget::initConnect(){
     connect(typeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onTypeChanged(int)));
     connect(addDateButton, SIGNAL(clicked()), this, SLOT(onAddDateClicked()));
     connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
+    connect(SharedMemory::getInstance()
+            , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
+            , this
+            , SLOT(onAirportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >)));
 }
 
 /**
@@ -245,54 +236,8 @@ void RckqInputWidget::onAddDateClicked(){
  * 查找机场
  */
 void RckqInputWidget::queryAirport(){
-    aiportList.clear();
-    runwayHash.clear();
-    QString queryStr = QString("select * from airport");
-    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
-    int rowCount = plainModel->rowCount();
-    for(int i = 0;i < rowCount;i++){
-        Airport airport;
-        airport.setCode(plainModel->record(i).value(0).toString());
-        airport.setName(plainModel->record(i).value(1).toString());
-        airport.setLongitude(plainModel->record(i).value(2).toFloat());
-        airport.setLatitude(plainModel->record(i).value(3).toFloat());
-        airport.setAltitude(plainModel->record(i).value(4).toFloat());
-        airport.setDirection(plainModel->record(i).value(5).toFloat());
-        airport.setType(plainModel->record(i).value(6).toString());
-        aiportList.append(airport);
-
-        //查找跑道
-        QList<QString> runwayList = queryRunway(airport.code().toLower());
-        runwayHash[airport.name()] = runwayList;
-    }
-    delete plainModel;
-}
-
-/**
- * @brief RckqInputWidget::queryRunway
- * 查找机场跑道
- * @param codeStr
- * @return
- */
-QList<QString> RckqInputWidget::queryRunway(QString codeStr){
-    QList<QString> runwayList;
-    //查找自动站风表
-    QString queryStr = QString("select distinct runwayno from %1_automaticwind").arg(codeStr);
-    QList<QVariant> resList = pgdb->queryVariant(queryStr);
-    int resCount = resList.size();
-    for(int i = 0;i < resCount;i++){
-        runwayList.append(resList[i].toString());
-    }
-    //查找温度气压表
-    queryStr = QString("select distinct runwayno from %1_automatictemperature").arg(codeStr);
-    resList = pgdb->queryVariant(queryStr);
-    resCount = resList.size();
-    for(int i = 0;i < resCount;i++){
-        if(!runwayList.contains(resList[i].toString())){
-            runwayList.append(resList[i].toString());
-        }
-    }
-    return runwayList;
+    airportList = SharedMemory::getInstance()->getAirportList();
+    runwayHash = SharedMemory::getInstance()->getRunwayHash();
 }
 
 /**
@@ -467,11 +412,74 @@ bool RckqInputWidget::validate(){
     return true;
 }
 
+void RckqInputWidget::resetAirportComboBox(QList<Airport> apList, QHash<QString, QList<QString> > rwHash, bool isSave){
+    if(isSave){
+        disconnect(airportComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onAirportChanged(const QString &)));
+
+        QString currentCode("");
+        QString currentRunway("");
+        if(airportList.count() > 0){
+            currentCode = airportList[airportComboBox->currentIndex()].code();
+            currentRunway = runwayComboBox->currentText();
+        }
+
+        airportComboBox->clear();
+        runwayComboBox->clear();
+
+        this->airportList = apList;
+        this->runwayHash = rwHash;
+
+        int airportCount = airportList.size();
+        int currentIndex = 0;
+        for(int i = 0;i < airportCount;i++){
+            airportComboBox->insertItem(i, airportList[i].name());
+            if(airportList[i].code().compare(currentCode) == 0){
+               currentIndex = i;
+            }
+        }
+        airportComboBox->setCurrentIndex(currentIndex);
+
+        if(airportCount > 0){
+            QString key = airportList[currentIndex].name();
+            if(runwayHash.contains(key)){
+                QList<QString> runwayList = runwayHash[key];
+                int runwayCount = runwayList.size();
+                for(int i = 0;i < runwayCount;i++){
+                    runwayComboBox->insertItem(i, runwayList[i]);
+                }
+                runwayComboBox->setCurrentText(currentRunway);
+            }
+        }
+
+        connect(airportComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onAirportChanged(const QString &)));
+    }else{
+        this->airportList = apList;
+        this->runwayHash = rwHash;
+
+        int airportCount = airportList.size();
+        for(int i = 0;i < airportCount;i++){
+            airportComboBox->insertItem(i, airportList[i].name());
+        }
+
+        if(airportCount > 0){
+            QString key = airportList[0].name();
+            if(runwayHash.contains(key)){
+                QList<QString> runwayList = runwayHash[key];
+                int runwayCount = runwayList.size();
+                for(int i = 0;i < runwayCount;i++){
+                    runwayComboBox->insertItem(i, runwayList[i]);
+                }
+            }
+        }
+    }
+}
+
+
 void RckqInputWidget::execute(){
     if(!validate()){
         return;
     }
-    QString code = aiportList[airportComboBox->currentIndex()].code();
+    QString code = airportList[airportComboBox->currentIndex()].code();
     QString runway = runwayComboBox->currentText();
     int type = typeComboBox->currentIndex();
     int fhour = fhourComboBox->currentIndex();
@@ -512,4 +520,8 @@ void RckqInputWidget::execute(){
     }
 
     emit executeRckq(code, runway, type, fhour, thour, dateList, weatherList);
+}
+
+void RckqInputWidget::onAirportInfoChanged(QList<Airport> airportList, QHash<QString, QList<QString> > runwayHash){
+    resetAirportComboBox(airportList, runwayHash, true);
 }

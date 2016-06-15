@@ -19,19 +19,21 @@ private slots:
     void onTypeChanged(int index);
     void onAddDateClicked();
     void execute();
+    void onAirportInfoChanged(QList<Airport>, QHash< QString, QList<QString> >);
 
 private:
     void initData();
     void initUI();
     void initConnect();
     void queryAirport();
-    QList<QString> queryRunway(QString);
     //输入check
     bool validate();
+    //重置机场列表
+    void resetAirportComboBox(QList<Airport> apList, QHash< QString, QList<QString> > rwHash, bool isSave = false);
 
 private:
     PgDataBase *pgdb;
-    QList<Airport> aiportList;
+    QList<Airport> airportList;
     QHash< QString, QList<QString> > runwayHash;
 
     QComboBox *airportComboBox;

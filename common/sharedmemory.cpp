@@ -59,11 +59,29 @@ void SharedMemory::queryAirport(){
 
 QList<QString> SharedMemory::queryRunway(QString codeStr){
     QList<QString> runwayList;
+    //查找自动站风表
     QString queryStr = QString("select distinct runwayno from %1_automaticwind").arg(codeStr);
     QList<QVariant> resList = pgDb->queryVariant(queryStr);
     int resCount = resList.size();
     for(int i = 0;i < resCount;i++){
         runwayList.append(resList[i].toString());
     }
+    //查找温度气压表
+    queryStr = QString("select distinct runwayno from %1_automatictemperature").arg(codeStr);
+    resList = pgDb->queryVariant(queryStr);
+    resCount = resList.size();
+    for(int i = 0;i < resCount;i++){
+        if(!runwayList.contains(resList[i].toString())){
+            runwayList.append(resList[i].toString());
+        }
+    }
     return runwayList;
+//    QList<QString> runwayList;
+//    QString queryStr = QString("select distinct runwayno from %1_automaticwind").arg(codeStr);
+//    QList<QVariant> resList = pgDb->queryVariant(queryStr);
+//    int resCount = resList.size();
+//    for(int i = 0;i < resCount;i++){
+//        runwayList.append(resList[i].toString());
+//    }
+//    return runwayList;
 }

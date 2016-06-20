@@ -13,6 +13,7 @@ public:
 
 signals:
     void executeFmg(QString code, QString runway, QString fspeed, QString tspeed, QList<QString> years);
+    void executeExport();
 
 private slots:
     void onAirportChanged(const QString &);
@@ -45,6 +46,7 @@ private:
     QGridLayout *dateLayout;
     QList<QCheckBox *> dateCheckBoxList;
     QPushButton *executeButton;
+    QPushButton *exportButton;
 };
 
 #endif // FMGINPUTWIDGET

@@ -17,6 +17,13 @@ FmgResultWidget::~FmgResultWidget(){
         }
         delete fmgControl;
     }
+    if(excelControl != NULL){
+        if(excelControl->isRunning()){
+            excelControl->quit();
+            excelControl->wait();
+        }
+        delete excelControl;
+    }
     delete imageWidget;
     delete imageArea;
 }
@@ -30,6 +37,8 @@ void FmgResultWidget::initData(){
         titleList.append(QString("%1°").arg(i));
     }
     fmgControl = new FmgControl;
+
+    excelControl = new ExcelControl;
 }
 
 void FmgResultWidget::initUI(){
@@ -74,6 +83,8 @@ void FmgResultWidget::initConnect(){
     connect(fmgControl, SIGNAL(sendMessage(int,QString)), this, SLOT(receiveMessage(int,QString)), Qt::QueuedConnection);
     connect(fmgControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
     connect(fmgControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(excelControl, SIGNAL(execute(bool)), this, SLOT(xlsExecute(bool)));
+    connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
 }
 
 void FmgResultWidget::executeFmg(QString code, QString runway, QString fspeed, QString tspeed, QList<QString> years){
@@ -85,6 +96,18 @@ void FmgResultWidget::executeFmg(QString code, QString runway, QString fspeed, Q
     windCountHash.clear();
     fmgControl->setData(code, runway, fspeed, tspeed, years);
     fmgControl->start();
+}
+
+void FmgResultWidget::executeExport(){
+    QString fileName = QFileDialog::getSaveFileName(this, tr("数据导出"), qApp->applicationDirPath(),
+                                                    tr("Excel Files (*.xls *.xlsx)"));
+    if(fileName.isEmpty()){
+        return;
+    }else{
+        excelControl->setExportPath(fileName);
+        excelControl->setTableParam(tableView, tableModel);
+        excelControl->start();
+    }
 }
 
 void FmgResultWidget::receiveMessage(int row, QString year){
@@ -123,6 +146,13 @@ void FmgResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         createCharts();
+    }
+}
+
+void FmgResultWidget::xlsExecute(bool isEnd){
+    if(isEnd){
+        emit setProgressValue(100);
+        QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
     }
 }
 

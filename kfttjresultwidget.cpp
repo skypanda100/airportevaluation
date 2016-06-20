@@ -129,6 +129,9 @@ void KfttjResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         this->createCharts();
+        ///////////////////
+        ExcelControl *excelControl = new ExcelControl(tableView, tableModel);
+        excelControl->start();
     }
 }
 

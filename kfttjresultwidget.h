@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include "model/tablemodel.h"
 #include "control/kfttjcontrol.h"
+#include "control/excelcontrol.h"
 #include "qchartviewer.h"
 #include "chartdir.h"
 

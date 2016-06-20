@@ -40,6 +40,8 @@ bool TableModel::setData(const QModelIndex &index, const QVariant &value, int ro
         }else if(value.toString().compare("1") == 0){
             this->item(index.row(), index.column())->setBackground(QColor(220, 50, 0));
             this->item(index.row(), index.column())->setTextAlignment(Qt::AlignCenter);
+        }else{
+            this->item(index.row(), index.column())->setBackground(QColor(255, 255, 255, 0));
         }
     }
 

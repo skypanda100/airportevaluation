@@ -12,6 +12,8 @@ TARGET = kefeitian
 TEMPLATE = app
 CONFIG += c++11
 
+include($$PWD/xlsx/qtxlsx.pri)
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     database/pgdatabase.cpp \
@@ -39,7 +41,8 @@ SOURCES += main.cpp\
     rckqresultwidget.cpp \
     control/rckqcontrol.cpp \
     airportsetupwidget.cpp \
-    common/sharedmemory.cpp
+    common/sharedmemory.cpp \
+    control/excelcontrol.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -68,7 +71,8 @@ HEADERS  += mainwindow.h \
     rckqresultwidget.h \
     control/rckqcontrol.h \
     airportsetupwidget.h \
-    common/sharedmemory.h
+    common/sharedmemory.h \
+    control/excelcontrol.h
 
 RESOURCES += \
     res.qrc

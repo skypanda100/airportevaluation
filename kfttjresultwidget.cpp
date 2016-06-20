@@ -62,7 +62,7 @@ void KfttjResultWidget::initUI(){
     this->setAutoFillBackground(true);
     this->setPalette(palette);
 
-    tableModel = new TableModel(0, titleList.size(), this);
+    tableModel = new TableModel(0, titleList.size(), this, true);
     int titleCount = titleList.size();
     for(int i = 0;i < titleCount;i++){
         tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);
@@ -129,9 +129,6 @@ void KfttjResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         this->createCharts();
-        ///////////////////
-        ExcelControl *excelControl = new ExcelControl(tableView, tableModel);
-        excelControl->start();
     }
 }
 

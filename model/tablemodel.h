@@ -6,7 +6,7 @@
 class TableModel : public QStandardItemModel{
     Q_OBJECT
 public:
-    TableModel(int, int, QObject *parent = 0);
+    TableModel(int, int, QObject *parent = 0, bool hasColor = false);
     ~TableModel();
 
     bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole);
@@ -14,6 +14,7 @@ public:
 
 private:
     QList<QVariant> m_headerData;
+    bool m_hasColor;
 };
 
 #endif // TABLEMODEL

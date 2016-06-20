@@ -40,7 +40,7 @@ void FmgResultWidget::initUI(){
     this->setPalette(palette);
 
     //表格
-    tableModel = new QStandardItemModel(0, titleList.size(), this);
+    tableModel = new TableModel(0, titleList.size(), this, false);
     int titleCount = titleList.size();
     for(int i = 0;i < titleCount;i++){
         tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);

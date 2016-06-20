@@ -3,9 +3,10 @@
 #include "xlsxformat.h"
 QTXLSX_USE_NAMESPACE
 
-ExcelControl::ExcelControl(QTableView *tableView, TableModel *tableModel, QObject *parent)
-    :m_tableView(tableView)
-    ,m_tableModel(tableModel)
+ExcelControl::ExcelControl(QObject *parent)
+    :m_tableView(NULL)
+    ,m_tableModel(NULL)
+    ,m_path("")
     ,QThread(parent)
 {
 
@@ -15,7 +16,20 @@ ExcelControl::~ExcelControl(){
 
 }
 
+void ExcelControl::setTableParam(const QTableView *tableView, const TableModel *tableModel){
+    this->m_tableView = tableView;
+    this->m_tableModel = tableModel;
+}
+
+void ExcelControl::setExportPath(QString path){
+    this->m_path = path;
+}
+
 void ExcelControl::run(){
+    if(m_tableView == NULL || m_tableModel == NULL){
+        return;
+    }
+
     int rowCount = m_tableModel->rowCount();
     int colCount = m_tableModel->columnCount();
     qDebug() << rowCount << colCount;
@@ -70,10 +84,23 @@ void ExcelControl::run(){
                     xlsx.write(i + 2, j + 1, "", cellFormat);
                 }
             }
+            int progress = (int)((i * colCount + j + 1) / (qreal)(rowCount * colCount) * 100);
+            emit setProgressValue(progress);
         }
     }
     //保存excel
-    xlsx.save();
+    if(m_path.isEmpty()){
+        xlsx.save();
+    }else{
+        xlsx.saveAs(m_path);
+    }
+
+    //初始化
+    m_tableView = NULL;
+    m_tableModel = NULL;
+
+    //发送处理完成的信号
+    emit execute(true);
 
     qDebug() << "excel done";
 }

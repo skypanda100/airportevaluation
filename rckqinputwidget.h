@@ -13,6 +13,7 @@ public:
 
 signals:
     void executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList);
+    void executeExport();
 
 private slots:
     void onAirportChanged(const QString &);
@@ -49,6 +50,7 @@ private:
     QList<QRadioButton *> weatherRadioButtonList;
     QGridLayout *weatherGLayout;
     QPushButton *executeButton;
+    QPushButton *exportButton;
 
 };
 

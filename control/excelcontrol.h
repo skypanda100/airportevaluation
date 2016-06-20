@@ -9,14 +9,22 @@ class ExcelControl : public QThread{
     Q_OBJECT
 
 public:
-    explicit ExcelControl(QTableView *tableView, TableModel *tableModel, QObject *parent = 0);
+    explicit ExcelControl(QObject *parent = 0);
     ~ExcelControl();
 
     void run() Q_DECL_OVERRIDE;
 
+    void setTableParam(const QTableView *tableView, const TableModel *tableModel);
+    void setExportPath(QString path);
+
+signals:
+    void setProgressValue(int);
+    void execute(bool isEnd);
+
 private:
-    QTableView *m_tableView;
-    TableModel *m_tableModel;
+    const QTableView *m_tableView;
+    const TableModel *m_tableModel;
+    QString m_path;
 };
 
 #endif // EXCELCONTROL

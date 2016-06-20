@@ -3,8 +3,10 @@
 
 #include <QtWidgets>
 #include "control/rckqcontrol.h"
+#include "control/excelcontrol.h"
 #include "qchartviewer.h"
 #include "chartdir.h"
+#include "model/tablemodel.h"
 
 class RckqResultWidget : public QSplitter{
     Q_OBJECT
@@ -17,8 +19,10 @@ signals:
 
 public slots:
     void executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList);
+    void executeExport();
     void receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr);
     void execute(bool);
+    void xlsExecute(bool);
 
 private:
     void initData();
@@ -27,13 +31,14 @@ private:
     void createCharts();
 
 private:
-    QStandardItemModel *tableModel;
+    TableModel *tableModel;
     QTableView *tableView;
     QScrollArea *imageArea;
     QWidget *imageWidget;
 
     QList<QString> titleList;
     RckqControl *rckqControl;
+    ExcelControl *excelControl;
 
     QHash< QString, QList<QString> > dataHash;
     int m_type;

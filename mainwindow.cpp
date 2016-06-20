@@ -367,6 +367,10 @@ void MainWindow::setupFmg(){
     this->setupFmgInputWidget();
     this->setupFmgResultWidget();
     connect(fmgInputWidget, SIGNAL(executeFmg(QString,QString,QString,QString,QList<QString>)), fmgResultWidget, SLOT(executeFmg(QString,QString,QString,QString,QList<QString>)));
+    connect(fmgInputWidget
+            , SIGNAL(executeExport())
+            , fmgResultWidget
+            , SLOT(executeExport()));
 }
 
 void MainWindow::setupFmgInputWidget(){
@@ -394,6 +398,10 @@ void MainWindow::setupRckq(){
             , SIGNAL(executeRckq(QString,QString,int,int,int,QList<QString>,QList<QString>))
             , rckqResultWidget
             , SLOT(executeRckq(QString,QString,int,int,int,QList<QString>,QList<QString>)));
+    connect(rckqInputWidget
+            , SIGNAL(executeExport())
+            , rckqResultWidget
+            , SLOT(executeExport()));
 }
 
 void MainWindow::setupRckqInputWidget(){

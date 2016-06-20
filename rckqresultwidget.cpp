@@ -20,6 +20,13 @@ RckqResultWidget::~RckqResultWidget(){
         }
         delete rckqControl;
     }
+    if(excelControl != NULL){
+        if(excelControl->isRunning()){
+            excelControl->quit();
+            excelControl->wait();
+        }
+        delete excelControl;
+    }
 }
 
 void RckqResultWidget::initData(){
@@ -32,6 +39,8 @@ void RckqResultWidget::initData(){
     }
 
     rckqControl = new RckqControl;
+
+    excelControl = new ExcelControl;
 }
 
 void RckqResultWidget::initUI(){
@@ -42,7 +51,7 @@ void RckqResultWidget::initUI(){
     this->setPalette(palette);
 
     //表格
-    tableModel = new QStandardItemModel(0, titleList.size(), this);
+    tableModel = new TableModel(0, titleList.size(), this, false);
     int titleCount = titleList.size();
     for(int i = 0;i < titleCount;i++){
         tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);
@@ -78,6 +87,8 @@ void RckqResultWidget::initConnect(){
             , Qt::QueuedConnection);
     connect(rckqControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
     connect(rckqControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(excelControl, SIGNAL(execute(bool)), this, SLOT(xlsExecute(bool)));
+    connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
 }
 
 void RckqResultWidget::executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList){
@@ -94,6 +105,18 @@ void RckqResultWidget::executeRckq(QString code, QString runway, int type, int f
     this->m_thour = thour;
     this->m_dateList = dateList;
     this->m_weatherList = weatherList;
+}
+
+void RckqResultWidget::executeExport(){
+    QString fileName = QFileDialog::getSaveFileName(this, tr("数据导出"), qApp->applicationDirPath(),
+                                                    tr("Excel Files (*.xls *.xlsx)"));
+    if(fileName.isEmpty()){
+        return;
+    }else{
+        excelControl->setExportPath(fileName);
+        excelControl->setTableParam(tableView, tableModel);
+        excelControl->start();
+    }
 }
 
 void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr){
@@ -128,6 +151,13 @@ void RckqResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         createCharts();
+    }
+}
+
+void RckqResultWidget::xlsExecute(bool isEnd){
+    if(isEnd){
+        emit setProgressValue(100);
+        QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
     }
 }
 

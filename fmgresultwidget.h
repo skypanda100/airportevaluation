@@ -5,6 +5,7 @@
 #include "control/fmgcontrol.h"
 #include "qchartviewer.h"
 #include "chartdir.h"
+#include "model/tablemodel.h"
 
 class FmgResultWidget : public QSplitter{
     Q_OBJECT
@@ -33,7 +34,7 @@ private:
     QList<QString> titleList;
     FmgControl *fmgControl;
 
-    QStandardItemModel *tableModel;
+    TableModel *tableModel;
     QTableView *tableView;
     QScrollArea *imageArea;
     QWidget *imageWidget;

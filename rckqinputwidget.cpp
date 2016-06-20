@@ -35,6 +35,7 @@ RckqInputWidget::~RckqInputWidget(){
     }
     delete weatherGLayout;
     delete executeButton;
+    delete exportButton;
 }
 
 void RckqInputWidget::initData(){
@@ -130,13 +131,16 @@ void RckqInputWidget::initUI(){
     QGroupBox *weatherGroup = new QGroupBox;
     weatherGroup->setTitle("气象要素");
     weatherGroup->setLayout(weatherGLayout);
-    //执行按钮
+    //按钮
     executeButton = new QPushButton;
     executeButton->setText("开始");
 
+    exportButton = new QPushButton;
+    exportButton->setText("导出");
+
     QHBoxLayout *executeLayout = new QHBoxLayout;
-    executeLayout->addStretch(1);
     executeLayout->addWidget(executeButton);
+    executeLayout->addWidget(exportButton);
 
     //主界面
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -158,6 +162,7 @@ void RckqInputWidget::initConnect(){
             , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
             , this
             , SLOT(onAirportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >)));
+    connect(exportButton, SIGNAL(clicked()), this, SIGNAL(executeExport()));
 }
 
 /**

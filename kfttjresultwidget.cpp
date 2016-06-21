@@ -11,7 +11,34 @@ KfttjResultWidget::KfttjResultWidget(QWidget *parent)
 KfttjResultWidget::~KfttjResultWidget(){
     delete tableModel;
     delete tableView;
-    delete imageWidget;
+    if(nkfttjChartView->getChart() != NULL){
+        delete nkfttjChartView->getChart();
+    }
+    delete nkfttjChartView;
+    if(kftyfbChartView->getChart() != NULL){
+        delete kftyfbChartView->getChart();
+    }
+    delete kftyfbChartView;
+    if(zlwzdChartView->getChart() != NULL){
+        delete zlwzdChartView->getChart();
+    }
+    delete zlwzdChartView;
+    if(xzkfnfbChartView->getChart() != NULL){
+        delete xzkfnfbChartView->getChart();
+    }
+    delete xzkfnfbChartView;
+    if(bkfnfbChartView->getChart() != NULL){
+        delete bkfnfbChartView->getChart();
+    }
+    delete bkfnfbChartView;
+    if(xzkfyfbChartView->getChart() != NULL){
+        delete xzkfyfbChartView->getChart();
+    }
+    delete xzkfyfbChartView;
+    if(bkfyfbChartView->getChart() != NULL){
+        delete bkfyfbChartView->getChart();
+    }
+    delete bkfyfbChartView;
     delete imageArea;
     if(kfttjControl != NULL){
         if(kfttjControl->isRunning()){
@@ -74,7 +101,7 @@ void KfttjResultWidget::initUI(){
     this->setOrientation(Qt::Vertical);
     this->addWidget(tableView);
     //调整列宽
-    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+//    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     imageArea = new QScrollArea;
     QPalette imagePalette;
@@ -82,7 +109,42 @@ void KfttjResultWidget::initUI(){
     imageArea->setAutoFillBackground(true);
     imageArea->setPalette(imagePalette);
     imageArea->setContentsMargins(5, 5, 5, 5);
-    imageWidget = new QWidget;
+    QWidget *imageWidget = new QWidget;
+    QHBoxLayout *imageLayout = new QHBoxLayout;
+    imageWidget->setLayout(imageLayout);
+
+    nkfttjChartView = new QChartViewer;
+    kftyfbChartView = new QChartViewer;
+    zlwzdChartView = new QChartViewer;
+    xzkfnfbChartView = new QChartViewer;
+    bkfnfbChartView = new QChartViewer;
+    xzkfyfbChartView = new QChartViewer;
+    bkfyfbChartView = new QChartViewer;
+
+    nkfttjChartView->setFixedSize(300
+                                 , 300);
+    kftyfbChartView->setFixedSize(600
+                                 , 300);
+    zlwzdChartView->setFixedSize(300
+                                , 300);
+    xzkfnfbChartView->setFixedSize(300
+                                  , 300);
+    bkfnfbChartView->setFixedSize(300
+                                 , 300);
+    xzkfyfbChartView->setFixedSize(700
+                                  , 300);
+    bkfyfbChartView->setFixedSize(700
+                                 , 300);
+
+    imageLayout->addWidget(nkfttjChartView);
+    imageLayout->addWidget(kftyfbChartView);
+    imageLayout->addWidget(zlwzdChartView);
+    imageLayout->addWidget(xzkfnfbChartView);
+    imageLayout->addWidget(bkfnfbChartView);
+    imageLayout->addWidget(xzkfyfbChartView);
+    imageLayout->addWidget(bkfyfbChartView);
+
+    imageArea->setWidget(imageWidget);
     this->addWidget(imageArea);
     this->setStretchFactor(0, 1);
 ///////////////////////
@@ -136,34 +198,29 @@ void KfttjResultWidget::createCharts(){
     QHash< QString, QList<float> > kfttjHash = kfttjControl->getKfttjHash();
     QHash< QString, QStringList > xzkfEffectHash = kfttjControl->getXzkfEffectHash();
     QHash< QString, QStringList > bkfEffectHash = kfttjControl->getBkfEffectHash();
-    //布局
-    QHBoxLayout *imageLayout = new QHBoxLayout;
-    imageLayout->setSpacing(5);
 
-    createNkfttjChart(kfttjHash, imageLayout);
-    createKftyfbChart(kfttjHash, imageLayout);
-    createZlwzdChart(kfttjHash, imageLayout);
-    createXzkfNfbChart(xzkfEffectHash, imageLayout);
-    createBkfNfbChart(bkfEffectHash, imageLayout);
-    createXzkfYfbChart(xzkfEffectHash, imageLayout);
-    createBkfYfbChart(bkfEffectHash, imageLayout);
-
-    //设置滚动区域的widget
-    imageWidget->setLayout(imageLayout);
-    imageArea->setWidget(imageWidget);
+    createNkfttjChart(kfttjHash);
+    createKftyfbChart(kfttjHash);
+    createZlwzdChart(kfttjHash);
+    createXzkfNfbChart(xzkfEffectHash);
+    createBkfNfbChart(bkfEffectHash);
+    createXzkfYfbChart(xzkfEffectHash);
+    createBkfYfbChart(bkfEffectHash);
 }
 
 /**
  * @brief KfttjResultWidget::createNkfttjChart
  * 年可飞天统计:采用饼图（要素为完全可飞，限制可飞，不可飞），可以包含几年的数据。
  * @param kfttjHash
- * @param imageLayout
  */
-void KfttjResultWidget::createNkfttjChart(QHash< QString, QList<float> > kfttjHash, QLayout *imageLayout){
+void KfttjResultWidget::createNkfttjChart(QHash< QString, QList<float> > kfttjHash){
+    //删除以前的chart
+    if(nkfttjChartView->getChart() != NULL){
+        delete nkfttjChartView->getChart();
+    }
     //key值
     QList<QString> keyList = kfttjHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *pieChartView = new QChartViewer;
     double datas[] = {0, 0, 0};
     const char *labels[] = {"完全可飞", "限制可飞", "不可飞"};
     int colors[] = {0x329600, 0xffb400, 0xdc3200};
@@ -185,21 +242,22 @@ void KfttjResultWidget::createNkfttjChart(QHash< QString, QList<float> > kfttjHa
         sizeof(labels) / sizeof(labels[0]))));
     pieChart->setColors(Chart::DataColor, IntArray(colors, (int)(sizeof(colors) / sizeof(colors[0]))));
     pieChart->makeChart();
-    pieChartView->setChart(pieChart);
-    imageLayout->addWidget(pieChartView);
+    nkfttjChartView->setChart(pieChart);
 }
 
 /**
  * @brief KfttjResultWidget::createKftyfbChart
  * 采用柱状图（要素为可飞，限制可飞，不可飞，横轴为1到12月，纵轴为绝对数值或者百分比），可以包含几年数据。
  * @param kfttjHash
- * @param imageLayout
  */
-void KfttjResultWidget::createKftyfbChart(QHash< QString, QList<float> > kfttjHash, QLayout *imageLayout){
+void KfttjResultWidget::createKftyfbChart(QHash< QString, QList<float> > kfttjHash){
+    //删除以前的chart
+    if(kftyfbChartView->getChart() != NULL){
+        delete kftyfbChartView->getChart();
+    }
     //key值
     QList<QString> keyList = kfttjHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *xyChartView = new QChartViewer;
 
     double data0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     double data1[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -233,21 +291,22 @@ void KfttjResultWidget::createKftyfbChart(QHash< QString, QList<float> > kfttjHa
     layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
     layer->setDataLabelStyle()->setAlignment(Chart::Center);
     xyChart->makeChart();
-    xyChartView->setChart(xyChart);
-    imageLayout->addWidget(xyChartView);
+    kftyfbChartView->setChart(xyChart);
 }
 
 /**
  * @brief KfttjResultWidget::createZlwzdChart
  * 半天统计占全年自然日数的百分比, 采用饼图(要素为半天,整天,缺测)。
  * @param kfttjHash
- * @param imageLayout
  */
-void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHash, QLayout *imageLayout){
+void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHash){
+    //删除以前的chart
+    if(zlwzdChartView->getChart() != NULL){
+        delete zlwzdChartView->getChart();
+    }
     //key值
     QList<QString> keyList = kfttjHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *pieChartView = new QChartViewer;
     double datas[] = {0, 0, 0};
     const char *labels[] = {"整天", "半天", "缺测"};
     int colors[] = {0x329600, 0xffb400, 0xdc3200};
@@ -274,21 +333,22 @@ void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHas
         sizeof(labels) / sizeof(labels[0]))));
     pieChart->setColors(Chart::DataColor, IntArray(colors, (int)(sizeof(colors) / sizeof(colors[0]))));
     pieChart->makeChart();
-    pieChartView->setChart(pieChart);
-    imageLayout->addWidget(pieChartView);
+    zlwzdChartView->setChart(pieChart);
 }
 
 /**
  * @brief KfttjResultWidget::createXzkfNfbChart
  * 限制可飞的年分布：采用饼图（要素为影响可飞天的各个要素），可以包含几年数据。
  * @param effectHash
- * @param imageLayout
  */
-void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHash){
+    //删除以前的chart
+    if(xzkfnfbChartView->getChart() != NULL){
+        delete xzkfnfbChartView->getChart();
+    }
     //key值
     QList<QString> keyList = effectHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *pieChartView = new QChartViewer;
     QList<QString> effectElementList;
     QList<double> effectCountList;
     for(int i = 0;i < keyCount;i++){
@@ -330,21 +390,22 @@ void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHas
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
     pieChart->makeChart();
-    pieChartView->setChart(pieChart);
-    imageLayout->addWidget(pieChartView);
+    xzkfnfbChartView->setChart(pieChart);
 }
 
 /**
  * @brief KfttjResultWidget::createBkfNfbChart
  * 不可飞的年分布：采用饼图（要素为影响可飞天的各个要素），可以包含几年数据。
  * @param effectHash
- * @param imageLayout
  */
-void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash){
+    //删除以前的chart
+    if(bkfnfbChartView->getChart() != NULL){
+        delete bkfnfbChartView->getChart();
+    }
     //key值
     QList<QString> keyList = effectHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *pieChartView = new QChartViewer;
     QList<QString> effectElementList;
     QList<double> effectCountList;
     for(int i = 0;i < keyCount;i++){
@@ -386,21 +447,22 @@ void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
     pieChart->makeChart();
-    pieChartView->setChart(pieChart);
-    imageLayout->addWidget(pieChartView);
+    bkfnfbChartView->setChart(pieChart);
 }
 
 /**
  * @brief KfttjResultWidget::createXzkfYfbChart
  * 限制可飞的月分布：采用柱状图（要素为影响可飞天的各个要素，横轴为1到12月，纵轴为百分比），可以包含几年数据。
  * @param effectHash
- * @param imageLayout
  */
-void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHash){
+    //删除以前的chart
+    if(xzkfyfbChartView->getChart() != NULL){
+        delete xzkfyfbChartView->getChart();
+    }
     //key值
     QList<QString> keyList = effectHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *xyChartView = new QChartViewer;
     QList<QString> effectElementList;
     for(int i = 0;i < keyCount;i++){
         QString key = keyList[i];
@@ -460,21 +522,22 @@ void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHas
     layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
     layer->setDataLabelStyle()->setAlignment(Chart::Center);
     xyChart->makeChart();
-    xyChartView->setChart(xyChart);
-    imageLayout->addWidget(xyChartView);
+    xzkfyfbChartView->setChart(xyChart);
 }
 
 /**
  * @brief KfttjResultWidget::createBkfYfbChart
  * 不可飞的月分布：采用柱状图（要素为影响可飞天的各个要素，横轴为1到12月，纵轴为百分比），可以包含几年数据。
  * @param effectHash
- * @param imageLayout
  */
-void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash, QLayout *imageLayout){
+void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash){
+    //删除以前的chart
+    if(bkfyfbChartView->getChart() != NULL){
+        delete bkfyfbChartView->getChart();
+    }
     //key值
     QList<QString> keyList = effectHash.keys();
     int keyCount = keyList.size();
-    QChartViewer *xyChartView = new QChartViewer;
     QList<QString> effectElementList;
     for(int i = 0;i < keyCount;i++){
         QString key = keyList[i];
@@ -534,6 +597,5 @@ void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash
     layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
     layer->setDataLabelStyle()->setAlignment(Chart::Center);
     xyChart->makeChart();
-    xyChartView->setChart(xyChart);
-    imageLayout->addWidget(xyChartView);
+    bkfyfbChartView->setChart(xyChart);
 }

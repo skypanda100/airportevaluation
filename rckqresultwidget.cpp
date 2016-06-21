@@ -11,7 +11,10 @@ RckqResultWidget::RckqResultWidget(QWidget *parent)
 RckqResultWidget::~RckqResultWidget(){
     delete tableModel;
     delete tableView;
-    delete imageWidget;
+    if(lineChartView->getChart() != NULL){
+        delete lineChartView->getChart();
+    }
+    delete lineChartView;
     delete imageArea;
     if(rckqControl != NULL){
         if(rckqControl->isRunning()){
@@ -70,8 +73,16 @@ void RckqResultWidget::initUI(){
     imageArea->setAutoFillBackground(true);
     imageArea->setPalette(imagePalette);
     imageArea->setContentsMargins(5, 5, 5, 5);
-    imageWidget = new QWidget;
+    QWidget *imageWidget = new QWidget;
+    QHBoxLayout *imageLayout = new QHBoxLayout;
+    imageWidget->setLayout(imageLayout);
 
+    lineChartView = new QChartViewer;
+    lineChartView->setFixedSize(1200, 360);
+
+    imageLayout->addWidget(lineChartView);
+
+    imageArea->setWidget(imageWidget);
     //纵向布局
     this->setOrientation(Qt::Vertical);
     //添加控件
@@ -164,15 +175,11 @@ void RckqResultWidget::xlsExecute(bool isEnd){
 void RckqResultWidget::createCharts(){
     //颜色
     int colors[] = {0x4D7FBC, 0xC0504D, 0x9BBB59, 0x7E62A1, 0x4BACC6, 0xF79646, 0x244670, 0x772C2A, 0x5F7530, 0x46345C, 0x1F6477, 0xC77F42};
-    //销毁之前的imageWidget
-    if(imageWidget != NULL){
-        delete imageWidget;
-        imageWidget = NULL;
-        imageWidget = new QWidget;
+    //销毁之前的chart
+    if(lineChartView->getChart() != NULL){
+        delete lineChartView->getChart();
     }
-    //布局
-    QHBoxLayout *imageLayout = new QHBoxLayout;
-    imageLayout->setSpacing(5);
+
     //计算x轴上应有的数据数量
     int xDataCount = 0;
     if(m_fhour > m_thour){
@@ -204,7 +211,6 @@ void RckqResultWidget::createCharts(){
     }while(dateTime.secsTo(tdateTime) >= 0);
 
     //make chart
-    QChartViewer *lineChartView = new QChartViewer;
     XYChart *c = new XYChart(1200, 360, Chart::brushedSilverColor(), Chart::Transparent, 2);
     c->setRoundedFrame(0x646464);
     LegendBox *legendBox;
@@ -253,8 +259,4 @@ void RckqResultWidget::createCharts(){
         c->getHeight() - 25);
     c->makeChart();
     lineChartView->setChart(c);
-    imageLayout->addWidget(lineChartView, 1, Qt::AlignHCenter);
-    //设置滚动区域的widget
-    imageWidget->setLayout(imageLayout);
-    imageArea->setWidget(imageWidget);
 }

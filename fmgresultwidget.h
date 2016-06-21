@@ -41,6 +41,8 @@ private:
     TableModel *tableModel;
     QTableView *tableView;
     QScrollArea *imageArea;
+    QList<QChartViewer *> polarChartViewList;
+    QHBoxLayout *imageLayout;
     QWidget *imageWidget;
 
 };

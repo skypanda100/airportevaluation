@@ -24,6 +24,15 @@ FmgResultWidget::~FmgResultWidget(){
         }
         delete excelControl;
     }
+    int polarChartViewCount = polarChartViewList.count();
+    for(int i = polarChartViewCount - 1;i >= 0;i--){
+        QChartViewer *polarChartView = polarChartViewList[i];
+        if(polarChartView->getChart() != NULL){
+            delete polarChartView->getChart();
+        }
+        delete polarChartView;
+    }
+    delete imageLayout;
     delete imageWidget;
     delete imageArea;
 }
@@ -69,7 +78,9 @@ void FmgResultWidget::initUI(){
     imageArea->setPalette(imagePalette);
     imageArea->setContentsMargins(5, 5, 5, 5);
     imageWidget = new QWidget;
-
+    imageLayout = new QHBoxLayout;
+    imageWidget->setLayout(imageLayout);
+    imageArea->setWidget(imageWidget);
     //纵向布局
     this->setOrientation(Qt::Vertical);
     //添加控件
@@ -157,15 +168,28 @@ void FmgResultWidget::xlsExecute(bool isEnd){
 }
 
 void FmgResultWidget::createCharts(){
-    //销毁之前的imageWidget
+    //销毁之前的chartView
+    int polarChartViewCount = polarChartViewList.count();
+    for(int i = polarChartViewCount - 1;i >= 0;i--){
+        QChartViewer *polarChartView = polarChartViewList[i];
+        if(polarChartView->getChart() != NULL){
+            delete polarChartView->getChart();
+        }
+        delete polarChartView;
+    }
+    polarChartViewList.clear();
+    //销毁之前的layout
+    if(imageLayout != NULL){
+        delete imageLayout;
+    }
+    //销毁之前的widget
     if(imageWidget != NULL){
         delete imageWidget;
-        imageWidget = NULL;
-        imageWidget = new QWidget;
     }
     //布局
-    QHBoxLayout *imageLayout = new QHBoxLayout;
-    imageLayout->setSpacing(5);
+    imageLayout = new QHBoxLayout;
+    //widget
+    imageWidget = new QWidget;
     //make chart
     QList<QString> keyList = windHash.keys();
     int keyCount = keyList.size();
@@ -313,9 +337,8 @@ void FmgResultWidget::createCharts(){
         c->makeChart();
         polarChartView->setChart(c);
         imageLayout->addWidget(polarChartView);
+        polarChartViewList.append(polarChartView);
     }
-
-    //设置滚动区域的widget
     imageWidget->setLayout(imageLayout);
     imageArea->setWidget(imageWidget);
 }

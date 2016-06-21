@@ -26,13 +26,13 @@ private:
     void initUI();
     void initConnect();
     void createCharts();
-    void createNkfttjChart(QHash< QString, QList<float> >, QLayout *);
-    void createKftyfbChart(QHash< QString, QList<float> >, QLayout *);
-    void createZlwzdChart(QHash< QString, QList<float> >, QLayout *);
-    void createXzkfNfbChart(QHash< QString, QStringList >, QLayout *);
-    void createBkfNfbChart(QHash< QString, QStringList >, QLayout *);
-    void createXzkfYfbChart(QHash< QString, QStringList >, QLayout *);
-    void createBkfYfbChart(QHash< QString, QStringList >, QLayout *);
+    void createNkfttjChart(QHash< QString, QList<float> >);
+    void createKftyfbChart(QHash< QString, QList<float> >);
+    void createZlwzdChart(QHash< QString, QList<float> >);
+    void createXzkfNfbChart(QHash< QString, QStringList >);
+    void createBkfNfbChart(QHash< QString, QStringList >);
+    void createXzkfYfbChart(QHash< QString, QStringList >);
+    void createBkfYfbChart(QHash< QString, QStringList >);
 
 private:
     QList<QString> titleList;
@@ -40,7 +40,13 @@ private:
     TableModel *tableModel;
     QTableView *tableView;
     QScrollArea *imageArea;
-    QWidget *imageWidget;
+    QChartViewer *nkfttjChartView;
+    QChartViewer *kftyfbChartView;
+    QChartViewer *zlwzdChartView;
+    QChartViewer *xzkfnfbChartView;
+    QChartViewer *bkfnfbChartView;
+    QChartViewer *xzkfyfbChartView;
+    QChartViewer *bkfyfbChartView;
 
     KfttjControl *kfttjControl;
 };

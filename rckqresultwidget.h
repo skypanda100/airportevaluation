@@ -34,7 +34,7 @@ private:
     TableModel *tableModel;
     QTableView *tableView;
     QScrollArea *imageArea;
-    QWidget *imageWidget;
+    QChartViewer *lineChartView;
 
     QList<QString> titleList;
     RckqControl *rckqControl;

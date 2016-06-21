@@ -50,6 +50,7 @@ void ExcelControl::run(){
     cellFormat.setFontSize(9);
 
     //添加标题
+    cellFormat.setPatternBackgroundColor(QColor(0, 176, 200));
     for(int i = 0;i < colCount;i++){
         //获取标题单元格值
         QString headerValue = m_tableModel->headerData(i, Qt::Horizontal).toString();

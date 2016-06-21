@@ -1,4 +1,5 @@
 #include "rckqresultwidget.h"
+#include "exportdialog.h"
 
 RckqResultWidget::RckqResultWidget(QWidget *parent)
     :QSplitter(parent)
@@ -119,15 +120,10 @@ void RckqResultWidget::executeRckq(QString code, QString runway, int type, int f
 }
 
 void RckqResultWidget::executeExport(){
-    QString fileName = QFileDialog::getSaveFileName(this, tr("数据导出"), qApp->applicationDirPath(),
-                                                    tr("Excel Files (*.xls *.xlsx)"));
-    if(fileName.isEmpty()){
-        return;
-    }else{
-        excelControl->setExportPath(fileName);
-        excelControl->setTableParam(tableView, tableModel);
-        excelControl->start();
-    }
+    ExportDialog exportDialog(1);
+    connect(&exportDialog, SIGNAL(exportFiles(QHash< int, QList<QString> >)), this, SLOT(exportFiles(QHash< int, QList<QString> >)));
+    exportDialog.exec();
+    disconnect(&exportDialog, SIGNAL(exportFiles(QHash< int, QList<QString> >)), this, SLOT(exportFiles(QHash< int, QList<QString> >)));
 }
 
 void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr){
@@ -169,6 +165,32 @@ void RckqResultWidget::xlsExecute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
+    }
+}
+
+void RckqResultWidget::exportFiles(QHash< int, QList<QString> > fileHash){
+    QString excelPath("");
+    QList<int> typeList = fileHash.keys();
+    for(int type : typeList){
+        if(type == 0){
+            for(QString filePath : fileHash[type]){
+                excelPath = filePath;
+            }
+        }else{
+            for(QString filePath : fileHash[type]){
+                if(!(filePath.trimmed().isEmpty())){
+                    BaseChart *chart = lineChartView->getChart();
+                    chart->makeChart(filePath.toStdString().c_str());
+                }
+            }
+        }
+    }
+    if(excelPath.isEmpty()){
+        QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
+    }else{
+        excelControl->setExportPath(excelPath);
+        excelControl->setTableParam(tableView, tableModel);
+        excelControl->start();
     }
 }
 

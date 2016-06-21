@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     control/rckqcontrol.cpp \
     airportsetupwidget.cpp \
     common/sharedmemory.cpp \
-    control/excelcontrol.cpp
+    control/excelcontrol.cpp \
+    exportdialog.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -72,7 +73,8 @@ HEADERS  += mainwindow.h \
     control/rckqcontrol.h \
     airportsetupwidget.h \
     common/sharedmemory.h \
-    control/excelcontrol.h
+    control/excelcontrol.h \
+    exportdialog.h
 
 RESOURCES += \
     res.qrc

@@ -1,4 +1,6 @@
 #include "fmgresultwidget.h"
+#include "exportdialog.h"
+
 FmgResultWidget::FmgResultWidget(QWidget *parent)
     :QSplitter(parent)
 {
@@ -110,15 +112,10 @@ void FmgResultWidget::executeFmg(QString code, QString runway, QString fspeed, Q
 }
 
 void FmgResultWidget::executeExport(){
-    QString fileName = QFileDialog::getSaveFileName(this, tr("数据导出"), qApp->applicationDirPath(),
-                                                    tr("Excel Files (*.xls *.xlsx)"));
-    if(fileName.isEmpty()){
-        return;
-    }else{
-        excelControl->setExportPath(fileName);
-        excelControl->setTableParam(tableView, tableModel);
-        excelControl->start();
-    }
+    ExportDialog exportDialog(polarChartViewList.size());
+    connect(&exportDialog, SIGNAL(exportFiles(QHash< int, QList<QString> >)), this, SLOT(exportFiles(QHash< int, QList<QString> >)));
+    exportDialog.exec();
+    disconnect(&exportDialog, SIGNAL(exportFiles(QHash< int, QList<QString> >)), this, SLOT(exportFiles(QHash< int, QList<QString> >)));
 }
 
 void FmgResultWidget::receiveMessage(int row, QString year){
@@ -164,6 +161,35 @@ void FmgResultWidget::xlsExecute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
+    }
+}
+
+void FmgResultWidget::exportFiles(QHash< int, QList<QString> > fileHash){
+    QString excelPath("");
+    QList<int> typeList = fileHash.keys();
+    for(int type : typeList){
+        if(type == 0){
+            for(QString filePath : fileHash[type]){
+                excelPath = filePath;
+            }
+        }else{
+            int fileCount = fileHash[type].size();
+            for(int i = 0;i < fileCount;i++){
+                QString filePath = fileHash[type][i].trimmed();
+                if(!filePath.isEmpty()){
+                    QChartViewer *chartViewer = polarChartViewList[i];
+                    BaseChart *chart = chartViewer->getChart();
+                    chart->makeChart(filePath.toStdString().c_str());
+                }
+            }
+        }
+    }
+    if(excelPath.isEmpty()){
+        QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
+    }else{
+        excelControl->setExportPath(excelPath);
+        excelControl->setTableParam(tableView, tableModel);
+        excelControl->start();
     }
 }
 

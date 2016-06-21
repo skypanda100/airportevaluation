@@ -23,6 +23,7 @@ public slots:
     void receiveMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr);
     void execute(bool);
     void xlsExecute(bool);
+    void exportFiles(QHash< int, QList<QString> >);
 
 private:
     void initData();
@@ -46,6 +47,7 @@ private:
     int m_thour;
     QList<QString> m_dateList;
     QList<QString> m_weatherList;
+
 };
 
 #endif // RCKQRESULTWIDGET

@@ -24,6 +24,7 @@ public slots:
     void receiveMessage(int row, QString year, QList<QString> windCountList);
     void execute(bool);
     void xlsExecute(bool);
+    void exportFiles(QHash< int, QList<QString> >);
 
 private:
     void initData();

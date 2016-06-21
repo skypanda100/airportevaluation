@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     ,sjdrQualityWidget(NULL)
     ,sjdrMainWidget(NULL)
     ,progressBar(NULL)
+    ,kfttjInputDock(NULL)
+    ,kfttjInputWidget(NULL)
     ,kfttjResultWidget(NULL)
     ,fmgInputDock(NULL)
     ,fmgInputWidget(NULL)
@@ -49,6 +51,10 @@ MainWindow::~MainWindow()
 
     if(progressBar != NULL){
         delete progressBar;
+    }
+
+    if(kfttjInputDock != NULL){
+        delete kfttjInputDock;
     }
 
     if(kfttjResultWidget != NULL){
@@ -221,6 +227,10 @@ void MainWindow::onSjdrTriggered(){
         resultWidget->setCurrentWidget(sjdrMainWidget);
     }
     //去除其他模块
+    if(isKfttjInit){
+        this->viewMenu->removeAction(kfttjInputDock->toggleViewAction());
+        kfttjInputDock->setVisible(false);
+    }
     if(isFmgInit){
         this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
         fmgInputDock->setVisible(false);
@@ -238,9 +248,31 @@ void MainWindow::onSjdrTriggered(){
 void MainWindow::onKfttjTriggered(){
     if(!isKfttjInit){
         isKfttjInit = true;
+        kfttjInputDock = new QDockWidget("可飞天统计输入控制", this);
+        kfttjInputDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        this->addDockWidget(Qt::LeftDockWidgetArea, kfttjInputDock);
+        this->viewMenu->addAction(kfttjInputDock->toggleViewAction());
+
         this->setupKfttj();
     }else{
+        kfttjInputDock->setVisible(true);
+        this->viewMenu->addAction(kfttjInputDock->toggleViewAction());
         resultWidget->setCurrentWidget(kfttjResultWidget);
+    }
+    //去除其他模块
+    if(isSjdrInit){
+        this->viewMenu->removeAction(sjdrInputDock->toggleViewAction());
+        this->viewMenu->removeAction(sjdrQualityDock->toggleViewAction());
+        sjdrInputDock->setVisible(false);
+        sjdrQualityDock->setVisible(false);
+    }
+    if(isRckqInit){
+        this->viewMenu->removeAction(rckqInputDock->toggleViewAction());
+        rckqInputDock->setVisible(false);
+    }
+    if(isFmgInit){
+        this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
+        fmgInputDock->setVisible(false);
     }
 }
 
@@ -269,8 +301,12 @@ void MainWindow::onFmgTriggered(){
         sjdrInputDock->setVisible(false);
         sjdrQualityDock->setVisible(false);
     }
+    if(isKfttjInit){
+        this->viewMenu->removeAction(kfttjInputDock->toggleViewAction());
+        kfttjInputDock->setVisible(false);
+    }
     if(isRckqInit){
-       this->viewMenu->removeAction(rckqInputDock->toggleViewAction());
+        this->viewMenu->removeAction(rckqInputDock->toggleViewAction());
         rckqInputDock->setVisible(false);
     }
 }
@@ -299,6 +335,10 @@ void MainWindow::onRckqTriggered(){
         this->viewMenu->removeAction(sjdrQualityDock->toggleViewAction());
         sjdrInputDock->setVisible(false);
         sjdrQualityDock->setVisible(false);
+    }
+    if(isKfttjInit){
+        this->viewMenu->removeAction(kfttjInputDock->toggleViewAction());
+        kfttjInputDock->setVisible(false);
     }
     if(isFmgInit){
         this->viewMenu->removeAction(fmgInputDock->toggleViewAction());
@@ -350,7 +390,21 @@ void MainWindow::setupSjdrResultWidget(){
 }
 
 void MainWindow::setupKfttj(){
+    this->setupKfttjInputWidget();
     this->setupKfttjResultWidget();
+    connect(kfttjInputWidget, SIGNAL(executeKfttj()), kfttjResultWidget, SLOT(executeKfttj()));
+    connect(kfttjInputWidget
+            , SIGNAL(executeExport())
+            , kfttjResultWidget
+            , SLOT(executeExport()));
+}
+
+void MainWindow::setupKfttjInputWidget(){
+    if(kfttjInputWidget != NULL){
+        delete kfttjInputWidget;
+    }
+    kfttjInputWidget = new KfttjInputWidget;
+    kfttjInputDock->setWidget(kfttjInputWidget);
 }
 
 void MainWindow::setupKfttjResultWidget(){

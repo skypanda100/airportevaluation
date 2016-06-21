@@ -2,8 +2,8 @@
 
 ExportDialog::ExportDialog(int chartCount, QWidget *parent)
     :QDialog(parent)
-    ,m_chartCount(chartCount)
 {
+    m_chartCount = chartCount <= 0 ? 1 : chartCount;
     this->initUI();
     this->initConnect();
 }

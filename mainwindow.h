@@ -6,6 +6,7 @@
 #include "sjdrinputwidget.h"
 #include "sjdrqualitywidget.h"
 #include "sjdrmainwidget.h"
+#include "kfttjinputwidget.h"
 #include "kfttjresultwidget.h"
 #include "fmginputwidget.h"
 #include "fmgresultwidget.h"
@@ -47,6 +48,8 @@ private:
     void setupSjdrResultWidget();
     //设置可飞天统计模块区
     void setupKfttj();
+    //设置可飞天统计模块的输入控制区
+    void setupKfttjInputWidget();
     //设置可飞天统计模块的结果区
     void setupKfttjResultWidget();
     //设置风玫瑰模块区
@@ -94,6 +97,8 @@ private:
     SjdrQualityWidget *sjdrQualityWidget;
     SjdrMainWidget *sjdrMainWidget;
 
+    QDockWidget *kfttjInputDock;
+    KfttjInputWidget *kfttjInputWidget;
     KfttjResultWidget *kfttjResultWidget;
 
     QDockWidget *fmgInputDock;

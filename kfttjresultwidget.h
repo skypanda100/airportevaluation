@@ -17,22 +17,26 @@ signals:
     void setProgressValue(int);
 
 public slots:
+    void executeKfttj();
+    void executeExport();
     void receiveMessage(const QString &message, int row, int col, int rows = 1, int cols = 1);
     void receiveMessage(int row, int count);
     void execute(bool);
+    void xlsExecute(bool);
+    void exportFiles(QHash< int, QList<QString> >);
 
 private:
     void initData();
     void initUI();
     void initConnect();
     void createCharts();
-    void createNkfttjChart(QHash< QString, QList<float> >);
-    void createKftyfbChart(QHash< QString, QList<float> >);
-    void createZlwzdChart(QHash< QString, QList<float> >);
-    void createXzkfNfbChart(QHash< QString, QStringList >);
-    void createBkfNfbChart(QHash< QString, QStringList >);
-    void createXzkfYfbChart(QHash< QString, QStringList >);
-    void createBkfYfbChart(QHash< QString, QStringList >);
+    void createNkfttjChart(const QHash< QString, QList<float> >&);
+    void createKftyfbChart(const QHash< QString, QList<float> >&);
+    void createZlwzdChart(const QHash< QString, QList<float> >&);
+    void createXzkfNfbChart(const QHash< QString, QStringList >&);
+    void createBkfNfbChart(const QHash< QString, QStringList >&);
+    void createXzkfYfbChart(const QHash< QString, QStringList >&);
+    void createBkfYfbChart(const QHash< QString, QStringList >&);
 
 private:
     QList<QString> titleList;
@@ -49,6 +53,7 @@ private:
     QChartViewer *bkfyfbChartView;
 
     KfttjControl *kfttjControl;
+    ExcelControl *excelControl;
 };
 
 #endif // KFTTJRESULTWIDGET

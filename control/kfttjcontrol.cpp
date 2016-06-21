@@ -69,6 +69,8 @@ void KfttjControl::initData(){
     bkfEffectHash.clear();
     effectHash.clear();
     resAll.clear();
+    summaryList.clear();
+    extremumList.clear();
 
     jan_day = JAN_DAY_E;
     jan_day_len = sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]);
@@ -96,7 +98,6 @@ void KfttjControl::initData(){
     dec_day_len = sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]);
     half_day = HALF_DAY_E;
     whole_day = WHOLE_DAY_E;
-    qDebug() << jan_day[3];
 }
 
 void KfttjControl::run(){

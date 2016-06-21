@@ -43,7 +43,8 @@ SOURCES += main.cpp\
     airportsetupwidget.cpp \
     common/sharedmemory.cpp \
     control/excelcontrol.cpp \
-    exportdialog.cpp
+    exportdialog.cpp \
+    kfttjinputwidget.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -74,7 +75,8 @@ HEADERS  += mainwindow.h \
     airportsetupwidget.h \
     common/sharedmemory.h \
     control/excelcontrol.h \
-    exportdialog.h
+    exportdialog.h \
+    kfttjinputwidget.h
 
 RESOURCES += \
     res.qrc

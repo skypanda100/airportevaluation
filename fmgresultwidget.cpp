@@ -177,9 +177,13 @@ void FmgResultWidget::exportFiles(QHash< int, QList<QString> > fileHash){
             for(int i = 0;i < fileCount;i++){
                 QString filePath = fileHash[type][i].trimmed();
                 if(!filePath.isEmpty()){
-                    QChartViewer *chartViewer = polarChartViewList[i];
-                    BaseChart *chart = chartViewer->getChart();
-                    chart->makeChart(filePath.toStdString().c_str());
+                    if(polarChartViewList.size() > 0){
+                        QChartViewer *chartViewer = polarChartViewList[i];
+                        BaseChart *chart = chartViewer->getChart();
+                        if(chart != NULL){
+                            chart->makeChart(filePath.toStdString().c_str());
+                        }
+                    }
                 }
             }
         }

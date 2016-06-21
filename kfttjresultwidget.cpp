@@ -1,4 +1,5 @@
 #include "kfttjresultwidget.h"
+#include "exportdialog.h"
 
 KfttjResultWidget::KfttjResultWidget(QWidget *parent)
     :QSplitter(parent)
@@ -47,6 +48,13 @@ KfttjResultWidget::~KfttjResultWidget(){
         }
         delete kfttjControl;
     }
+    if(excelControl != NULL){
+        if(excelControl->isRunning()){
+            excelControl->quit();
+            excelControl->wait();
+        }
+        delete excelControl;
+    }
 }
 
 void KfttjResultWidget::initData(){
@@ -81,6 +89,8 @@ void KfttjResultWidget::initData(){
               << "不可飞"
               << "影响原因";
     kfttjControl = new KfttjControl;
+
+    excelControl = new ExcelControl;
 }
 
 void KfttjResultWidget::initUI(){
@@ -147,7 +157,23 @@ void KfttjResultWidget::initUI(){
     imageArea->setWidget(imageWidget);
     this->addWidget(imageArea);
     this->setStretchFactor(0, 1);
-///////////////////////
+}
+
+void KfttjResultWidget::initConnect(){
+    connect(kfttjControl, SIGNAL(sendMessage(int,int)), this, SLOT(receiveMessage(int,int)), Qt::QueuedConnection);
+    connect(kfttjControl, SIGNAL(sendMessage(QString,int,int,int,int)), this, SLOT(receiveMessage(QString,int,int,int,int)), Qt::QueuedConnection);
+    connect(kfttjControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
+    connect(kfttjControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)), Qt::QueuedConnection);
+    connect(excelControl, SIGNAL(execute(bool)), this, SLOT(xlsExecute(bool)));
+    connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+}
+
+void KfttjResultWidget::executeKfttj(){
+    int rowCount = tableModel->rowCount();
+    for(int i = rowCount - 1;i >= 0;i--){
+        tableModel->removeRow(i);
+    }
+    ///////////////////////
     //查询月总簿表
     QString summaryStartDatetime = "2012-12-31 17:00:00";
     QString summaryEndDatetime = "2013-12-31 16:00:00";
@@ -169,11 +195,11 @@ void KfttjResultWidget::initUI(){
     kfttjControl->start();
 }
 
-void KfttjResultWidget::initConnect(){
-    connect(kfttjControl, SIGNAL(sendMessage(int,int)), this, SLOT(receiveMessage(int,int)), Qt::QueuedConnection);
-    connect(kfttjControl, SIGNAL(sendMessage(QString,int,int,int,int)), this, SLOT(receiveMessage(QString,int,int,int,int)), Qt::QueuedConnection);
-    connect(kfttjControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
-    connect(kfttjControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)), Qt::QueuedConnection);
+void KfttjResultWidget::executeExport(){
+    ExportDialog exportDialog(7);
+    connect(&exportDialog, SIGNAL(exportFiles(QHash< int, QList<QString> >)), this, SLOT(exportFiles(QHash< int, QList<QString> >)));
+    exportDialog.exec();
+    disconnect(&exportDialog, SIGNAL(exportFiles(QHash< int, QList<QString> >)), this, SLOT(exportFiles(QHash< int, QList<QString> >)));
 }
 
 void KfttjResultWidget::receiveMessage(const QString &message, int row, int col, int rows, int cols){
@@ -191,6 +217,66 @@ void KfttjResultWidget::execute(bool isEnd){
     if(isEnd){
         emit setProgressValue(100);
         this->createCharts();
+    }
+}
+
+void KfttjResultWidget::xlsExecute(bool isEnd){
+    if(isEnd){
+        emit setProgressValue(100);
+        QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
+    }
+}
+
+void KfttjResultWidget::exportFiles(QHash<int, QList<QString> > fileHash){
+    QString excelPath("");
+    QList<int> typeList = fileHash.keys();
+    for(int type : typeList){
+        if(type == 0){
+            for(QString filePath : fileHash[type]){
+                excelPath = filePath;
+            }
+        }else{
+            int fileCount = fileHash[type].size();
+            for(int i = 0;i < fileCount;i++){
+                QString filePath = fileHash[type][i].trimmed();
+                if(!filePath.isEmpty()){
+                    BaseChart *baseChart = NULL;
+                    switch(i){
+                    case 0:
+                        baseChart = nkfttjChartView->getChart();
+                        break;
+                    case 1:
+                        baseChart = kftyfbChartView->getChart();
+                        break;
+                    case 2:
+                        baseChart = zlwzdChartView->getChart();
+                        break;
+                    case 3:
+                        baseChart = xzkfnfbChartView->getChart();
+                        break;
+                    case 4:
+                        baseChart = bkfnfbChartView->getChart();
+                        break;
+                    case 5:
+                        baseChart = xzkfyfbChartView->getChart();
+                        break;
+                    case 6:
+                        baseChart = bkfyfbChartView->getChart();
+                        break;
+                    }
+                    if(baseChart != NULL){
+                        baseChart->makeChart(filePath.toStdString().c_str());
+                    }
+                }
+            }
+        }
+    }
+    if(excelPath.isEmpty()){
+        QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
+    }else{
+        excelControl->setExportPath(excelPath);
+        excelControl->setTableParam(tableView, tableModel);
+        excelControl->start();
     }
 }
 
@@ -213,7 +299,7 @@ void KfttjResultWidget::createCharts(){
  * 年可飞天统计:采用饼图（要素为完全可飞，限制可飞，不可飞），可以包含几年的数据。
  * @param kfttjHash
  */
-void KfttjResultWidget::createNkfttjChart(QHash< QString, QList<float> > kfttjHash){
+void KfttjResultWidget::createNkfttjChart(const QHash< QString, QList<float> > &kfttjHash){
     //删除以前的chart
     if(nkfttjChartView->getChart() != NULL){
         delete nkfttjChartView->getChart();
@@ -250,7 +336,7 @@ void KfttjResultWidget::createNkfttjChart(QHash< QString, QList<float> > kfttjHa
  * 采用柱状图（要素为可飞，限制可飞，不可飞，横轴为1到12月，纵轴为绝对数值或者百分比），可以包含几年数据。
  * @param kfttjHash
  */
-void KfttjResultWidget::createKftyfbChart(QHash< QString, QList<float> > kfttjHash){
+void KfttjResultWidget::createKftyfbChart(const QHash< QString, QList<float> > &kfttjHash){
     //删除以前的chart
     if(kftyfbChartView->getChart() != NULL){
         delete kftyfbChartView->getChart();
@@ -299,7 +385,7 @@ void KfttjResultWidget::createKftyfbChart(QHash< QString, QList<float> > kfttjHa
  * 半天统计占全年自然日数的百分比, 采用饼图(要素为半天,整天,缺测)。
  * @param kfttjHash
  */
-void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHash){
+void KfttjResultWidget::createZlwzdChart(const QHash< QString, QList<float> > &kfttjHash){
     //删除以前的chart
     if(zlwzdChartView->getChart() != NULL){
         delete zlwzdChartView->getChart();
@@ -341,7 +427,7 @@ void KfttjResultWidget::createZlwzdChart(QHash< QString, QList<float> > kfttjHas
  * 限制可飞的年分布：采用饼图（要素为影响可飞天的各个要素），可以包含几年数据。
  * @param effectHash
  */
-void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHash){
+void KfttjResultWidget::createXzkfNfbChart(const QHash<QString, QStringList> &effectHash){
     //删除以前的chart
     if(xzkfnfbChartView->getChart() != NULL){
         delete xzkfnfbChartView->getChart();
@@ -398,7 +484,7 @@ void KfttjResultWidget::createXzkfNfbChart(QHash<QString, QStringList> effectHas
  * 不可飞的年分布：采用饼图（要素为影响可飞天的各个要素），可以包含几年数据。
  * @param effectHash
  */
-void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash){
+void KfttjResultWidget::createBkfNfbChart(const QHash<QString, QStringList> &effectHash){
     //删除以前的chart
     if(bkfnfbChartView->getChart() != NULL){
         delete bkfnfbChartView->getChart();
@@ -455,7 +541,7 @@ void KfttjResultWidget::createBkfNfbChart(QHash<QString, QStringList> effectHash
  * 限制可飞的月分布：采用柱状图（要素为影响可飞天的各个要素，横轴为1到12月，纵轴为百分比），可以包含几年数据。
  * @param effectHash
  */
-void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHash){
+void KfttjResultWidget::createXzkfYfbChart(const QHash<QString, QStringList> &effectHash){
     //删除以前的chart
     if(xzkfyfbChartView->getChart() != NULL){
         delete xzkfyfbChartView->getChart();
@@ -530,7 +616,7 @@ void KfttjResultWidget::createXzkfYfbChart(QHash<QString, QStringList> effectHas
  * 不可飞的月分布：采用柱状图（要素为影响可飞天的各个要素，横轴为1到12月，纵轴为百分比），可以包含几年数据。
  * @param effectHash
  */
-void KfttjResultWidget::createBkfYfbChart(QHash<QString, QStringList> effectHash){
+void KfttjResultWidget::createBkfYfbChart(const QHash<QString, QStringList> &effectHash){
     //删除以前的chart
     if(bkfyfbChartView->getChart() != NULL){
         delete bkfyfbChartView->getChart();

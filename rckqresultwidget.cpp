@@ -180,7 +180,9 @@ void RckqResultWidget::exportFiles(QHash< int, QList<QString> > fileHash){
             for(QString filePath : fileHash[type]){
                 if(!(filePath.trimmed().isEmpty())){
                     BaseChart *chart = lineChartView->getChart();
-                    chart->makeChart(filePath.toStdString().c_str());
+                    if(chart != NULL){
+                        chart->makeChart(filePath.toStdString().c_str());
+                    }
                 }
             }
         }

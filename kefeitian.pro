@@ -44,7 +44,9 @@ SOURCES += main.cpp\
     common/sharedmemory.cpp \
     control/excelcontrol.cpp \
     exportdialog.cpp \
-    kfttjinputwidget.cpp
+    kfttjinputwidget.cpp \
+    bean/weatherparam.cpp \
+    bean/weatherparamsetup.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -76,7 +78,9 @@ HEADERS  += mainwindow.h \
     common/sharedmemory.h \
     control/excelcontrol.h \
     exportdialog.h \
-    kfttjinputwidget.h
+    kfttjinputwidget.h \
+    bean/weatherparam.h \
+    bean/weatherparamsetup.h
 
 RESOURCES += \
     res.qrc

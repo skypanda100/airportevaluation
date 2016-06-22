@@ -77,11 +77,11 @@ void ExportDialog::browseClicked(){
     QObject *object = this->sender();
     if(object == dataDefineButton){
         QString filePath = QFileDialog::getSaveFileName(this, tr("数据导出"), qApp->applicationDirPath(),
-                                                            tr("Excel Files (*.xls *.xlsx)"));
+                                                            tr("Excel Files (*.xlsx)"));
         dataDefineEdit->setText(filePath);
     }else{
         QString filePath = QFileDialog::getSaveFileName(this, tr("数据导出"), qApp->applicationDirPath(),
-                                                            tr("Images (*.png *.jpg)"));
+                                                            tr("Images (*.png)"));
         int index = chartButtonList.indexOf((QPushButton *)object);
         chartEditList[index]->setText(filePath);
     }
@@ -113,7 +113,7 @@ bool ExportDialog::validate(){
         }
     }
     if(!dataDefinePath.isEmpty()){
-        QRegExp regExp(".*(\\.[xX][lL][sS][xX]?)$");
+        QRegExp regExp(".*(\\.[xX][lL][sS][xX])$");
         int pos = regExp.indexIn(dataDefinePath);
         if(pos < 0){
             QMessageBox::critical(this, tr("错误提示"), tr("请输入正确的文件路径(文件路径 + 文件名)"));
@@ -126,7 +126,7 @@ bool ExportDialog::validate(){
         QLineEdit *chartEdit = chartEditList[i];
         QString chartPath = chartEdit->text().trimmed();
         if(!chartPath.isEmpty()){
-            QRegExp regExp(".*((\\.[jJ][pP][gG])|(\\.[pP][nN][gG]))$");
+            QRegExp regExp(".*(\\.[pP][nN][gG])$");
             int pos = regExp.indexIn(chartPath);
             if(pos < 0){
                 QMessageBox::critical(this, tr("错误提示"), tr("请输入正确的文件路径(文件路径 + 文件名)"));

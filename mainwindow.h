@@ -13,6 +13,7 @@
 #include "rckqinputwidget.h"
 #include "rckqresultwidget.h"
 #include "airportsetupwidget.h"
+#include "weatherparamsetupwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -71,6 +72,7 @@ private slots:
     void onFmgTriggered();
     void onRckqTriggered();
     void onAirportSetupTriggered();
+    void onWeatherSetupTriggered();
 
 private:
     bool isSjdrInit;

@@ -102,6 +102,7 @@ void MainWindow::initConnect(){
     connect(fmgAction, SIGNAL(triggered()), this, SLOT(onFmgTriggered()));
     connect(rckqAction, SIGNAL(triggered()), this, SLOT(onRckqTriggered()));
     connect(airportAction, SIGNAL(triggered()), this, SLOT(onAirportSetupTriggered()));
+    connect(weatherAction, SIGNAL(triggered()), this, SLOT(onWeatherSetupTriggered()));
 }
 
 void MainWindow::setupCentralWidget(){
@@ -354,6 +355,16 @@ void MainWindow::onAirportSetupTriggered(){
     AirportSetupWidget *airportSetupWidget = new AirportSetupWidget;
     airportSetupWidget->exec();
     delete airportSetupWidget;
+}
+
+/**
+ * @brief MainWindow::onWeatherSetupTriggered
+ * 气象阀值设置模块
+ */
+void MainWindow::onWeatherSetupTriggered(){
+    WeatherParamSetupWidget *weatherParamSetupWidget = new WeatherParamSetupWidget;
+    weatherParamSetupWidget->exec();
+    delete weatherParamSetupWidget;
 }
 
 void MainWindow::setupSjdr(){

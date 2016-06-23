@@ -152,7 +152,7 @@ void MultiWeatherParamWidget::initUI(){
         //group
         QGroupBox *groupBox = new QGroupBox;
         groupBox->setTitle(title);
-        groupBox->setAlignment(Qt::AlignHCenter);
+        groupBox->setAlignment(Qt::AlignLeft);
         groupBox->setLayout(gridLayout);
         //添加group
         scrollLayout->addWidget(groupBox);
@@ -397,7 +397,7 @@ void SingleWeatherParamWidget::initUI(){
         //group
         QGroupBox *groupBox = new QGroupBox;
         groupBox->setTitle(title);
-        groupBox->setAlignment(Qt::AlignHCenter);
+        groupBox->setAlignment(Qt::AlignLeft);
         groupBox->setLayout(gridLayout);
         //添加group
         scrollLayout->addWidget(groupBox);

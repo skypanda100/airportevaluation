@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "database/pgdatabase.h"
+#include "bean/airport.h"
 #include "bean/weatherparam.h"
 
 class KfttjInputWidget : public QWidget{
@@ -16,19 +17,33 @@ signals:
     void executeExport();
 
 private slots:
+    void onAirportChanged(int);
     void onQxysChanged(int);
     void onSlfRadioButtonClicked(bool);
     void execute();
+    void onAirportInfoChanged(QList<Airport>, QHash< QString, QList<QString> >);
 
 private:
     void initData();
     void initUI();
     void initConnect();
+    //查询机场表
+    void queryAirport();
+    //重置机场列表
+    void resetAirportComboBox(QList<Airport> airportList, bool isSave = false);
+    //重置日期
+    void resetDateArea();
 
 private:
+    QList<Airport> airportList;
+    QList<QString> dateList;
+
     PgDataBase *pgDb;
     QHash< int, QList<WeatherParam> > wpHash;
 
+    QComboBox *airportComboBox;
+    QList<QCheckBox *> dateCheckBoxList;
+    QGridLayout *dateLayout;
     QComboBox *qxysComboBox;
     QGroupBox *fqfGroupBox;
     QRadioButton *slfRadioButton;

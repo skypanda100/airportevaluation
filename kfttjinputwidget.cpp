@@ -1,4 +1,5 @@
 #include "kfttjinputwidget.h"
+#include "common/sharedmemory.h"
 
 KfttjInputWidget::KfttjInputWidget(QWidget *parent)
     :QWidget(parent)
@@ -9,6 +10,14 @@ KfttjInputWidget::KfttjInputWidget(QWidget *parent)
 }
 
 KfttjInputWidget::~KfttjInputWidget(){
+    delete airportComboBox;
+    int dateCheckBoxCount = dateCheckBoxList.size();
+    for(int i = 0;i < dateCheckBoxCount;i++){
+        QCheckBox *checkBox = dateCheckBoxList[i];
+        delete checkBox;
+    }
+    dateCheckBoxList.clear();
+    delete dateLayout;
     delete qxysComboBox;
     delete slfRadioButton;
     delete sfCheckBox;
@@ -81,6 +90,27 @@ void KfttjInputWidget::initData(){
 void KfttjInputWidget::initUI(){
     //设置宽度
     this->setMinimumWidth(290);
+    //机场
+    airportComboBox = new QComboBox;
+    queryAirport();
+
+    QVBoxLayout *airportLayout = new QVBoxLayout;
+    airportLayout->addWidget(airportComboBox);
+
+    QGroupBox *airportGroupBox = new QGroupBox;
+    airportGroupBox->setTitle("机场");
+    airportGroupBox->setLayout(airportLayout);
+
+    //日期
+    dateLayout = new QGridLayout;
+
+    QGroupBox *dateGroupBox = new QGroupBox;
+    dateGroupBox->setTitle("日期");
+    dateGroupBox->setLayout(dateLayout);
+
+    if(airportComboBox->count() > 0){
+        onAirportChanged(0);
+    }
     //气象要素
     qxysComboBox = new QComboBox;
     qxysComboBox->insertItem(0, "多要素");
@@ -315,18 +345,111 @@ void KfttjInputWidget::initUI(){
 
     //主界面
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(airportGroupBox);
+    mainLayout->addWidget(dateGroupBox);
     mainLayout->addWidget(qxysGroupBox);
     mainLayout->addLayout(executeLayout);
     mainLayout->addStretch(1);
     this->setLayout(mainLayout);
-
 }
 
 void KfttjInputWidget::initConnect(){
+    connect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
     connect(qxysComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onQxysChanged(int)));
     connect(slfRadioButton, SIGNAL(toggled(bool)), this, SLOT(onSlfRadioButtonClicked(bool)));
     connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
     connect(exportButton, SIGNAL(clicked()), this, SIGNAL(executeExport()));
+    connect(SharedMemory::getInstance()
+            , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
+            , this
+            , SLOT(onAirportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >)));
+}
+
+/**
+ * @brief KfttjInputWidget::queryAirport
+ * 查找机场
+ */
+void KfttjInputWidget::queryAirport(){
+    resetAirportComboBox(SharedMemory::getInstance()->getAirportList(), false);
+}
+
+/**
+ * @brief KfttjInputWidget::onAirportInfoChanged
+ * @param airportList
+ */
+void KfttjInputWidget::onAirportInfoChanged(QList<Airport> airportList, QHash< QString, QList<QString> >){
+    resetAirportComboBox(airportList, true);
+}
+
+void KfttjInputWidget::resetAirportComboBox(QList<Airport> apList, bool isSave){
+    QString currentAirportCode;
+    if(airportList.count() > 0){
+        QString currentAirportText = airportComboBox->currentText();
+        for(Airport airport : airportList){
+            if(currentAirportText.compare(airport.name()) == 0){
+                currentAirportCode = airport.code();
+                break;
+            }
+        }
+    }
+
+    for(int i = airportComboBox->count() - 1;i >= 0;i--){
+        airportComboBox->removeItem(i);
+    }
+
+    this->airportList = apList;
+    int airportCount = airportList.size();
+    for(int i = 0;i < airportCount;i++){
+        airportComboBox->insertItem(i, airportList[i].name());
+    }
+    if(isSave){
+        if(!currentAirportCode.isEmpty()){
+            for(Airport airport : airportList){
+                if(currentAirportCode.compare(airport.code()) == 0){
+                    airportComboBox->setCurrentText(airport.name());
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void KfttjInputWidget::onAirportChanged(int index){
+    dateList.clear();
+    if(index < airportList.count()){
+        Airport airport = airportList[index];
+        QString apCode = airport.code();
+        QString dateSql = QString("select distinct to_char(datetime, 'yyyy') from %1_monthsummary "
+                                     "union "
+                                     "select distinct to_char(datetime, 'yyyy') from %1_extremum").arg(apCode);
+        QList<QVariant> resList = pgDb->queryVariant(dateSql);
+        int resCount = resList.size();
+        for(int i = 0;i < resCount;i++){
+            dateList.append(resList[i].toString());
+        }
+    }
+    qSort(dateList.begin(), dateList.end());
+    resetDateArea();
+}
+
+/**
+ * @brief KfttjInputWidget::resetDateArea
+ * 充值日期区域
+ */
+void KfttjInputWidget::resetDateArea(){
+    int dateCheckBoxCount = dateCheckBoxList.size();
+    for(int i = 0;i < dateCheckBoxCount;i++){
+        QCheckBox *checkBox = dateCheckBoxList[i];
+        delete checkBox;
+    }
+    dateCheckBoxList.clear();
+
+    int dateCount = dateList.size();
+    for(int i = 0;i < dateCount;i++){
+        QCheckBox *checkBox = new QCheckBox(dateList[i]);
+        dateLayout->addWidget(checkBox, i / 3 , i % 3);
+        dateCheckBoxList.append(checkBox);
+    }
 }
 
 void KfttjInputWidget::onQxysChanged(int index){

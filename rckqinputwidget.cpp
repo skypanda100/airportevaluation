@@ -64,7 +64,6 @@ void RckqInputWidget::initUI(){
     airportGroup->setLayout(airportLayout);
     //类型（单日多要素，多日单要素）
     typeComboBox = new QComboBox;
-    typeComboBox->setFixedWidth(170);
     typeComboBox->insertItem(0, "单日多要素");
     typeComboBox->insertItem(1, "多日单要素");
 

@@ -370,7 +370,7 @@ void KfttjControl::analysis(){
             }
         }
         if(canInsertRows){
-            sendMessage(dateCount * elementCount, elementCount);//4为4个气象要素
+            emit sendMessage(dateCount * elementCount, elementCount);//4为4个气象要素
             //日期
             emit sendMessage(currentDateTime_local.toString("yyyy年MM月dd日"), dateCount * elementCount, 0, elementCount, 1);
             //能见度

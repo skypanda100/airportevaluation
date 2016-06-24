@@ -101,9 +101,15 @@ void KfttjControl::initData(){
 }
 
 void KfttjControl::run(){
+    //更新进度
+    emit setProgressValue(1);
+    //初始化
     initData();
+    //查询月总薄及极值
     query();
+    //数据分析
     analysis();
+    //发送执行完成的信号
     emit execute(true);
 }
 

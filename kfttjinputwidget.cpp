@@ -731,7 +731,7 @@ void KfttjInputWidget::execute(){
                 wpList.append(weatherParamList[6]);
             }
         }
-        emit executeKfttj();
+        emit executeKfttj(airportCode, dateList, isMultiWeather, wpList);
     }
 }
 

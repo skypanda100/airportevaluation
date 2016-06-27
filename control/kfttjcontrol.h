@@ -6,6 +6,7 @@
 #include "database/pgdatabase.h"
 #include "bean/monthsummary.h"
 #include "bean/extremum.h"
+#include "bean/weatherparam.h"
 
 class KfttjControl : public QThread{
     Q_OBJECT
@@ -16,6 +17,9 @@ public:
 
     void setSummarySql(QString);
     void setExtremumSql(QString);
+    void setAirportCode(QString);
+    void setMultiWeather(bool);
+    void setWeatherParamList(QList<WeatherParam>);
 
     QHash< QString, QList<float> > getKfttjHash() const;
     QHash< QString, QStringList > getXzkfEffectHash() const;
@@ -47,6 +51,12 @@ private:
     QString guessCloudEvolution(const Extremum &, int);
 
 private:
+    //机场code
+    QString m_airportCode;
+    //是否为多要素
+    bool m_isMultiWeather;
+    //气象要素
+    QList<WeatherParam> m_wpList;
     //白天
     const int *jan_day;
     int jan_day_len;

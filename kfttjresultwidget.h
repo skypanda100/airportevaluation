@@ -2,6 +2,7 @@
 #define KFTTJRESULTWIDGET
 
 #include <QtWidgets>
+#include "bean/weatherparam.h"
 #include "model/tablemodel.h"
 #include "control/kfttjcontrol.h"
 #include "control/excelcontrol.h"
@@ -17,7 +18,7 @@ signals:
     void setProgressValue(int);
 
 public slots:
-    void executeKfttj();
+    void executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);
     void executeExport();
     void receiveMessage(const QString &message, int row, int col, int rows = 1, int cols = 1);
     void receiveMessage(int row, int count);

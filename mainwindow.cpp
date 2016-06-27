@@ -403,7 +403,7 @@ void MainWindow::setupSjdrResultWidget(){
 void MainWindow::setupKfttj(){
     this->setupKfttjInputWidget();
     this->setupKfttjResultWidget();
-    connect(kfttjInputWidget, SIGNAL(executeKfttj()), kfttjResultWidget, SLOT(executeKfttj()));
+    connect(kfttjInputWidget, SIGNAL(executeKfttj(QString,QList<QString>,bool,QList<WeatherParam>)), kfttjResultWidget, SLOT(executeKfttj(QString,QList<QString>,bool,QList<WeatherParam>)));
     connect(kfttjInputWidget
             , SIGNAL(executeExport())
             , kfttjResultWidget

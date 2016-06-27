@@ -1,4 +1,5 @@
 #include "kfttjcontrol.h"
+#include "common/sharedmemory.h"
 
 KfttjControl::KfttjControl(QObject *parent)
     :QThread(parent)
@@ -51,6 +52,18 @@ void KfttjControl::setExtremumSql(QString extremumSql){
     this->m_extremumSql = extremumSql;
 }
 
+void KfttjControl::setAirportCode(QString airportCode){
+    this->m_airportCode = airportCode;
+}
+
+void KfttjControl::setMultiWeather(bool isMultiWeather){
+    this->m_isMultiWeather = isMultiWeather;
+}
+
+void KfttjControl::setWeatherParamList(QList<WeatherParam> wpList){
+    this->m_wpList = wpList;
+}
+
 QHash< QString, QList<float> > KfttjControl::getKfttjHash() const {
     return this->kfttjHash;
 }
@@ -72,32 +85,99 @@ void KfttjControl::initData(){
     summaryList.clear();
     extremumList.clear();
 
-    jan_day = JAN_DAY_E;
-    jan_day_len = sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]);
-    feb_day = FEB_DAY_E;
-    feb_day_len = sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]);
-    mar_day = MAR_DAY_E;
-    mar_day_len = sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]);
-    apr_day = APR_DAY_E;
-    apr_day_len = sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]);
-    may_day = MAY_DAY_E;
-    may_day_len = sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]);
-    jun_day = JUN_DAY_E;
-    jun_day_len = sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]);
-    jul_day = JUL_DAY_E;
-    jul_day_len = sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]);
-    aug_day = AUG_DAY_E;
-    aug_day_len = sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]);
-    sep_day = SEP_DAY_E;
-    sep_day_len = sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]);
-    oct_day = OCT_DAY_E;
-    oct_day_len = sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]);
-    nov_day = NOV_DAY_E;
-    nov_day_len = sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]);
-    dec_day = DEC_DAY_E;
-    dec_day_len = sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]);
-    half_day = HALF_DAY_E;
-    whole_day = WHOLE_DAY_E;
+    QList<Airport> airportList = SharedMemory::getInstance()->getAirportList();
+    Airport currentAirport;
+    for(Airport airport : airportList){
+        if(airport.code().compare(m_airportCode, Qt::CaseInsensitive) == 0){
+            currentAirport = airport;
+            break;
+        }
+    }
+    if(currentAirport.longitude() >= 110){
+        //东经110度以东
+        jan_day = JAN_DAY_E;
+        jan_day_len = sizeof(JAN_DAY_E) / sizeof(JAN_DAY_E[0]);
+        feb_day = FEB_DAY_E;
+        feb_day_len = sizeof(FEB_DAY_E) / sizeof(FEB_DAY_E[0]);
+        mar_day = MAR_DAY_E;
+        mar_day_len = sizeof(MAR_DAY_E) / sizeof(MAR_DAY_E[0]);
+        apr_day = APR_DAY_E;
+        apr_day_len = sizeof(APR_DAY_E) / sizeof(APR_DAY_E[0]);
+        may_day = MAY_DAY_E;
+        may_day_len = sizeof(MAY_DAY_E) / sizeof(MAY_DAY_E[0]);
+        jun_day = JUN_DAY_E;
+        jun_day_len = sizeof(JUN_DAY_E) / sizeof(JUN_DAY_E[0]);
+        jul_day = JUL_DAY_E;
+        jul_day_len = sizeof(JUL_DAY_E) / sizeof(JUL_DAY_E[0]);
+        aug_day = AUG_DAY_E;
+        aug_day_len = sizeof(AUG_DAY_E) / sizeof(AUG_DAY_E[0]);
+        sep_day = SEP_DAY_E;
+        sep_day_len = sizeof(SEP_DAY_E) / sizeof(SEP_DAY_E[0]);
+        oct_day = OCT_DAY_E;
+        oct_day_len = sizeof(OCT_DAY_E) / sizeof(OCT_DAY_E[0]);
+        nov_day = NOV_DAY_E;
+        nov_day_len = sizeof(NOV_DAY_E) / sizeof(NOV_DAY_E[0]);
+        dec_day = DEC_DAY_E;
+        dec_day_len = sizeof(DEC_DAY_E) / sizeof(DEC_DAY_E[0]);
+        half_day = HALF_DAY_E;
+        whole_day = WHOLE_DAY_E;
+    }else if(currentAirport.longitude() < 110 && currentAirport.longitude() >= 95){
+        //东经95度以东~东经110度
+        jan_day = JAN_DAY_M;
+        jan_day_len = sizeof(JAN_DAY_M) / sizeof(JAN_DAY_M[0]);
+        feb_day = FEB_DAY_M;
+        feb_day_len = sizeof(FEB_DAY_M) / sizeof(FEB_DAY_M[0]);
+        mar_day = MAR_DAY_M;
+        mar_day_len = sizeof(MAR_DAY_M) / sizeof(MAR_DAY_M[0]);
+        apr_day = APR_DAY_M;
+        apr_day_len = sizeof(APR_DAY_M) / sizeof(APR_DAY_M[0]);
+        may_day = MAY_DAY_M;
+        may_day_len = sizeof(MAY_DAY_M) / sizeof(MAY_DAY_M[0]);
+        jun_day = JUN_DAY_M;
+        jun_day_len = sizeof(JUN_DAY_M) / sizeof(JUN_DAY_M[0]);
+        jul_day = JUL_DAY_M;
+        jul_day_len = sizeof(JUL_DAY_M) / sizeof(JUL_DAY_M[0]);
+        aug_day = AUG_DAY_M;
+        aug_day_len = sizeof(AUG_DAY_M) / sizeof(AUG_DAY_M[0]);
+        sep_day = SEP_DAY_M;
+        sep_day_len = sizeof(SEP_DAY_M) / sizeof(SEP_DAY_M[0]);
+        oct_day = OCT_DAY_M;
+        oct_day_len = sizeof(OCT_DAY_M) / sizeof(OCT_DAY_M[0]);
+        nov_day = NOV_DAY_M;
+        nov_day_len = sizeof(NOV_DAY_M) / sizeof(NOV_DAY_M[0]);
+        dec_day = DEC_DAY_M;
+        dec_day_len = sizeof(DEC_DAY_M) / sizeof(DEC_DAY_M[0]);
+        half_day = HALF_DAY_M;
+        whole_day = WHOLE_DAY_M;
+    }else{
+        //东经95度以西
+        jan_day = JAN_DAY_W;
+        jan_day_len = sizeof(JAN_DAY_W) / sizeof(JAN_DAY_W[0]);
+        feb_day = FEB_DAY_W;
+        feb_day_len = sizeof(FEB_DAY_W) / sizeof(FEB_DAY_W[0]);
+        mar_day = MAR_DAY_W;
+        mar_day_len = sizeof(MAR_DAY_W) / sizeof(MAR_DAY_W[0]);
+        apr_day = APR_DAY_W;
+        apr_day_len = sizeof(APR_DAY_W) / sizeof(APR_DAY_W[0]);
+        may_day = MAY_DAY_W;
+        may_day_len = sizeof(MAY_DAY_W) / sizeof(MAY_DAY_W[0]);
+        jun_day = JUN_DAY_W;
+        jun_day_len = sizeof(JUN_DAY_W) / sizeof(JUN_DAY_W[0]);
+        jul_day = JUL_DAY_W;
+        jul_day_len = sizeof(JUL_DAY_W) / sizeof(JUL_DAY_W[0]);
+        aug_day = AUG_DAY_W;
+        aug_day_len = sizeof(AUG_DAY_W) / sizeof(AUG_DAY_W[0]);
+        sep_day = SEP_DAY_W;
+        sep_day_len = sizeof(SEP_DAY_W) / sizeof(SEP_DAY_W[0]);
+        oct_day = OCT_DAY_W;
+        oct_day_len = sizeof(OCT_DAY_W) / sizeof(OCT_DAY_W[0]);
+        nov_day = NOV_DAY_W;
+        nov_day_len = sizeof(NOV_DAY_W) / sizeof(NOV_DAY_W[0]);
+        dec_day = DEC_DAY_W;
+        dec_day_len = sizeof(DEC_DAY_W) / sizeof(DEC_DAY_W[0]);
+        half_day = HALF_DAY_W;
+        whole_day = WHOLE_DAY_W;
+    }
 }
 
 void KfttjControl::run(){

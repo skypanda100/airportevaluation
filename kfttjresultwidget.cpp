@@ -168,31 +168,41 @@ void KfttjResultWidget::initConnect(){
     connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
 }
 
-void KfttjResultWidget::executeKfttj(){
+void KfttjResultWidget::executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList){
+    //清除
     int rowCount = tableModel->rowCount();
     for(int i = rowCount - 1;i >= 0;i--){
         tableModel->removeRow(i);
     }
-    ///////////////////////
-    //查询月总簿表
-    QString summaryStartDatetime = "2012-12-31 17:00:00";
-    QString summaryEndDatetime = "2013-12-31 16:00:00";
+    //执行可飞天统计
+    int dateCount = dateList.count();
+    for(int i = 0;i < dateCount;i++){
+        int dateInt = dateList[i].toInt();
+        //查询月总簿表
+        QString summaryStartDatetime = QString("%1-12-31 17:00:00").arg(dateInt - 1);
+        QString summaryEndDatetime = QString("%1-12-31 16:00:00").arg(dateInt);
 
-    QString summarySql = QString("select * from zsdy_monthsummary where datetime >= '%1' and datetime <= '%2' order by datetime")
-            .arg(summaryStartDatetime)
-            .arg(summaryEndDatetime);
+        QString summarySql = QString("select * from %1_monthsummary where datetime >= '%2' and datetime <= '%3' order by datetime")
+                .arg(airportCode)
+                .arg(summaryStartDatetime)
+                .arg(summaryEndDatetime);
 
-    //查询极值表
-    QString extremumStartDatetime = "2013-01-01 00:00:00";
-    QString extremumEndDatetime = "2013-12-31 23:59:59";
+        //查询极值表
+        QString extremumStartDatetime = QString("%1-01-01 00:00:00").arg(dateInt);
+        QString extremumEndDatetime = QString("%1-12-31 23:59:59").arg(dateInt);
 
-    QString extremumSql = QString("select * from zsdy_extremum where datetime >= '%1' and datetime <= '%2' order by datetime")
-            .arg(extremumStartDatetime)
-            .arg(extremumEndDatetime);
+        QString extremumSql = QString("select * from %1_extremum where datetime >= '%2' and datetime <= '%3' order by datetime")
+                .arg(airportCode)
+                .arg(extremumStartDatetime)
+                .arg(extremumEndDatetime);
 
-    kfttjControl->setSummarySql(summarySql);
-    kfttjControl->setExtremumSql(extremumSql);
-    kfttjControl->start();
+        kfttjControl->setSummarySql(summarySql);
+        kfttjControl->setExtremumSql(extremumSql);
+        kfttjControl->setAirportCode(airportCode);
+        kfttjControl->setMultiWeather(isMultiWeather);
+        kfttjControl->setWeatherParamList(wpList);
+        kfttjControl->start();
+    }
 }
 
 void KfttjResultWidget::executeExport(){

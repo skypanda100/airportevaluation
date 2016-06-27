@@ -13,7 +13,7 @@ public:
     ~KfttjInputWidget();
 
 signals:
-    void executeKfttj();
+    void executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);
     void executeExport();
 
 private slots:

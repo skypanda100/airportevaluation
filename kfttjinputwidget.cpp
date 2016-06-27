@@ -122,6 +122,7 @@ void KfttjInputWidget::initUI(){
     fqfGroupBox = new QGroupBox;
     fqfGroupBox->setTitle("非强风");
     fqfGroupBox->setCheckable(true);
+    fqfGroupBox->setChecked(false);
 
     slfRadioButton = new QRadioButton;
     slfRadioButton->setText("矢量风");
@@ -129,10 +130,13 @@ void KfttjInputWidget::initUI(){
 
     sfCheckBox = new QCheckBox;
     sfCheckBox->setText("顺风");
+    sfCheckBox->setChecked(true);
     nfCheckBox = new QCheckBox;
     nfCheckBox->setText("逆风");
+    nfCheckBox->setChecked(true);
     cfCheckBox = new QCheckBox;
     cfCheckBox->setText("侧风");
+    cfCheckBox->setChecked(true);
 
     QGridLayout *fqfGLayout = new QGridLayout;
     fqfGLayout->addWidget(sfCheckBox, 0, 0);
@@ -152,6 +156,7 @@ void KfttjInputWidget::initUI(){
     wdGroupBox = new QGroupBox;
     wdGroupBox->setTitle("温度");
     wdGroupBox->setCheckable(true);
+    wdGroupBox->setChecked(false);
 
     cgwRadioButton = new QRadioButton;
     cgwRadioButton->setText("常规温");
@@ -165,6 +170,7 @@ void KfttjInputWidget::initUI(){
     qyGroupBox = new QGroupBox;
     qyGroupBox->setTitle("气压");
     qyGroupBox->setCheckable(true);
+    qyGroupBox->setChecked(false);
 
     cmqyRadioButton = new QRadioButton;
     cmqyRadioButton->setText("场面气压");
@@ -182,6 +188,7 @@ void KfttjInputWidget::initUI(){
     sdGroupBox = new QGroupBox;
     sdGroupBox->setTitle("湿度");
     sdGroupBox->setCheckable(true);
+    sdGroupBox->setChecked(false);
 
     cgsRadioButton = new QRadioButton;
     cgsRadioButton->setText("常规湿");
@@ -198,6 +205,7 @@ void KfttjInputWidget::initUI(){
     njdGroupBox = new QGroupBox;
     njdGroupBox->setTitle("能见度");
     njdGroupBox->setCheckable(true);
+    njdGroupBox->setChecked(false);
 
     spnjdRadioButton = new QRadioButton;
     spnjdRadioButton->setText("水平能见度");
@@ -211,6 +219,7 @@ void KfttjInputWidget::initUI(){
     yGroupBox = new QGroupBox;
     yGroupBox->setTitle("云");
     yGroupBox->setCheckable(true);
+    yGroupBox->setChecked(false);
 
     ylygRadioButton = new QRadioButton;
     ylygRadioButton->setText("云量云高");
@@ -224,6 +233,7 @@ void KfttjInputWidget::initUI(){
     jsGroupBox = new QGroupBox;
     jsGroupBox->setTitle("降水");
     jsGroupBox->setCheckable(true);
+    jsGroupBox->setChecked(false);
 
     fqjsRadioButton = new QRadioButton;
     fqjsRadioButton->setText("非强降水");
@@ -237,25 +247,35 @@ void KfttjInputWidget::initUI(){
     wxtqGroupBox = new QGroupBox;
     wxtqGroupBox->setTitle("危险天气");
     wxtqGroupBox->setCheckable(true);
+    wxtqGroupBox->setChecked(false);
 
     njyCheckBox = new QCheckBox;
     njyCheckBox->setText("浓积云");
+    njyCheckBox->setChecked(true);
     jyyCheckBox = new QCheckBox;
     jyyCheckBox->setText("积雨云");
+    jyyCheckBox->setChecked(true);
     sdCheckBox = new QCheckBox;
     sdCheckBox->setText("闪电");
+    sdCheckBox->setChecked(true);
     lbCheckBox = new QCheckBox;
     lbCheckBox->setText("雷暴");
+    lbCheckBox->setChecked(true);
     bbCheckBox = new QCheckBox;
     bbCheckBox->setText("冰雹");
+    bbCheckBox->setChecked(true);
     bxCheckBox = new QCheckBox;
     bxCheckBox->setText("飑线");
+    bxCheckBox->setChecked(true);
     ljCheckBox = new QCheckBox;
     ljCheckBox->setText("龙卷");
+    ljCheckBox->setChecked(true);
     scbCheckBox = new QCheckBox;
     scbCheckBox->setText("沙尘暴");
+    scbCheckBox->setChecked(true);
     fqbCheckBox = new QCheckBox;
     fqbCheckBox->setText("风切变");
+    fqbCheckBox->setChecked(true);
 
     QGridLayout *wxtqLayout = new QGridLayout;
     wxtqLayout->addWidget(njyCheckBox, 0, 0);
@@ -474,8 +494,245 @@ void KfttjInputWidget::onSlfRadioButtonClicked(bool isChecked){
     }
 }
 
+bool KfttjInputWidget::validate(){
+    //检查机场
+    if(airportComboBox->count() == 0){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个机场才能进行可飞天统计!\n请在机场设置里添加一个机场.");
+        return false;
+    }
+    //检查日期
+    if(dateCheckBoxList.count() == 0){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个日期才能进行可飞天统计!\n请在数据导入里导入月总簿.");
+        return false;
+    }
+    bool isDateChecked = false;
+    for(QCheckBox *checkBox : dateCheckBoxList){
+        if(checkBox->isChecked()){
+            isDateChecked = true;
+            break;
+        }
+    }
+    if(!isDateChecked){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个日期才能进行可飞天统计!");
+        return false;
+    }
+    //检查气象要素
+    if(qxysComboBox->currentIndex() == 0){
+        bool isQxysChecked = false;
+        //非强风
+        if(fqfGroupBox->isChecked()){
+            if(slfRadioButton->isChecked()){
+                if(sfCheckBox->isChecked() || nfCheckBox->isChecked() || cfCheckBox->isChecked()){
+                    isQxysChecked = true;
+                }
+            }else{
+                isQxysChecked = true;
+            }
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //温度
+        if(wdGroupBox->isChecked()){
+            if(cgwRadioButton->isChecked()){
+                isQxysChecked = true;
+            }
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //气压
+        if(qyGroupBox->isChecked()){
+            isQxysChecked = true;
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //湿度
+        if(sdGroupBox->isChecked()){
+            isQxysChecked = true;
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //能见度
+        if(njdGroupBox->isChecked()){
+            if(spnjdRadioButton->isChecked()){
+                isQxysChecked = true;
+            }
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //云
+        if(yGroupBox->isChecked()){
+            if(ylygRadioButton->isChecked()){
+                isQxysChecked = true;
+            }
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //降水
+        if(jsGroupBox->isChecked()){
+            if(fqjsRadioButton->isChecked()){
+                isQxysChecked = true;
+            }
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        //危险天气
+        if(wxtqGroupBox->isChecked()){
+            if(njyCheckBox->isChecked() || jyyCheckBox->isChecked()
+                    || sdCheckBox->isChecked() || lbCheckBox->isChecked()
+                    || bbCheckBox->isChecked() || bxCheckBox->isChecked()
+                    || ljCheckBox->isChecked() || scbCheckBox->isChecked()
+                    || fqbCheckBox->isChecked()){
+                isQxysChecked = true;
+            }
+        }
+        if(isQxysChecked){
+            return true;
+        }
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个气象要素才能进行可飞天统计!");
+        return false;
+    }
+
+    return true;
+}
+
 void KfttjInputWidget::execute(){
-    emit executeKfttj();
+    if(validate()){
+        //机场
+        QList<Airport> airportList = SharedMemory::getInstance()->getAirportList();
+        QString airportCode = airportList[airportComboBox->currentIndex()].code();
+        //日期
+        QList<QString> dateList;
+        for(QCheckBox *checkBox : dateCheckBoxList){
+            if(checkBox->isChecked()){
+                dateList.append(checkBox->text());
+            }
+        }
+        //气象要素
+        bool isMultiWeather = true;
+        QList<WeatherParam> wpList;
+        if(qxysComboBox->currentIndex() == 0){
+            isMultiWeather = true;
+            QList<WeatherParam> weatherParamList = wpHash[1];
+            //非强风
+            if(fqfGroupBox->isChecked()){
+                if(slfRadioButton->isChecked()){
+                    if(sfCheckBox->isChecked()){
+                        wpList.append(weatherParamList[0]);
+                    }
+                    if(nfCheckBox->isChecked()){
+                        wpList.append(weatherParamList[1]);
+                    }
+                    if(cfCheckBox->isChecked()){
+                        wpList.append(weatherParamList[2]);
+                    }
+                }else{
+                    wpList.append(weatherParamList[3]);
+                }
+            }
+            //温度
+            if(wdGroupBox->isChecked()){
+                if(cgwRadioButton->isChecked()){
+                    wpList.append(weatherParamList[4]);
+                }
+            }
+            //气压
+            if(qyGroupBox->isChecked()){
+                if(cmqyRadioButton->isChecked()){
+                    wpList.append(weatherParamList[5]);
+                }else{
+                    wpList.append(weatherParamList[6]);
+                }
+            }
+            //湿度
+            if(sdGroupBox->isChecked()){
+                if(cgsRadioButton->isChecked()){
+                    wpList.append(weatherParamList[7]);
+                }else{
+                    wpList.append(weatherParamList[8]);
+                }
+            }
+            //能见度
+            if(njdGroupBox->isChecked()){
+                if(spnjdRadioButton->isChecked()){
+                    wpList.append(weatherParamList[9]);
+                }
+            }
+            //云
+            if(yGroupBox->isChecked()){
+                if(ylygRadioButton->isChecked()){
+                    wpList.append(weatherParamList[10]);
+                }
+            }
+            //降水
+            if(jsGroupBox->isChecked()){
+                if(fqjsRadioButton->isChecked()){
+                    wpList.append(weatherParamList[11]);
+                }
+            }
+            //危险天气
+            if(wxtqGroupBox->isChecked()){
+                if(njyCheckBox->isChecked()){
+                    wpList.append(weatherParamList[12]);
+                }
+                if(jyyCheckBox->isChecked()){
+                    wpList.append(weatherParamList[13]);
+                }
+                if(sdCheckBox->isChecked()){
+                    wpList.append(weatherParamList[14]);
+                }
+                if(lbCheckBox->isChecked()){
+                    wpList.append(weatherParamList[15]);
+                }
+                if(bbCheckBox->isChecked()){
+                    wpList.append(weatherParamList[16]);
+                }
+                if(bxCheckBox->isChecked()){
+                    wpList.append(weatherParamList[17]);
+                }
+                if(ljCheckBox->isChecked()){
+                    wpList.append(weatherParamList[18]);
+                }
+                if(scbCheckBox->isChecked()){
+                    wpList.append(weatherParamList[19]);
+                }
+                if(fqbCheckBox->isChecked()){
+                    wpList.append(weatherParamList[20]);
+                }
+            }
+        }else{
+            isMultiWeather = false;
+            QList<WeatherParam> weatherParamList = wpHash[0];
+            if(ssfRadioButton->isChecked()){
+                wpList.append(weatherParamList[0]);
+            }
+            if(snfRadioButton->isChecked()){
+                wpList.append(weatherParamList[1]);
+            }
+            if(scfRadioButton->isChecked()){
+                wpList.append(weatherParamList[2]);
+            }
+            if(sblfRadioButton->isChecked()){
+                wpList.append(weatherParamList[3]);
+            }
+            if(sjgwRadioButton->isChecked()){
+                wpList.append(weatherParamList[4]);
+            }
+            if(sjdwRadioButton->isChecked()){
+                wpList.append(weatherParamList[5]);
+            }
+            if(sqjsRadioButton->isChecked()){
+                wpList.append(weatherParamList[6]);
+            }
+        }
+        emit executeKfttj();
+    }
 }
 
 

@@ -33,6 +33,8 @@ private:
     void resetAirportComboBox(QList<Airport> airportList, bool isSave = false);
     //重置日期
     void resetDateArea();
+    //合法性check
+    bool validate();
 
 private:
     QList<Airport> airportList;

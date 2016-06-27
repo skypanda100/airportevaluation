@@ -7,6 +7,7 @@
 #include "bean/monthsummary.h"
 #include "bean/extremum.h"
 #include "bean/weatherparam.h"
+#include "bean/weatherparamsetup.h"
 
 class KfttjControl : public QThread{
     Q_OBJECT
@@ -40,6 +41,8 @@ private:
     int getHalfOrWholeDay(QDateTime);
     int getExtremumIndex(QDateTime);
     void analysis();
+    QList<QString> getDataFromJson(QString);
+    bool isMatchArgs(float, QString, QString);
 
     /*** 风.非强风模式.矢量风.顺风 ***/
     QString analysisMultiSf(const Monthsummary &, int, int);
@@ -89,7 +92,7 @@ private:
     QString analysisAll(QDateTime, QStringList, int, int);
     void analysisDay(QDateTime, int);
 
-    QString guessVisibilityEvolution(const Extremum &, int);
+    QString guessVisibilityEvolution(const Extremum &, int, QList<QString>);
     QString guessCloudEvolution(const Extremum &, int);
 
 private:
@@ -99,6 +102,8 @@ private:
     bool m_isMultiWeather;
     //气象要素
     QList<WeatherParam> m_wpList;
+    //气象要素阀值
+    QList<WeatherParamSetup> weatherParamSetupList;
     //白天
     const int *jan_day;
     int jan_day_len;

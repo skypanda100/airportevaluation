@@ -35,9 +35,6 @@ KfttjControl::KfttjControl(QObject *parent)
               << "不可飞"
               << "影响原因";
     pgdb = new PgDataBase;
-
-    //需要统计的气象参数个数
-    elementCount = 4 + 1; ////4:能见度,云,侧风,逆风 1:综合
 }
 
 KfttjControl::~KfttjControl(){
@@ -84,6 +81,9 @@ void KfttjControl::initData(){
     resAll.clear();
     summaryList.clear();
     extremumList.clear();
+
+    //需要统计的气象参数个数
+    elementCount = m_wpList.count() + 1;
 
     QList<Airport> airportList = SharedMemory::getInstance()->getAirportList();
     Airport currentAirport;
@@ -178,6 +178,19 @@ void KfttjControl::initData(){
         half_day = HALF_DAY_W;
         whole_day = WHOLE_DAY_W;
     }
+    //气象要素阀值
+    weatherParamSetupList.clear();
+    QString queryStr = QString("select * from weatherparamsetup where code = '%1' order by paramid").arg(currentAirport.code());
+    QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
+    int rowCount = plainModel->rowCount();
+    for(int i = 0;i < rowCount;i++){
+        WeatherParamSetup weatherParamSetup;
+        weatherParamSetup.setCode(plainModel->record(i).value(0).toString());
+        weatherParamSetup.setParamid(plainModel->record(i).value(1).toInt());
+        weatherParamSetup.setLimits(plainModel->record(i).value(2).toString());
+        weatherParamSetupList.append(weatherParamSetup);
+    }
+    delete plainModel;
 }
 
 void KfttjControl::run(){
@@ -399,6 +412,69 @@ bool KfttjControl::isDayTime(QDateTime currentDateTime_utc){
     return canExecute;
 }
 
+QList<QString> KfttjControl::getDataFromJson(QString jsonStr){
+    QList<QString> valueList;
+    QJsonParseError jsonErr;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr.toUtf8(), &jsonErr);
+    if(jsonErr.error == QJsonParseError::NoError){
+        if(!jsonDoc.isEmpty()){
+            if(jsonDoc.isObject()){
+                QJsonObject jobj = jsonDoc.object();
+                QJsonObject::iterator it = jobj.begin();
+                while(it != jobj.end()){
+                    if(QJsonValue::Array == it.value().type()){
+                        QJsonArray array = it.value().toArray();
+                        int subArrayCount = array.count();
+                        for(int i = 0;i < subArrayCount;i++){
+                            QJsonArray subArray = array.at(i).toArray();
+                            valueList.append(subArray.at(0).toString());
+                            valueList.append(subArray.at(1).toString());
+                        }
+                    }
+                    it++;
+                }
+            }
+        }
+    }
+    return valueList;
+}
+
+/**
+ * @brief KfttjControl::isMatchArgs
+ * 判断value是否>=fromStr并且<toStr
+ * @param value
+ * @param fromStr
+ * @param toStr
+ * @return
+ */
+bool KfttjControl::isMatchArgs(float value, QString fromStr, QString toStr){
+    if(fromStr.isEmpty() && toStr.isEmpty()){
+        return true;
+    }else if(!fromStr.isEmpty() && toStr.isEmpty()){
+        float fromValue = fromStr.toFloat();
+        if(value >= fromValue){
+            return true;
+        }else{
+            return false;
+        }
+    }else if(fromStr.isEmpty() && !toStr.isEmpty()){
+        float toValue = toStr.toFloat();
+        if(value < toValue){
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        float fromValue = fromStr.toFloat();
+        float toValue = toStr.toFloat();
+        if(value >= fromValue && value < toValue){
+            return true;
+        }else{
+            return false;
+        }
+    }
+}
+
 /**
  * @brief KfttjControl::getHalfOrWholeDay
  * 判断是否为半天或者整天
@@ -429,7 +505,10 @@ int KfttjControl::getExtremumIndex(QDateTime currentDateTime_utc){
     return index;
 }
 
-//能见度->云->侧风->逆风
+/**
+ * @brief KfttjControl::analysis
+ * 数据分析
+ */
 void KfttjControl::analysis(){
     int summaryCount = summaryList.size();
     int dateCount = 0;
@@ -450,19 +529,16 @@ void KfttjControl::analysis(){
             }
         }
         if(canInsertRows){
-            emit sendMessage(dateCount * elementCount, elementCount);//4为4个气象要素
+            emit sendMessage(dateCount * elementCount, elementCount);
             //日期
             emit sendMessage(currentDateTime_local.toString("yyyy年MM月dd日"), dateCount * elementCount, 0, elementCount, 1);
-            //能见度
-            emit sendMessage("能见度", dateCount * elementCount, 1, 1, 1);
-            //云
-            emit sendMessage("云", dateCount * elementCount + 1, 1, 1, 1);
-            //侧风
-            emit sendMessage("侧风", dateCount * elementCount + 2, 1, 1, 1);
-            //逆风
-            emit sendMessage("逆风", dateCount * elementCount + 3, 1, 1, 1);
+            int weatherParamCount = m_wpList.count();
+            for(int j = 0;j < weatherParamCount;j++){
+                WeatherParam weatherParam = m_wpList[j];
+                emit sendMessage(weatherParam.name(), dateCount * elementCount + j, 1, 1, 1);
+            }
             //综合
-            emit sendMessage("综合", dateCount * elementCount + 4, 1, 1, 1);
+            emit sendMessage("综合", dateCount * elementCount + weatherParamCount, 1, 1, 1);
             //完全可飞
             emit sendMessage("", dateCount * elementCount, titleList.indexOf("完全可飞"), elementCount, 1);
             //限制可飞
@@ -485,16 +561,119 @@ void KfttjControl::analysis(){
         int hour = currentDateTime_utc.toString("h").toInt();
         if(canExecute){
             QStringList results;
-            //能见度.水平能见度
-            results.append(analysisMultiSpnjd(monthsummary, dateCount * elementCount, titleList.indexOf(QString::number(hour))));
-            //云
-            results.append(analysisMultiYlyg(monthsummary, dateCount * elementCount + 1, titleList.indexOf(QString::number(hour))));
-            //风.非强风模式.矢量风.侧风
-            results.append(analysisMultiCf(monthsummary, dateCount * elementCount + 2, titleList.indexOf(QString::number(hour))));
-            //风.非强风模式.矢量风.逆风
-            results.append(analysisMultiNf(monthsummary, dateCount * elementCount + 3, titleList.indexOf(QString::number(hour))));
+            int weatherParamCount = m_wpList.count();
+            for(int j = 0;j < weatherParamCount;j++){
+                WeatherParam weatherParam = m_wpList[j];
+                switch(weatherParam.id()){
+                case 0:
+                    //风.非强风模式.矢量风.顺风
+                    results.append(analysisMultiSf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 1:
+                    //风.非强风模式.矢量风.逆风
+                    results.append(analysisMultiNf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 2:
+                    //风.非强风模式.矢量风.侧风
+                    results.append(analysisMultiCf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 3:
+                    //风.非强风模式.标量风
+                    results.append(analysisMultiBlf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 4:
+                    //温度.常规温
+                    results.append(analysisMultiCgw(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 5:
+                    //气压.场面气压
+                    results.append(analysisMultiCmqy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 6:
+                    //气压.修正海面气压
+                    results.append(analysisMultiXzhmqy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 7:
+                    //湿度.常规湿.比湿
+                    results.append(analysisMultiCgs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 8:
+                    //湿度.极湿.比湿
+                    results.append(analysisMultiJs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 9:
+                    //能见度.水平能见度
+                    results.append(analysisMultiSpnjd(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 10:
+                    //云
+                    results.append(analysisMultiYlyg(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 11:
+                    //降水.非强降水模式
+                    results.append(analysisMultiFqjs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 12:
+                    //危险天气.浓积云
+                    results.append(analysisMultiNjy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 13:
+                    //危险天气.积雨云
+                    results.append(analysisMultiJyy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 14:
+                    //危险天气.闪电
+                    results.append(analysisMultiSd(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 15:
+                    //危险天气.雷暴
+                    results.append(analysisMultiLb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 16:
+                    //危险天气.冰雹
+                    results.append(analysisMultiBb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 17:
+                    //危险天气.飑线
+                    results.append(analysisMultiBx(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 18:
+                    //危险天气.龙卷
+                    results.append(analysisMultiLj(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 19:
+                    //危险天气.沙尘暴
+                    results.append(analysisMultiScb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 20:
+                    //危险天气.风切变
+                    results.append(analysisMultiFqb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    break;
+                case 21:
+                    //风.强风模式.矢量风.顺风
+                    break;
+                case 22:
+                    //风.强风模式.矢量风.逆风
+                    break;
+                case 23:
+                    //风.强风模式.矢量风.侧风
+                    break;
+                case 24:
+                    //风.强风模式.标量风
+                    break;
+                case 25:
+                    //温度.极高温
+                    break;
+                case 26:
+                    //温度.极低温
+                    break;
+                case 27:
+                    //降水.强降水模式
+                    break;
+                }
+            }
             //综合
-            analysisAll(currentDateTime_local, results, dateCount * elementCount + 4, titleList.indexOf(QString::number(hour)));
+            analysisAll(currentDateTime_local, results, dateCount * elementCount + weatherParamCount, titleList.indexOf(QString::number(hour)));
         }else{
             resAll.append(0);
         }
@@ -512,7 +691,7 @@ void KfttjControl::analysis(){
  * @param hour
  * @return
  */
-QString KfttjControl::guessVisibilityEvolution(const Extremum &extremum, int hour){
+QString KfttjControl::guessVisibilityEvolution(const Extremum &extremum, int hour, QList<QString> limitList){
     QString valueStr("");
     QString retStr("");
     QRegExp regExp("(BR|FG)([\\(\\)\\d\\-]*([\\(\\)\\d]+\\-)$)");
@@ -560,11 +739,11 @@ QString KfttjControl::guessVisibilityEvolution(const Extremum &extremum, int hou
             if(pos2 >= 0){
                 QStringList resList = regExp2.capturedTexts();
                 int leadingvisibility = resList[resList.size() - 1].toInt();
-                if(leadingvisibility < 3000){
+                if(isMatchArgs(leadingvisibility, limitList[0], limitList[1])){
                     valueStr = QString("1");
-                }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
+                }else if(isMatchArgs(leadingvisibility, limitList[2], limitList[3])){
                     valueStr = QString("2");
-                }else if(leadingvisibility >= 5000){
+                }else if(isMatchArgs(leadingvisibility, limitList[4], limitList[5])){
                     valueStr = QString("3");
                 }else{
 
@@ -653,7 +832,47 @@ QString KfttjControl::guessCloudEvolution(const Extremum &extremum, int hour){
  * @return
  */
 QString KfttjControl::analysisMultiSf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 0){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float tailspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            tailspeed = qCos(winddirection - 180) * speed;
+        }
+        //顺风
+        if(isMatchArgs(-tailspeed, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(-tailspeed, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(-tailspeed, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -666,6 +885,19 @@ QString KfttjControl::analysisMultiSf(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiNf(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 1){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
     QString windspeedStr = monthsummary.windspeed().trimmed();
     QString gustspeedStr = monthsummary.gustspeed().trimmed();
     QString winddirectionStr = monthsummary.winddirection().trimmed();
@@ -679,11 +911,11 @@ QString KfttjControl::analysisMultiNf(const Monthsummary &monthsummary, int row,
             headspeed = qCos(winddirection - 180) * speed;
         }
         //逆风
-        if(headspeed >= 15){
+        if(isMatchArgs(headspeed, limitList[0], limitList[1])){
             resultStr = QString("1");
-        }else if(headspeed < 15 && headspeed >= 10){
+        }else if(isMatchArgs(headspeed, limitList[2], limitList[3])){
             resultStr = QString("2");
-        }else if(headspeed < 10){
+        }else if(isMatchArgs(headspeed, limitList[4], limitList[5])){
             resultStr = QString("3");
         }else{
 
@@ -705,6 +937,19 @@ QString KfttjControl::analysisMultiNf(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiCf(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 2){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
     QString windspeedStr = monthsummary.windspeed().trimmed();
     QString gustspeedStr = monthsummary.gustspeed().trimmed();
     QString winddirectionStr = monthsummary.winddirection().trimmed();
@@ -718,11 +963,11 @@ QString KfttjControl::analysisMultiCf(const Monthsummary &monthsummary, int row,
             crossspeed = qAbs(qSin(winddirection - 180) * speed);
         }
         //侧风
-        if(crossspeed >= 12){
+        if(isMatchArgs(crossspeed, limitList[0], limitList[1])){
             resultStr = QString("1");
-        }else if(crossspeed < 12 && crossspeed >= 8){
+        }else if(isMatchArgs(crossspeed, limitList[2], limitList[3])){
             resultStr = QString("2");
-        }else if(crossspeed < 8){
+        }else if(isMatchArgs(crossspeed, limitList[4], limitList[5])){
             resultStr = QString("3");
         }else{
 
@@ -743,7 +988,41 @@ QString KfttjControl::analysisMultiCf(const Monthsummary &monthsummary, int row,
  * @return
  */
 QString KfttjControl::analysisMultiBlf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 3){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        //标量风
+        if(isMatchArgs(speed, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(speed, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(speed, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -755,7 +1034,38 @@ QString KfttjControl::analysisMultiBlf(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisMultiCgw(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 4){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 10){
+        return resultStr;
+    }
+
+    QString temperatureStr = monthsummary.temperature().trimmed();
+    if(temperatureStr.compare("") != 0){
+        float temperature = temperatureStr.toFloat();
+        //常规温
+        if(isMatchArgs(temperature, limitList[0], limitList[1]) || isMatchArgs(temperature, limitList[8], limitList[9])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(temperature, limitList[2], limitList[3]) || isMatchArgs(temperature, limitList[6], limitList[7])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(temperature, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -767,7 +1077,38 @@ QString KfttjControl::analysisMultiCgw(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisMultiCmqy(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 5){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 10){
+        return resultStr;
+    }
+
+    QString airdromepressureStr = monthsummary.airdromepressure().trimmed();
+    if(airdromepressureStr.compare("") != 0){
+        float airdromepressure = airdromepressureStr.toFloat();
+        //场面气压
+        if(isMatchArgs(airdromepressure, limitList[0], limitList[1]) || isMatchArgs(airdromepressure, limitList[8], limitList[9])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(airdromepressure, limitList[2], limitList[3]) || isMatchArgs(airdromepressure, limitList[6], limitList[7])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(airdromepressure, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -779,7 +1120,38 @@ QString KfttjControl::analysisMultiCmqy(const Monthsummary &monthsummary, int ro
  * @return
  */
 QString KfttjControl::analysisMultiXzhmqy(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 6){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 10){
+        return resultStr;
+    }
+
+    QString correctedseapressureStr = monthsummary.correctedseapressure().trimmed();
+    if(correctedseapressureStr.compare("") != 0){
+        float correctedseapressure = correctedseapressureStr.toFloat();
+        //修正海面气压
+        if(isMatchArgs(correctedseapressure, limitList[0], limitList[1]) || isMatchArgs(correctedseapressure, limitList[8], limitList[9])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(correctedseapressure, limitList[2], limitList[3]) || isMatchArgs(correctedseapressure, limitList[6], limitList[7])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(correctedseapressure, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -791,7 +1163,71 @@ QString KfttjControl::analysisMultiXzhmqy(const Monthsummary &monthsummary, int 
  * @return
  */
 QString KfttjControl::analysisMultiCgs(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 7){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 10){
+        return resultStr;
+    }
+
+    QString pressureStr = monthsummary.airdromepressure().trimmed();
+    QString humidityStr = monthsummary.relativehumidity().trimmed();
+    QString temperatureStr = monthsummary.temperature().trimmed();
+    if(pressureStr.compare("") != 0 && humidityStr.compare("") != 0 && temperatureStr.compare("") != 0){
+        float pressure = pressureStr.toFloat();
+        float humidity = humidityStr.toFloat();
+        float temperature = temperatureStr.toFloat();
+        double q = 0.0;
+        if(temperature >= -15){
+            double a = 17.269;
+            double b = 35.86;
+            double es0 = 6.1078;
+            double es = qPow(es0, a * temperature / (273.15 + temperature - b));
+            double e = es * humidity;
+            q = 0.622 * e / (pressure - 0.378 * e) * 1000;
+        }else if(temperature < -40){
+            double a = 21.8746;
+            double b = 7.66;
+            double es0 = 6.1078;
+            double es = qPow(es0, a * temperature / (273.15 + temperature - b));
+            double e = es * humidity;
+            q = 0.622 * e / (pressure - 0.378 * e) * 1000;
+        }else{
+            double a_water = 17.269;
+            double b_water = 35.86;
+            double es0_water = 6.1078;
+            double es_water = qPow(es0_water, a_water * temperature / (273.15 + temperature - b_water));
+            double a_ice = 21.8746;
+            double b_ice = 7.66;
+            double es0_ice = 6.1078;
+            double es_ice = qPow(es0_ice, a_ice * temperature / (273.15 + temperature - b_ice));
+            double es = 0.002 * ((80 + 2 * temperature) * es_water - (30 + 2 * temperature) * es_ice);
+            double e = es * humidity;
+            q = 0.622 * e / (pressure - 0.378 * e) * 1000;
+        }
+        //比湿
+        if(isMatchArgs(q, limitList[0], limitList[1]) || isMatchArgs(q, limitList[8], limitList[9])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(q, limitList[2], limitList[3]) || isMatchArgs(q, limitList[6], limitList[7])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(q, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -803,7 +1239,71 @@ QString KfttjControl::analysisMultiCgs(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisMultiJs(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
 
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 8){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString pressureStr = monthsummary.airdromepressure().trimmed();
+    QString humidityStr = monthsummary.relativehumidity().trimmed();
+    QString temperatureStr = monthsummary.temperature().trimmed();
+    if(pressureStr.compare("") != 0 && humidityStr.compare("") != 0 && temperatureStr.compare("") != 0){
+        float pressure = pressureStr.toFloat();
+        float humidity = humidityStr.toFloat();
+        float temperature = temperatureStr.toFloat();
+        double q = 0.0;
+        if(temperature >= -15){
+            double a = 17.269;
+            double b = 35.86;
+            double es0 = 6.1078;
+            double es = qPow(es0, a * temperature / (273.15 + temperature - b));
+            double e = es * humidity;
+            q = 0.622 * e / (pressure - 0.378 * e) * 1000;
+        }else if(temperature < -40){
+            double a = 21.8746;
+            double b = 7.66;
+            double es0 = 6.1078;
+            double es = qPow(es0, a * temperature / (273.15 + temperature - b));
+            double e = es * humidity;
+            q = 0.622 * e / (pressure - 0.378 * e) * 1000;
+        }else{
+            double a_water = 17.269;
+            double b_water = 35.86;
+            double es0_water = 6.1078;
+            double es_water = qPow(es0_water, a_water * temperature / (273.15 + temperature - b_water));
+            double a_ice = 21.8746;
+            double b_ice = 7.66;
+            double es0_ice = 6.1078;
+            double es_ice = qPow(es0_ice, a_ice * temperature / (273.15 + temperature - b_ice));
+            double es = 0.002 * ((80 + 2 * temperature) * es_water - (30 + 2 * temperature) * es_ice);
+            double e = es * humidity;
+            q = 0.622 * e / (pressure - 0.378 * e) * 1000;
+        }
+        //比湿
+        if(isMatchArgs(q, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(q, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(q, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
 }
 
 /**
@@ -816,6 +1316,19 @@ QString KfttjControl::analysisMultiJs(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiSpnjd(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 9){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() == 0){
+        return resultStr;
+    }
+
     QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
     int hour = currentDateTime_utc.toString("h").toInt();
@@ -823,11 +1336,11 @@ QString KfttjControl::analysisMultiSpnjd(const Monthsummary &monthsummary, int r
         resultStr = QString("1");
     }else if(leadingvisibilityStr.compare("") != 0){
         int leadingvisibility = leadingvisibilityStr.toInt();
-        if(leadingvisibility < 3000){
+        if(isMatchArgs(leadingvisibility, limitList[0], limitList[1])){
             resultStr = QString("1");
-        }else if(leadingvisibility >= 3000 && leadingvisibility < 5000){
+        }else if(isMatchArgs(leadingvisibility, limitList[2], limitList[3])){
             resultStr = QString("2");
-        }else if(leadingvisibility >= 5000){
+        }else if(isMatchArgs(leadingvisibility, limitList[4], limitList[5])){
             resultStr = QString("3");
         }else{
 
@@ -839,13 +1352,13 @@ QString KfttjControl::analysisMultiSpnjd(const Monthsummary &monthsummary, int r
             int index = getExtremumIndex(currentDateTime_utc);
             if(index > -1){
                 Extremum extremum = extremumList[index];
-                resultStr = guessVisibilityEvolution(extremum, half_day);
+                resultStr = guessVisibilityEvolution(extremum, half_day, limitList);
             }
         }else if(how == 2){
             int index = getExtremumIndex(currentDateTime_utc);
             if(index > -1){
                 Extremum extremum = extremumList[index];
-                resultStr = guessVisibilityEvolution(extremum, whole_day);
+                resultStr = guessVisibilityEvolution(extremum, whole_day, limitList);
             }
         }
     }
@@ -880,6 +1393,19 @@ QString KfttjControl::analysisMultiSpnjd(const Monthsummary &monthsummary, int r
  */
 QString KfttjControl::analysisMultiYlyg(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 10){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() == 0){
+        return resultStr;
+    }
+
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
     int hour = currentDateTime_utc.toString("h").toInt();
     QString totalcloudcoverStr = monthsummary.totalcloudcover().trimmed();
@@ -923,11 +1449,11 @@ QString KfttjControl::analysisMultiYlyg(const Monthsummary &monthsummary, int ro
             }
 
             if(cloudState > -1){
-                if(cloudState < 600){
+                if(isMatchArgs(cloudState, limitList[0], limitList[1])){
                     resultStr = QString("1");
-                }else if(cloudState < 2500 && cloudState >= 600){
+                }else if(isMatchArgs(cloudState, limitList[2], limitList[3])){
                     resultStr = QString("2");
-                }else if(cloudState >= 2500){
+                }else if(isMatchArgs(cloudState, limitList[4], limitList[5])){
                     resultStr = QString("3");
                 }else{
 
@@ -1018,7 +1544,28 @@ QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int ro
  * @return
  */
 QString KfttjControl::analysisMultiNjy(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QList<QString> cloudStateList;
+    cloudStateList.append(monthsummary.lowcloudstate1());
+    cloudStateList.append(monthsummary.lowcloudstate2());
+    cloudStateList.append(monthsummary.lowcloudstate3());
+    cloudStateList.append(monthsummary.lowcloudstate4());
+    cloudStateList.append(monthsummary.lowcloudstate5());
+    cloudStateList.append(monthsummary.middlecloudstate1());
+    cloudStateList.append(monthsummary.middlecloudstate2());
+    cloudStateList.append(monthsummary.middlecloudstate3());
+    cloudStateList.append(monthsummary.highcloudstate1());
+    cloudStateList.append(monthsummary.highcloudstate2());
+    cloudStateList.append(monthsummary.highcloudstate3());
+    for(QString cloudState : cloudStateList){
+        if(cloudState.indexOf("TCU", 0, Qt::CaseInsensitive) > -1){
+            resultStr = QString("1");
+            break;
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1030,7 +1577,28 @@ QString KfttjControl::analysisMultiNjy(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisMultiJyy(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QList<QString> cloudStateList;
+    cloudStateList.append(monthsummary.lowcloudstate1());
+    cloudStateList.append(monthsummary.lowcloudstate2());
+    cloudStateList.append(monthsummary.lowcloudstate3());
+    cloudStateList.append(monthsummary.lowcloudstate4());
+    cloudStateList.append(monthsummary.lowcloudstate5());
+    cloudStateList.append(monthsummary.middlecloudstate1());
+    cloudStateList.append(monthsummary.middlecloudstate2());
+    cloudStateList.append(monthsummary.middlecloudstate3());
+    cloudStateList.append(monthsummary.highcloudstate1());
+    cloudStateList.append(monthsummary.highcloudstate2());
+    cloudStateList.append(monthsummary.highcloudstate3());
+    for(QString cloudState : cloudStateList){
+        if(cloudState.indexOf("CB", 0, Qt::CaseInsensitive) > -1){
+            resultStr = QString("1");
+            break;
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1042,7 +1610,32 @@ QString KfttjControl::analysisMultiJyy(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisMultiSd(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("TS", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1054,7 +1647,32 @@ QString KfttjControl::analysisMultiSd(const Monthsummary &monthsummary, int row,
  * @return
  */
 QString KfttjControl::analysisMultiLb(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("TS", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1066,7 +1684,32 @@ QString KfttjControl::analysisMultiLb(const Monthsummary &monthsummary, int row,
  * @return
  */
 QString KfttjControl::analysisMultiBb(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("GR", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1078,7 +1721,32 @@ QString KfttjControl::analysisMultiBb(const Monthsummary &monthsummary, int row,
  * @return
  */
 QString KfttjControl::analysisMultiBx(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("SQ", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1090,7 +1758,32 @@ QString KfttjControl::analysisMultiBx(const Monthsummary &monthsummary, int row,
  * @return
  */
 QString KfttjControl::analysisMultiLj(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("FC", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1102,7 +1795,35 @@ QString KfttjControl::analysisMultiLj(const Monthsummary &monthsummary, int row,
  * @return
  */
 QString KfttjControl::analysisMultiScb(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("SS", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }else if(evolution.indexOf("DS", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
 
 /**
@@ -1114,34 +1835,33 @@ QString KfttjControl::analysisMultiScb(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisMultiFqb(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QList<QString> evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+        for(QString evolution : evolutionList){
+            if(evolution.indexOf("WS", 0, Qt::CaseInsensitive) > -1){
+                resultStr = QString("1");
+                break;
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
 
+    return resultStr;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * @brief KfttjControl::analysisAll
@@ -1149,13 +1869,10 @@ QString KfttjControl::analysisMultiFqb(const Monthsummary &monthsummary, int row
  * @return
  */
 QString KfttjControl::analysisAll(QDateTime currentDateTime_local, QStringList results, int row, int col){
-    /***简单这样写，这块得做活***/
     QList<QString> elementList;
-    elementList.append("能见度");
-    elementList.append("云");
-    elementList.append("侧风");
-    elementList.append("逆风");
-    /************************/
+    for(WeatherParam weatherParam : m_wpList){
+        elementList.append(weatherParam.name());
+    }
     QString key = currentDateTime_local.toString("yyyy-MM-dd");
     QStringList xzkfEffectList;
     QStringList bkfEffectList;

@@ -681,7 +681,7 @@ void KfttjControl::analysis(){
         emit setProgressValue((int)(((qreal)(i + 1)/(qreal)summaryCount) * 100));
     }
     //日可飞天统计
-    analysisDay(lastDateTime_local, (dateCount - 1) * elementCount);
+    analysisDay(lastDateTime_local, dateCount * elementCount);
 }
 
 /**
@@ -1611,27 +1611,9 @@ QString KfttjControl::analysisMultiJyy(const Monthsummary &monthsummary, int row
  */
 QString KfttjControl::analysisMultiSd(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("TS", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("TS", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 
@@ -1648,27 +1630,9 @@ QString KfttjControl::analysisMultiSd(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiLb(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("TS", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("TS", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 
@@ -1685,27 +1649,9 @@ QString KfttjControl::analysisMultiLb(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiBb(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("GR", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("GR", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 
@@ -1722,27 +1668,9 @@ QString KfttjControl::analysisMultiBb(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiBx(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("SQ", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("SQ", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 
@@ -1759,27 +1687,9 @@ QString KfttjControl::analysisMultiBx(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiLj(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("FC", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("FC", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 
@@ -1796,30 +1706,11 @@ QString KfttjControl::analysisMultiLj(const Monthsummary &monthsummary, int row,
  */
 QString KfttjControl::analysisMultiScb(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("SS", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }else if(evolution.indexOf("DS", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("SS", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
+    }else if(phenomena.indexOf("DS", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 
@@ -1836,27 +1727,9 @@ QString KfttjControl::analysisMultiScb(const Monthsummary &monthsummary, int row
  */
 QString KfttjControl::analysisMultiFqb(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("3");
-    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
-    if(index > -1){
-        Extremum extremum = extremumList[index];
-        QList<QString> evolutionList;
-        evolutionList.append(extremum.evolution1());
-        evolutionList.append(extremum.evolution2());
-        evolutionList.append(extremum.evolution3());
-        evolutionList.append(extremum.evolution4());
-        evolutionList.append(extremum.evolution5());
-        evolutionList.append(extremum.evolution6());
-        evolutionList.append(extremum.evolution7());
-        evolutionList.append(extremum.evolution8());
-        evolutionList.append(extremum.evolution9());
-        evolutionList.append(extremum.evolution10());
-        for(QString evolution : evolutionList){
-            if(evolution.indexOf("WS", 0, Qt::CaseInsensitive) > -1){
-                resultStr = QString("1");
-                break;
-            }
-        }
+    QString phenomena = monthsummary.phenomena();
+    if(phenomena.indexOf("WS", 0, Qt::CaseInsensitive) > -1){
+        resultStr = QString("1");
     }
     emit sendMessage(resultStr, row, col, 1, 1);
 

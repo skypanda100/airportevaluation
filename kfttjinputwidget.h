@@ -44,7 +44,7 @@ private:
     QHash< int, QList<WeatherParam> > wpHash;
 
     QComboBox *airportComboBox;
-    QList<QCheckBox *> dateCheckBoxList;
+    QList<QRadioButton *> dateRadioButtonList;
     QGridLayout *dateLayout;
     QComboBox *qxysComboBox;
     QGroupBox *fqfGroupBox;

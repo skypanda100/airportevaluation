@@ -40,10 +40,52 @@ private:
     int getHalfOrWholeDay(QDateTime);
     int getExtremumIndex(QDateTime);
     void analysis();
-    QString analysisVisibility(const Monthsummary &, int, int);
-    QString analysisCloud(const Monthsummary &, int, int);
-    QString analysisCrossWind(const Monthsummary &, int, int);
-    QString analysisHeadWind(const Monthsummary &, int, int);
+
+    /*** 风.非强风模式.矢量风.顺风 ***/
+    QString analysisMultiSf(const Monthsummary &, int, int);
+    /*** 风.非强风模式.矢量风.逆风 ***/
+    QString analysisMultiNf(const Monthsummary &, int, int);
+    /*** 风.非强风模式.矢量风.侧风 ***/
+    QString analysisMultiCf(const Monthsummary &, int, int);
+    /*** 风.非强风模式.标量风 ***/
+    QString analysisMultiBlf(const Monthsummary &, int, int);
+    /*** 温度.常规温 ***/
+    QString analysisMultiCgw(const Monthsummary &, int, int);
+    /*** 气压.场面气压 ***/
+    QString analysisMultiCmqy(const Monthsummary &, int, int);
+    /*** 气压.修正海面气压 ***/
+    QString analysisMultiXzhmqy(const Monthsummary &, int, int);
+    /*** 湿度.常规湿.比湿 ***/
+    QString analysisMultiCgs(const Monthsummary &, int, int);
+    /*** 湿度.极湿.比湿 ***/
+    QString analysisMultiJs(const Monthsummary &, int, int);
+    /*** 能见度.水平能见度 ***/
+    QString analysisMultiSpnjd(const Monthsummary &, int, int);
+    /*** 云 ***/
+    QString analysisMultiYlyg(const Monthsummary &, int, int);
+    /*** 降水.非强降水模式 ***/
+    QString analysisMultiFqjs(const Monthsummary &, int, int);
+    /*** 危险天气.浓积云 ***/
+    QString analysisMultiNjy(const Monthsummary &, int, int);
+    /*** 危险天气.积雨云 ***/
+    QString analysisMultiJyy(const Monthsummary &, int, int);
+    /*** 危险天气.闪电 ***/
+    QString analysisMultiSd(const Monthsummary &, int, int);
+    /*** 危险天气.雷暴 ***/
+    QString analysisMultiLb(const Monthsummary &, int, int);
+    /*** 危险天气.冰雹 ***/
+    QString analysisMultiBb(const Monthsummary &, int, int);
+    /*** 危险天气.飑线 ***/
+    QString analysisMultiBx(const Monthsummary &, int, int);
+    /*** 危险天气.龙卷 ***/
+    QString analysisMultiLj(const Monthsummary &, int, int);
+    /*** 危险天气.沙尘暴 ***/
+    QString analysisMultiScb(const Monthsummary &, int, int);
+    /*** 危险天气.风切变 ***/
+    QString analysisMultiFqb(const Monthsummary &, int, int);
+
+
+    /////////
     QString analysisAll(QDateTime, QStringList, int, int);
     void analysisDay(QDateTime, int);
 

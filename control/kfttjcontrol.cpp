@@ -485,14 +485,14 @@ void KfttjControl::analysis(){
         int hour = currentDateTime_utc.toString("h").toInt();
         if(canExecute){
             QStringList results;
-            //能见度
-            results.append(analysisVisibility(monthsummary, dateCount * elementCount, titleList.indexOf(QString::number(hour))));
+            //能见度.水平能见度
+            results.append(analysisMultiSpnjd(monthsummary, dateCount * elementCount, titleList.indexOf(QString::number(hour))));
             //云
-            results.append(analysisCloud(monthsummary, dateCount * elementCount + 1, titleList.indexOf(QString::number(hour))));
-            //侧风
-            results.append(analysisCrossWind(monthsummary, dateCount * elementCount + 2, titleList.indexOf(QString::number(hour))));
-            //逆风
-            results.append(analysisHeadWind(monthsummary, dateCount * elementCount + 3, titleList.indexOf(QString::number(hour))));
+            results.append(analysisMultiYlyg(monthsummary, dateCount * elementCount + 1, titleList.indexOf(QString::number(hour))));
+            //风.非强风模式.矢量风.侧风
+            results.append(analysisMultiCf(monthsummary, dateCount * elementCount + 2, titleList.indexOf(QString::number(hour))));
+            //风.非强风模式.矢量风.逆风
+            results.append(analysisMultiNf(monthsummary, dateCount * elementCount + 3, titleList.indexOf(QString::number(hour))));
             //综合
             analysisAll(currentDateTime_local, results, dateCount * elementCount + 4, titleList.indexOf(QString::number(hour)));
         }else{
@@ -645,11 +645,176 @@ QString KfttjControl::guessCloudEvolution(const Extremum &extremum, int hour){
 }
 
 /**
- * @brief KfttjControl::analysisVisibility
- * 能见度分析
+ * @brief KfttjControl::analysisMultiSf
+ * 风.非强风模式.矢量风.顺风
  * @param monthsummary
+ * @param row
+ * @param col
+ * @return
  */
-QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int row, int col){
+QString KfttjControl::analysisMultiSf(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiNf
+ * 风.非强风模式.矢量风.逆风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiNf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float headspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            headspeed = qCos(winddirection - 180) * speed;
+        }
+        //逆风
+        if(headspeed >= 15){
+            resultStr = QString("1");
+        }else if(headspeed < 15 && headspeed >= 10){
+            resultStr = QString("2");
+        }else if(headspeed < 10){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisMultiCf
+ * 风.非强风模式.矢量风.侧风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiCf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float crossspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            crossspeed = qAbs(qSin(winddirection - 180) * speed);
+        }
+        //侧风
+        if(crossspeed >= 12){
+            resultStr = QString("1");
+        }else if(crossspeed < 12 && crossspeed >= 8){
+            resultStr = QString("2");
+        }else if(crossspeed < 8){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisMultiBlf
+ * 风.非强风模式.标量风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiBlf(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiCgw
+ * 温度.常规温
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiCgw(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiCmqy
+ * 气压.场面气压
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiCmqy(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiXzhmqy
+ * 气压.修正海面气压
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiXzhmqy(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiCgs
+ * 湿度.常规湿.比湿
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiCgs(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiJs
+ * 湿度.极湿.比湿
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiJs(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiSpnjd
+ * 能见度.水平能见度
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiSpnjd(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
     QString leadingvisibilityStr = monthsummary.leadingvisibility().trimmed();
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
@@ -706,11 +871,14 @@ QString KfttjControl::analysisVisibility(const Monthsummary &monthsummary, int r
 }
 
 /**
- * @brief KfttjControl::analysisCloud
- * 云分析
+ * @brief KfttjControl::analysisMultiYlyg
+ * 云
  * @param monthsummary
+ * @param row
+ * @param col
+ * @return
  */
-QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, int col){
+QString KfttjControl::analysisMultiYlyg(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
     int hour = currentDateTime_utc.toString("h").toInt();
@@ -830,76 +998,150 @@ QString KfttjControl::analysisCloud(const Monthsummary &monthsummary, int row, i
 }
 
 /**
- * @brief KfttjControl::analysisCrossWind
- * 侧风分析
+ * @brief KfttjControl::analysisMultiFqjs
+ * 降水.非强降水模式
  * @param monthsummary
+ * @param row
+ * @param col
+ * @return
  */
-QString KfttjControl::analysisCrossWind(const Monthsummary &monthsummary, int row, int col){
-    QString resultStr("");
-    QString windspeedStr = monthsummary.windspeed().trimmed();
-    QString gustspeedStr = monthsummary.gustspeed().trimmed();
-    QString winddirectionStr = monthsummary.winddirection().trimmed();
-    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
-        float windspeed = windspeedStr.toFloat();
-        float gustspeed = gustspeedStr.toFloat();
-        float speed = qMax(windspeed, gustspeed);
-        float crossspeed = speed;
-        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
-            float winddirection = winddirectionStr.toFloat();
-            crossspeed = qAbs(qSin(winddirection - 180) * speed);
-        }
-        //侧风
-        if(crossspeed >= 12){
-            resultStr = QString("1");
-        }else if(crossspeed < 12 && crossspeed >= 8){
-            resultStr = QString("2");
-        }else if(crossspeed < 8){
-            resultStr = QString("3");
-        }else{
+QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int row, int col){
 
-        }
-    }
-    if(resultStr.compare("") != 0){
-        emit sendMessage(resultStr, row, col, 1, 1);
-    }
-    return resultStr;
 }
 
 /**
- * @brief KfttjControl::analysisHeadWind
- * 逆风分析
+ * @brief KfttjControl::analysisMultiNjy
+ * 危险天气.浓积云
  * @param monthsummary
+ * @param row
+ * @param col
+ * @return
  */
-QString KfttjControl::analysisHeadWind(const Monthsummary &monthsummary, int row, int col){
-    QString resultStr("");
-    QString windspeedStr = monthsummary.windspeed().trimmed();
-    QString gustspeedStr = monthsummary.gustspeed().trimmed();
-    QString winddirectionStr = monthsummary.winddirection().trimmed();
-    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
-        float windspeed = windspeedStr.toFloat();
-        float gustspeed = gustspeedStr.toFloat();
-        float speed = qMax(windspeed, gustspeed);
-        float headspeed = speed;
-        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
-            float winddirection = winddirectionStr.toFloat();
-            headspeed = qCos(winddirection - 180) * speed;
-        }
-        //逆风
-        if(headspeed >= 15){
-            resultStr = QString("1");
-        }else if(headspeed < 15 && headspeed >= 10){
-            resultStr = QString("2");
-        }else if(headspeed < 10){
-            resultStr = QString("3");
-        }else{
+QString KfttjControl::analysisMultiNjy(const Monthsummary &monthsummary, int row, int col){
 
-        }
-    }
-    if(resultStr.compare("") != 0){
-        emit sendMessage(resultStr, row, col, 1, 1);
-    }
-    return resultStr;
 }
+
+/**
+ * @brief KfttjControl::analysisMultiJyy
+ * 危险天气.积雨云
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiJyy(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiSd
+ * 危险天气.闪电
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiSd(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiLb
+ * 危险天气.雷暴
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiLb(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiBb
+ * 危险天气.冰雹
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiBb(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiBx
+ * 危险天气.飑线
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiBx(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiLj
+ * 危险天气.龙卷
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiLj(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiScb
+ * 危险天气.沙尘暴
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiScb(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
+ * @brief KfttjControl::analysisMultiFqb
+ * 危险天气.风切变
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisMultiFqb(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief KfttjControl::analysisAll

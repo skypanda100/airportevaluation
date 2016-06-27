@@ -86,7 +86,20 @@ private:
     QString analysisMultiScb(const Monthsummary &, int, int);
     /*** 危险天气.风切变 ***/
     QString analysisMultiFqb(const Monthsummary &, int, int);
-
+    /*** 风.强风模式.矢量风.顺风 ***/
+    QString analysisSingleSf(const Monthsummary &, int, int);
+    /*** 风.强风模式.矢量风.逆风 ***/
+    QString analysisSingleNf(const Monthsummary &, int, int);
+    /*** 风.强风模式.矢量风.侧风 ***/
+    QString analysisSingleCf(const Monthsummary &, int, int);
+    /*** 风.强风模式.标量风 ***/
+    QString analysisSingleBlf(const Monthsummary &, int, int);
+    /*** 温度.极高温 ***/
+    QString analysisSingleJgw(const Monthsummary &, int, int);
+    /*** 温度.极低温 ***/
+    QString analysisSingleJdw(const Monthsummary &, int, int);
+    /*** 降水.强降水 ***/
+    QString analysisSingleQjs(const Monthsummary &, int, int);
 
     /////////
     QString analysisAll(QDateTime, QStringList, int, int);

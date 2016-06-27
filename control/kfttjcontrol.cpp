@@ -651,24 +651,31 @@ void KfttjControl::analysis(){
                     break;
                 case 21:
                     //风.强风模式.矢量风.顺风
+                    results.append(analysisSingleSf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 case 22:
                     //风.强风模式.矢量风.逆风
+                    results.append(analysisSingleNf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 case 23:
                     //风.强风模式.矢量风.侧风
+                    results.append(analysisSingleCf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 case 24:
                     //风.强风模式.标量风
+                    results.append(analysisSingleBlf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 case 25:
                     //温度.极高温
+                    results.append(analysisSingleJgw(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 case 26:
                     //温度.极低温
+                    results.append(analysisSingleJdw(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 case 27:
                     //降水.强降水模式
+                    results.append(analysisSingleQjs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
                     break;
                 }
             }
@@ -1737,6 +1744,306 @@ QString KfttjControl::analysisMultiFqb(const Monthsummary &monthsummary, int row
 }
 
 /**
+ * @brief KfttjControl::analysisSingleSf
+ * 风.强风模式.矢量风.顺风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleSf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 21){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float tailspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            tailspeed = qCos(winddirection - 180) * speed;
+        }
+        //顺风
+        if(isMatchArgs(-tailspeed, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(-tailspeed, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(-tailspeed, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisSingleNf
+ * 风.强风模式.矢量风.逆风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleNf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 22){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float headspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            headspeed = qCos(winddirection - 180) * speed;
+        }
+        //逆风
+        if(isMatchArgs(headspeed, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(headspeed, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(headspeed, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisSingleCf
+ * 风.强风模式.矢量风.侧风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleCf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 23){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    QString winddirectionStr = monthsummary.winddirection().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        float crossspeed = speed;
+        if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
+            float winddirection = winddirectionStr.toFloat();
+            crossspeed = qAbs(qSin(winddirection - 180) * speed);
+        }
+        //侧风
+        if(isMatchArgs(crossspeed, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(crossspeed, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(crossspeed, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisSingleBlf
+ * 风.强风模式.标量风
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleBlf(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 24){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString windspeedStr = monthsummary.windspeed().trimmed();
+    QString gustspeedStr = monthsummary.gustspeed().trimmed();
+    if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
+        float windspeed = windspeedStr.toFloat();
+        float gustspeed = gustspeedStr.toFloat();
+        float speed = qMax(windspeed, gustspeed);
+        //标量风
+        if(isMatchArgs(speed, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(speed, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(speed, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisSingleJgw
+ * 温度.极高温
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleJgw(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 25){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString temperatureStr = monthsummary.temperature().trimmed();
+    if(temperatureStr.compare("") != 0){
+        float temperature = temperatureStr.toFloat();
+        //常规温
+        if(isMatchArgs(temperature, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(temperature, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(temperature, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisSingleJdw
+ * 温度.极低温
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleJdw(const Monthsummary &monthsummary, int row, int col){
+    QString resultStr("");
+
+    QList<QString> limitList;
+    for(WeatherParamSetup wpSetup : weatherParamSetupList){
+        if(wpSetup.paramid() == 26){
+            limitList = this->getDataFromJson(wpSetup.limits());
+            break;
+        }
+    }
+
+    if(limitList.count() != 6){
+        return resultStr;
+    }
+
+    QString temperatureStr = monthsummary.temperature().trimmed();
+    if(temperatureStr.compare("") != 0){
+        float temperature = temperatureStr.toFloat();
+        //常规温
+        if(isMatchArgs(temperature, limitList[0], limitList[1])){
+            resultStr = QString("1");
+        }else if(isMatchArgs(temperature, limitList[2], limitList[3])){
+            resultStr = QString("2");
+        }else if(isMatchArgs(temperature, limitList[4], limitList[5])){
+            resultStr = QString("3");
+        }else{
+
+        }
+    }
+    if(resultStr.compare("") != 0){
+        emit sendMessage(resultStr, row, col, 1, 1);
+    }
+    return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisSingleQjs
+ * 降水.强降水
+ * @param monthsummary
+ * @param row
+ * @param col
+ * @return
+ */
+QString KfttjControl::analysisSingleQjs(const Monthsummary &monthsummary, int row, int col){
+
+}
+
+/**
  * @brief KfttjControl::analysisAll
  * 综合所有气象要素进行分析
  * @return
@@ -1890,148 +2197,150 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
     int valueCount = valueStrList.size();
     QString valueStr = valueStrList.join("");
 
-    if(valueCount < minHalfCount){
-        //缺测
-        kfttjHash[kfttjKey] = kfttjValue;
-    }else if(valueCount >= minHalfCount && valueCount < minWholeCount){
-        //半天统计
-        /*
-         * 1.存在一个连续4~6小时均为“完全可飞”的时段，记“0.5个可飞天”
-         * 2.存在一个连续4~6小时均不出现“不可飞”的时段，同时又不满足“0.5个可飞天”的条件，记“0.5个限制可飞天”
-         * 3.既不满足“0.5个可飞天”的条件，又不满足“0.5个限制可飞天” 的条件，记“0.5个不可飞天”
-         */
-        QRegExp halfRegExp1("(3{4,})");
-        QRegExp halfRegExp2("([2|3]{4,})");
-        int halfPos1 = halfRegExp1.indexIn(valueStr);
-        if(halfPos1 >= 0){
-            emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
-            kfttjValue[0] = 0.5;
+    if(m_isMultiWeather){
+        if(valueCount < minHalfCount){
+            //缺测
             kfttjHash[kfttjKey] = kfttjValue;
-        }else{
-            int halfPos2 = halfRegExp2.indexIn(valueStr);
-            if(halfPos2 >= 0){
-                emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
-                kfttjValue[1] = 0.5;
+        }else if(valueCount >= minHalfCount && valueCount < minWholeCount){
+            //半天统计
+            /*
+             * 1.存在一个连续4~6小时均为“完全可飞”的时段，记“0.5个可飞天”
+             * 2.存在一个连续4~6小时均不出现“不可飞”的时段，同时又不满足“0.5个可飞天”的条件，记“0.5个限制可飞天”
+             * 3.既不满足“0.5个可飞天”的条件，又不满足“0.5个限制可飞天” 的条件，记“0.5个不可飞天”
+             */
+            QRegExp halfRegExp1("(3{4,})");
+            QRegExp halfRegExp2("([2|3]{4,})");
+            int halfPos1 = halfRegExp1.indexIn(valueStr);
+            if(halfPos1 >= 0){
+                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                kfttjValue[0] = 0.5;
                 kfttjHash[kfttjKey] = kfttjValue;
-
-                if(effectHash.contains(kfttjKey)){
-                    QStringList xzkfEffectList = effectHash[kfttjKey][0];
-                    emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
-                    xzkfEffectHash[kfttjKey] = xzkfEffectList;
-                }
             }else{
-                emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
-                kfttjValue[2] = 0.5;
-                kfttjHash[kfttjKey] = kfttjValue;
+                int halfPos2 = halfRegExp2.indexIn(valueStr);
+                if(halfPos2 >= 0){
+                    emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                    kfttjValue[1] = 0.5;
+                    kfttjHash[kfttjKey] = kfttjValue;
 
-                if(effectHash.contains(kfttjKey)){
-                    QStringList bkfEffectList = effectHash[kfttjKey][1];
-                    emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
-                    bkfEffectHash[kfttjKey] = bkfEffectList;
-                }
-            }
-        }
-    }else{
-        //整天统计
-        /*
-         * 1.连续7个小时以上均为“完全可飞”，或存在两个及以上4~6小时连续的“完全可飞”时段，记为“1个完全可飞天”
-         * 2.连续7个小时以上无“不可飞”，或存在两个以上4~6小时连续不出现“不可飞”的时段，记为“1个限制可飞天”
-         * 3.仅存在一个连续4~6小时均为“完全可飞”的时段，记为“0.5个完全可飞天”和“0.5个不可飞天”
-         * 4.仅存在一个连续4~6小时不出现“不可飞”的时段，记为“0.5个限制可飞天”和“0.5个不可飞天”
-         * 5.存在一个连续4~6小时均为“完全可飞”的时段和一个连续4~6小时不出现“不可飞”的时段，记为“0.5个完全可飞天”和“0.5个限制可飞天”
-         * 6.没有连续超过4小时不出现“不可飞”的时段，记为“1个不可飞天”
-         */
-        QRegExp wholeRegExp1("(3{7,})|(3{4}[1|2|3]*3{4})");
-        QRegExp wholeRegExp2("([2|3]{7,})|([2|3]{4}[1|2|3]*[2|3]{4})");
-        QRegExp wholeRegExp3("([1|2]|3{,3})*(3{4,6})([1|2]|3{,3})*");
-        QRegExp wholeRegExp4("(1|[2|3]{,3})*([2|3]{4,6})(1|[2|3]{,3})*");
-        QRegExp wholeRegExp5("(3{4}[1|2|3]*[2|3]{4})|([2|3]{4}[1|2|3]*3{4})");
-        QRegExp wholeRegExp6("[2|3]{4,}");
-        int wholePos1 = wholeRegExp1.indexIn(valueStr);
-        if(wholePos1 >= 0){
-            emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
-            kfttjValue[0] = 1;
-            kfttjHash[kfttjKey] = kfttjValue;
-        }else{
-            int wholePos2 = wholeRegExp2.indexIn(valueStr);
-            if(wholePos2 >= 0){
-                emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
-                kfttjValue[1] = 1;
-                kfttjHash[kfttjKey] = kfttjValue;
-
-                if(effectHash.contains(kfttjKey)){
-                    QStringList xzkfEffectList = effectHash[kfttjKey][0];
-                    emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
-                    xzkfEffectHash[kfttjKey] = xzkfEffectList;
-                }
-            }else{
-                int wholePos3 = wholeRegExp3.indexIn(valueStr);
-                if(wholePos3 >= 0){
-                    emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                    if(effectHash.contains(kfttjKey)){
+                        QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                        emit sendMessage(xzkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                        xzkfEffectHash[kfttjKey] = xzkfEffectList;
+                    }
+                }else{
                     emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
-                    kfttjValue[0] = 0.5;
                     kfttjValue[2] = 0.5;
                     kfttjHash[kfttjKey] = kfttjValue;
 
                     if(effectHash.contains(kfttjKey)){
                         QStringList bkfEffectList = effectHash[kfttjKey][1];
-                        emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                        emit sendMessage(bkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
                         bkfEffectHash[kfttjKey] = bkfEffectList;
                     }
+                }
+            }
+        }else{
+            //整天统计
+            /*
+             * 1.连续7个小时以上均为“完全可飞”，或存在两个及以上4~6小时连续的“完全可飞”时段，记为“1个完全可飞天”
+             * 2.连续7个小时以上无“不可飞”，或存在两个以上4~6小时连续不出现“不可飞”的时段，记为“1个限制可飞天”
+             * 3.仅存在一个连续4~6小时均为“完全可飞”的时段，记为“0.5个完全可飞天”和“0.5个不可飞天”
+             * 4.仅存在一个连续4~6小时不出现“不可飞”的时段，记为“0.5个限制可飞天”和“0.5个不可飞天”
+             * 5.存在一个连续4~6小时均为“完全可飞”的时段和一个连续4~6小时不出现“不可飞”的时段，记为“0.5个完全可飞天”和“0.5个限制可飞天”
+             * 6.没有连续超过4小时不出现“不可飞”的时段，记为“1个不可飞天”
+             */
+            QRegExp wholeRegExp1("(3{7,})|(3{4}[1|2|3]*3{4})");
+            QRegExp wholeRegExp2("([2|3]{7,})|([2|3]{4}[1|2|3]*[2|3]{4})");
+            QRegExp wholeRegExp3("([1|2]|3{,3})*(3{4,6})([1|2]|3{,3})*");
+            QRegExp wholeRegExp4("(1|[2|3]{,3})*([2|3]{4,6})(1|[2|3]{,3})*");
+            QRegExp wholeRegExp5("(3{4}[1|2|3]*[2|3]{4})|([2|3]{4}[1|2|3]*3{4})");
+            QRegExp wholeRegExp6("[2|3]{4,}");
+            int wholePos1 = wholeRegExp1.indexIn(valueStr);
+            if(wholePos1 >= 0){
+                emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
+                kfttjValue[0] = 1;
+                kfttjHash[kfttjKey] = kfttjValue;
+            }else{
+                int wholePos2 = wholeRegExp2.indexIn(valueStr);
+                if(wholePos2 >= 0){
+                    emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
+                    kfttjValue[1] = 1;
+                    kfttjHash[kfttjKey] = kfttjValue;
+
+                    if(effectHash.contains(kfttjKey)){
+                        QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                        emit sendMessage(xzkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                        xzkfEffectHash[kfttjKey] = xzkfEffectList;
+                    }
                 }else{
-                    int wholePos4 = wholeRegExp4.indexIn(valueStr);
-                    if(wholePos4 >= 0){
-                        emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                    int wholePos3 = wholeRegExp3.indexIn(valueStr);
+                    if(wholePos3 >= 0){
+                        emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
                         emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
-                        kfttjValue[1] = 0.5;
+                        kfttjValue[0] = 0.5;
                         kfttjValue[2] = 0.5;
                         kfttjHash[kfttjKey] = kfttjValue;
 
                         if(effectHash.contains(kfttjKey)){
-                            QStringList xzkfEffectList = effectHash[kfttjKey][0];
                             QStringList bkfEffectList = effectHash[kfttjKey][1];
-                            QStringList sumEffectList;
-                            int xzkfEffectCount = xzkfEffectList.size();
-                            for(int i = 0;i < xzkfEffectCount;i++){
-                                if(!sumEffectList.contains(xzkfEffectList[i])){
-                                    sumEffectList.append(xzkfEffectList[i]);
-                                }
-                            }
-                            int bkfEffectCount = bkfEffectList.size();
-                            for(int i = 0;i < bkfEffectCount;i++){
-                                if(!sumEffectList.contains(bkfEffectList[i])){
-                                    sumEffectList.append(bkfEffectList[i]);
-                                }
-                            }
-                            emit sendMessage(sumEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
-                            xzkfEffectHash[kfttjKey] = xzkfEffectList;
+                            emit sendMessage(bkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
                             bkfEffectHash[kfttjKey] = bkfEffectList;
                         }
                     }else{
-                        int wholePos5 = wholeRegExp5.indexIn(valueStr);
-                        if(wholePos5 >= 0){
-                            emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                        int wholePos4 = wholeRegExp4.indexIn(valueStr);
+                        if(wholePos4 >= 0){
                             emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
-                            kfttjValue[0] = 0.5;
+                            emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
                             kfttjValue[1] = 0.5;
+                            kfttjValue[2] = 0.5;
                             kfttjHash[kfttjKey] = kfttjValue;
 
                             if(effectHash.contains(kfttjKey)){
                                 QStringList xzkfEffectList = effectHash[kfttjKey][0];
-                                emit sendMessage(xzkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
+                                QStringList bkfEffectList = effectHash[kfttjKey][1];
+                                QStringList sumEffectList;
+                                int xzkfEffectCount = xzkfEffectList.size();
+                                for(int i = 0;i < xzkfEffectCount;i++){
+                                    if(!sumEffectList.contains(xzkfEffectList[i])){
+                                        sumEffectList.append(xzkfEffectList[i]);
+                                    }
+                                }
+                                int bkfEffectCount = bkfEffectList.size();
+                                for(int i = 0;i < bkfEffectCount;i++){
+                                    if(!sumEffectList.contains(bkfEffectList[i])){
+                                        sumEffectList.append(bkfEffectList[i]);
+                                    }
+                                }
+                                emit sendMessage(sumEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
                                 xzkfEffectHash[kfttjKey] = xzkfEffectList;
+                                bkfEffectHash[kfttjKey] = bkfEffectList;
                             }
                         }else{
-                            int wholePos6 = wholeRegExp6.indexIn(valueStr);
-                            if(wholePos6 < 0){
-                                emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
-                                kfttjValue[2] = 1;
+                            int wholePos5 = wholeRegExp5.indexIn(valueStr);
+                            if(wholePos5 >= 0){
+                                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                                emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                                kfttjValue[0] = 0.5;
+                                kfttjValue[1] = 0.5;
                                 kfttjHash[kfttjKey] = kfttjValue;
 
                                 if(effectHash.contains(kfttjKey)){
-                                    QStringList bkfEffectList = effectHash[kfttjKey][1];
-                                    emit sendMessage(bkfEffectList.join("\n"), row, titleList.size() - 1, 1, 1);
-                                    bkfEffectHash[kfttjKey] = bkfEffectList;
+                                    QStringList xzkfEffectList = effectHash[kfttjKey][0];
+                                    emit sendMessage(xzkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                                    xzkfEffectHash[kfttjKey] = xzkfEffectList;
+                                }
+                            }else{
+                                int wholePos6 = wholeRegExp6.indexIn(valueStr);
+                                if(wholePos6 < 0){
+                                    emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                                    kfttjValue[2] = 1;
+                                    kfttjHash[kfttjKey] = kfttjValue;
+
+                                    if(effectHash.contains(kfttjKey)){
+                                        QStringList bkfEffectList = effectHash[kfttjKey][1];
+                                        emit sendMessage(bkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                                        bkfEffectHash[kfttjKey] = bkfEffectList;
+                                    }
                                 }
                             }
                         }
@@ -2039,6 +2348,26 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                 }
             }
         }
+    }else{
+        if(valueCount == 0){
+            //缺测
+            kfttjHash[kfttjKey] = kfttjValue;
+        }else{
+            if(valueStr.indexOf("3") > -1){
+                emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
+                kfttjValue[0] = 1;
+                kfttjHash[kfttjKey] = kfttjValue;
+            }else if(valueStr.indexOf("2") > -1){
+                emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
+                kfttjValue[1] = 1;
+                kfttjHash[kfttjKey] = kfttjValue;
+            }else{
+                emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                kfttjValue[2] = 1;
+                kfttjHash[kfttjKey] = kfttjValue;
+            }
+        }
     }
+
     resAll.clear();
 }

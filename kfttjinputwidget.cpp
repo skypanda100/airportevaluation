@@ -374,7 +374,6 @@ void KfttjInputWidget::initUI(){
 }
 
 void KfttjInputWidget::initConnect(){
-    connect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
     connect(qxysComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onQxysChanged(int)));
     connect(slfRadioButton, SIGNAL(toggled(bool)), this, SLOT(onSlfRadioButtonClicked(bool)));
     connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
@@ -412,7 +411,7 @@ void KfttjInputWidget::resetAirportComboBox(QList<Airport> apList, bool isSave){
             }
         }
     }
-
+    disconnect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
     for(int i = airportComboBox->count() - 1;i >= 0;i--){
         airportComboBox->removeItem(i);
     }
@@ -432,6 +431,7 @@ void KfttjInputWidget::resetAirportComboBox(QList<Airport> apList, bool isSave){
             }
         }
     }
+    connect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
 }
 
 void KfttjInputWidget::onAirportChanged(int index){

@@ -482,8 +482,8 @@ void AirportModifyWidget::onConfirmClicked(){
 
         bool ret = pgDb->save(saveAirportSql, values);
         if(ret){
-            QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
             SharedMemory::getInstance()->queryAirportInfomation();
+            QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
         }else{
             QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
         }

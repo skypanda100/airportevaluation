@@ -47,6 +47,7 @@ private:
     QLineEdit *pathEdit;
     QPushButton *browseButton;
     QPushButton *executeButton;
+    QPushButton *stopButton;
 };
 
 #endif // SJDRINPUTWIDGET

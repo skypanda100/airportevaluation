@@ -42,6 +42,10 @@ void SjdrMainWidget::initConnect(){
 }
 
 void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qualityControlSourceList, QList<QString> fileList){
+    if(sjdrControl != NULL && sjdrControl->m_execute){
+        QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
+        return;
+    }
     //清除之前的数据
     removeAllRows();
 
@@ -58,7 +62,7 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
     }
 
     //给数据源分类
-    emit setProgressValue(0);
+    emit setProgressValue(1);
     assortSource(qualityControlSourceList, fileList);
     sumCount = fileList.count();
     executeCount = 0;
@@ -66,9 +70,8 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
 
 void SjdrMainWidget::stopExecuteSjdr(){
     if(sjdrControl != NULL){
-        if(sjdrControl->isRunning()){
-            sjdrControl->quit();
-            sjdrControl->wait();
+        if(sjdrControl->m_execute){
+            sjdrControl->clearTask();
         }
     }
 }

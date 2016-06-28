@@ -126,6 +126,12 @@ void SjdrControl::addTask(SjdrElement sjdrElement){
     m_tasks.push_back(sjdrElement);
 }
 
+void SjdrControl::clearTask(){
+    m_tasks.clear();
+    m_execute = false;
+    emit execute(true);
+}
+
 void SjdrControl::setAirport(const Airport &airport)
 {
     m_airport = airport;
@@ -153,7 +159,9 @@ void SjdrControl::run(){
             }else{
                 controlUnknown(sjdrEle);
             }
-            emit singleExecute(true);
+            if(m_execute){
+                emit singleExecute(true);
+            }
         }else{
             if(m_execute){
                 m_execute = false;
@@ -203,6 +211,9 @@ void SjdrControl::controlSummary(const SjdrElement &sjdrElement){
             int rowCount = plainModel->rowCount();
             bool isAllDone = true;
             for(int j = 0;j < rowCount;j++){
+                if(!m_execute){
+                    return;
+                }
                 int fieldCount = monthsummary_fields.size();
                 QList<QVariant> values;
                 for(int k = 0;k < fieldCount;k++){
@@ -254,6 +265,9 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
             int rowCount = plainModel->rowCount();
             bool isAllDone = true;
             for(int j = 0;j < rowCount;j++){
+                if(!m_execute){
+                    return;
+                }
                 int fieldCount = extremum_fields.size();
                 QList<QVariant> values;
                 for(int k = 0;k < fieldCount;k++){
@@ -305,6 +319,9 @@ void SjdrControl::controlMainlandAutomaticWind(const SjdrElement &sjdrElement){
     bool isAllDone = true;
     while(!fileInput.atEnd())
     {
+        if(!m_execute){
+            return;
+        }
         line++;
         lineStr = fileInput.readLine();
         if(!isStart){
@@ -368,6 +385,9 @@ void SjdrControl::controlMacaoAutomaticWind(const SjdrElement &sjdrElement){
     bool isAllDone = true;
     while(!fileInput.atEnd())
     {
+        if(!m_execute){
+            return;
+        }
         line++;
         lineStr = fileInput.readLine();
         if(!isStart){
@@ -461,6 +481,9 @@ void SjdrControl::controlMainlandAutomaticTemperature(const SjdrElement &sjdrEle
     bool isAllDone = true;
     while(!fileInput.atEnd())
     {
+        if(!m_execute){
+            return;
+        }
         line++;
         lineStr = fileInput.readLine();
         if(!isStart){

@@ -26,6 +26,7 @@ public:
     ~SjdrControl();
 
     void addTask(SjdrElement);
+    void clearTask();
 
     void setAirport(const Airport &airport);
 
@@ -37,6 +38,9 @@ signals:
     void sendMessage(QStringList);
     void execute(bool isEnd);
     void singleExecute(bool isEnd);
+
+public:
+    bool m_execute;
 
 private:
     void message(const QString &info, const SjdrElement &sjdrElement, ReturnCode code = MSG_UNDEFINE);
@@ -63,7 +67,6 @@ private:
     Airport m_airport;
     QVector<SjdrElement> m_tasks;
     bool m_loop;
-    bool m_execute;
     PgDataBase *pgdb;
 };
 

@@ -21,6 +21,7 @@ SjdrInputWidget::~SjdrInputWidget(){
     delete pathEdit;
     delete browseButton;
     delete executeButton;
+    delete stopButton;
 }
 
 void SjdrInputWidget::initData(){
@@ -73,10 +74,12 @@ void SjdrInputWidget::initUI(){
     //执行按钮
     executeButton = new QPushButton;
     executeButton->setText("开始");
+    stopButton = new QPushButton;
+    stopButton->setText("停止");
 
     QHBoxLayout *executeLayout = new QHBoxLayout;
-    executeLayout->addStretch(1);
     executeLayout->addWidget(executeButton);
+    executeLayout->addWidget(stopButton);
 
     //主界面
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -91,6 +94,7 @@ void SjdrInputWidget::initUI(){
 void SjdrInputWidget::initConnect(){
     connect(browseButton, SIGNAL(clicked()), this, SLOT(browse()));
     connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
+    connect(stopButton, SIGNAL(clicked()), this, SLOT(execute()));
     connect(SharedMemory::getInstance()
             , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
             , this
@@ -121,6 +125,18 @@ bool SjdrInputWidget::validate(){
     if(!isSourceChked){
         QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个数据源才能进行数据导入!");
         return false;
+    }
+    //路径
+    QString path = pathEdit->text().trimmed();
+    if(path.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须输入数据源路径才能进行数据导入!");
+        return false;
+    }else{
+        QFileInfo srcFileInfo = QFileInfo(path);
+        if(!srcFileInfo.isDir() && !srcFileInfo.isFile()){
+            QMessageBox::critical(0, QObject::tr("错误提示"), "请输入正确的数据源路径!");
+            return false;
+        }
     }
     return true;
 }
@@ -215,11 +231,14 @@ void SjdrInputWidget::browse(){
  * 执行数据导入
  */
 void SjdrInputWidget::execute(){
-    if(executeButton->text().compare("开始") == 0){
+    bool isStart = true;
+    if(this->sender() == stopButton){
+        isStart = false;
+    }
+    if(isStart){
         if(!validate()){
            return;
         }
-        executeButton->setText("停止");
         //清除
         sourceFileList.clear();
         int ret = findFiles(pathEdit->text());
@@ -238,7 +257,6 @@ void SjdrInputWidget::execute(){
         emit executeSjdr(airportList[airportComboBox->currentIndex()], qualityControlSourceChkedList, sourceFileList);
     }else{
         emit stopExecuteSjdr();
-        executeButton->setText("开始");
     }
 }
 

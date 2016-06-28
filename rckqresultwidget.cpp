@@ -104,6 +104,10 @@ void RckqResultWidget::initConnect(){
 }
 
 void RckqResultWidget::executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList){
+    if(rckqControl->isRunning()){
+        QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
+        return;
+    }
     dataHash.clear();
     int rowCount = tableModel->rowCount();
     for(int i = rowCount - 1;i >= 0;i--){
@@ -169,6 +173,10 @@ void RckqResultWidget::xlsExecute(bool isEnd){
 }
 
 void RckqResultWidget::exportFiles(QHash< int, QList<QString> > fileHash){
+    if(excelControl->isRunning()){
+        QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
+        return;
+    }
     QString excelPath("");
     QList<int> typeList = fileHash.keys();
     for(int type : typeList){

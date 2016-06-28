@@ -52,6 +52,7 @@ void FmgControl::setData(QString code, QString runway, QString fspeed, QString t
 }
 
 void FmgControl::run(){
+    emit setProgressValue(1);
     int yearCount = m_years.size();
     int totalProgress = yearCount * 12;
     int currentProgress = 0;

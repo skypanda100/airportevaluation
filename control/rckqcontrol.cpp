@@ -43,6 +43,7 @@ QList<QString> RckqControl::createDatetimeSql(QString dateStr, int fhour, int th
 }
 
 void RckqControl::run(){
+    emit setProgressValue(1);
     int weatherCount = m_weatherList.size();
     int sumCount = 0;
     if(m_fhour > m_thour){

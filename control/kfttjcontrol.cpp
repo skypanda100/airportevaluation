@@ -1539,7 +1539,8 @@ QString KfttjControl::analysisMultiYlyg(const Monthsummary &monthsummary, int ro
  * @return
  */
 QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int row, int col){
-
+    QString resultStr("");
+    return resultStr;
 }
 
 /**
@@ -2040,7 +2041,8 @@ QString KfttjControl::analysisSingleJdw(const Monthsummary &monthsummary, int ro
  * @return
  */
 QString KfttjControl::analysisSingleQjs(const Monthsummary &monthsummary, int row, int col){
-
+    QString resultStr("");
+    return resultStr;
 }
 
 /**

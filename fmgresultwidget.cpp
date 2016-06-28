@@ -101,6 +101,10 @@ void FmgResultWidget::initConnect(){
 }
 
 void FmgResultWidget::executeFmg(QString code, QString runway, QString fspeed, QString tspeed, QList<QString> years){
+    if(fmgControl->isRunning()){
+        QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
+        return;
+    }
     int rowCount = tableModel->rowCount();
     for(int i = rowCount - 1;i >= 0;i--){
         tableModel->removeRow(i);
@@ -165,6 +169,10 @@ void FmgResultWidget::xlsExecute(bool isEnd){
 }
 
 void FmgResultWidget::exportFiles(QHash< int, QList<QString> > fileHash){
+    if(excelControl->isRunning()){
+        QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
+        return;
+    }
     QString excelPath("");
     QList<int> typeList = fileHash.keys();
     for(int type : typeList){

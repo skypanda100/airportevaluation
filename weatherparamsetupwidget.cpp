@@ -89,6 +89,8 @@ void MultiWeatherParamWidget::initUI(){
     QVBoxLayout *scrollLayout = new QVBoxLayout;
 
     editHash.clear();
+    QRegExp regExp("^-?(\\d+(\\.\\d{1,2})?)$");
+    QRegExpValidator *validator = new QRegExpValidator(regExp, this);
     for(WeatherParam weatherParam : weatherParamList){
         QList<QLineEdit *> editList;
         int key = weatherParam.id();
@@ -100,8 +102,10 @@ void MultiWeatherParamWidget::initUI(){
         QLabel *bkfLabel = new QLabel;
         bkfLabel->setText("不可飞");
         QLineEdit *bkfLeftEdit = new QLineEdit;
+        bkfLeftEdit->setValidator(validator);
         editList.append(bkfLeftEdit);
         QLineEdit *bkfRightEdit = new QLineEdit;
+        bkfRightEdit->setValidator(validator);
         editList.append(bkfRightEdit);
         gridLayout->addWidget(bkfLabel, 0, 0);
         gridLayout->addWidget(bkfLeftEdit, 0, 1);
@@ -110,8 +114,10 @@ void MultiWeatherParamWidget::initUI(){
         QLabel *xzkfLabel = new QLabel;
         xzkfLabel->setText("限制可飞");
         QLineEdit *xzkfLeftEdit = new QLineEdit;
+        xzkfLeftEdit->setValidator(validator);
         editList.append(xzkfLeftEdit);
         QLineEdit *xzkfRightEdit = new QLineEdit;
+        xzkfRightEdit->setValidator(validator);
         editList.append(xzkfRightEdit);
         gridLayout->addWidget(xzkfLabel, 1, 0);
         gridLayout->addWidget(xzkfLeftEdit, 1, 1);
@@ -120,8 +126,10 @@ void MultiWeatherParamWidget::initUI(){
         QLabel *wqkfLabel = new QLabel;
         wqkfLabel->setText("完全可飞");
         QLineEdit *wqkfLeftEdit = new QLineEdit;
+        wqkfLeftEdit->setValidator(validator);
         editList.append(wqkfLeftEdit);
         QLineEdit *wqkfRightEdit = new QLineEdit;
+        wqkfRightEdit->setValidator(validator);
         editList.append(wqkfRightEdit);
         gridLayout->addWidget(wqkfLabel, 2, 0);
         gridLayout->addWidget(wqkfLeftEdit, 2, 1);
@@ -132,8 +140,10 @@ void MultiWeatherParamWidget::initUI(){
             QLabel *xzkfLabel = new QLabel;
             xzkfLabel->setText("限制可飞");
             QLineEdit *xzkfLeftEdit = new QLineEdit;
+            xzkfLeftEdit->setValidator(validator);
             editList.append(xzkfLeftEdit);
             QLineEdit *xzkfRightEdit = new QLineEdit;
+            xzkfRightEdit->setValidator(validator);
             editList.append(xzkfRightEdit);
             gridLayout->addWidget(xzkfLabel, 3, 0);
             gridLayout->addWidget(xzkfLeftEdit, 3, 1);
@@ -142,8 +152,10 @@ void MultiWeatherParamWidget::initUI(){
             QLabel *bkfLabel = new QLabel;
             bkfLabel->setText("不可飞");
             QLineEdit *bkfLeftEdit = new QLineEdit;
+            bkfLeftEdit->setValidator(validator);
             editList.append(bkfLeftEdit);
             QLineEdit *bkfRightEdit = new QLineEdit;
+            bkfRightEdit->setValidator(validator);
             editList.append(bkfRightEdit);
             gridLayout->addWidget(bkfLabel, 4, 0);
             gridLayout->addWidget(bkfLeftEdit, 4, 1);
@@ -334,6 +346,8 @@ void SingleWeatherParamWidget::initUI(){
     QVBoxLayout *scrollLayout = new QVBoxLayout;
 
     editHash.clear();
+    QRegExp regExp("^-?(\\d+(\\.\\d{1,2})?)$");
+    QRegExpValidator *validator = new QRegExpValidator(regExp, this);
     for(WeatherParam weatherParam : weatherParamList){
         QList<QLineEdit *> editList;
         int key = weatherParam.id();
@@ -345,8 +359,10 @@ void SingleWeatherParamWidget::initUI(){
         QLabel *bkfLabel = new QLabel;
         bkfLabel->setText("不可飞");
         QLineEdit *bkfLeftEdit = new QLineEdit;
+        bkfLeftEdit->setValidator(validator);
         editList.append(bkfLeftEdit);
         QLineEdit *bkfRightEdit = new QLineEdit;
+        bkfRightEdit->setValidator(validator);
         editList.append(bkfRightEdit);
         gridLayout->addWidget(bkfLabel, 0, 0);
         gridLayout->addWidget(bkfLeftEdit, 0, 1);
@@ -355,8 +371,10 @@ void SingleWeatherParamWidget::initUI(){
         QLabel *xzkfLabel = new QLabel;
         xzkfLabel->setText("限制可飞");
         QLineEdit *xzkfLeftEdit = new QLineEdit;
+        xzkfLeftEdit->setValidator(validator);
         editList.append(xzkfLeftEdit);
         QLineEdit *xzkfRightEdit = new QLineEdit;
+        xzkfRightEdit->setValidator(validator);
         editList.append(xzkfRightEdit);
         gridLayout->addWidget(xzkfLabel, 1, 0);
         gridLayout->addWidget(xzkfLeftEdit, 1, 1);
@@ -365,8 +383,10 @@ void SingleWeatherParamWidget::initUI(){
         QLabel *wqkfLabel = new QLabel;
         wqkfLabel->setText("完全可飞");
         QLineEdit *wqkfLeftEdit = new QLineEdit;
+        wqkfLeftEdit->setValidator(validator);
         editList.append(wqkfLeftEdit);
         QLineEdit *wqkfRightEdit = new QLineEdit;
+        wqkfRightEdit->setValidator(validator);
         editList.append(wqkfRightEdit);
         gridLayout->addWidget(wqkfLabel, 2, 0);
         gridLayout->addWidget(wqkfLeftEdit, 2, 1);
@@ -377,8 +397,10 @@ void SingleWeatherParamWidget::initUI(){
             QLabel *xzkfLabel = new QLabel;
             xzkfLabel->setText("限制可飞");
             QLineEdit *xzkfLeftEdit = new QLineEdit;
+            xzkfLeftEdit->setValidator(validator);
             editList.append(xzkfLeftEdit);
             QLineEdit *xzkfRightEdit = new QLineEdit;
+            xzkfRightEdit->setValidator(validator);
             editList.append(xzkfRightEdit);
             gridLayout->addWidget(xzkfLabel, 3, 0);
             gridLayout->addWidget(xzkfLeftEdit, 3, 1);
@@ -387,8 +409,10 @@ void SingleWeatherParamWidget::initUI(){
             QLabel *bkfLabel = new QLabel;
             bkfLabel->setText("不可飞");
             QLineEdit *bkfLeftEdit = new QLineEdit;
+            bkfLeftEdit->setValidator(validator);
             editList.append(bkfLeftEdit);
             QLineEdit *bkfRightEdit = new QLineEdit;
+            bkfRightEdit->setValidator(validator);
             editList.append(bkfRightEdit);
             gridLayout->addWidget(bkfLabel, 4, 0);
             gridLayout->addWidget(bkfLeftEdit, 4, 1);

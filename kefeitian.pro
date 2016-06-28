@@ -87,6 +87,9 @@ HEADERS  += mainwindow.h \
 RESOURCES += \
     res.qrc
 
+RC_FILE += \
+    res.rc
+
 INCLUDEPATH += $$PWD/chartdir60/include
 LIBS += $$PWD/chartdir60/lib/chartdir60.lib
 win32 {

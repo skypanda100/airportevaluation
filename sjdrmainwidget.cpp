@@ -64,6 +64,15 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
     executeCount = 0;
 }
 
+void SjdrMainWidget::stopExecuteSjdr(){
+    if(sjdrControl != NULL){
+        if(sjdrControl->isRunning()){
+            sjdrControl->quit();
+            sjdrControl->wait();
+        }
+    }
+}
+
 void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSourceList, QList<QString> fileList){
     int qualityControlSourceCount = qualityControlSourceList.size();
     int fileCount = fileList.size();

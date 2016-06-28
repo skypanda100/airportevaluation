@@ -151,6 +151,109 @@ bool AirportAddWidget::validate(){
     return true;
 }
 
+bool AirportAddWidget::createMonthSummary(QString code){
+    QString createSql = QString("CREATE TABLE %1_monthsummary("
+                                "datetime timestamp(6) without time zone NOT NULL,"
+                                "winddirection character varying(50),"
+                                "windspeed character varying(50),"
+                                "gustspeed character varying(50),"
+                                "leadingvisibility character varying(50),"
+                                "runway1no character varying(50),"
+                                "runway1vr character varying(50),"
+                                "runway2no character varying(50),"
+                                "runway2vr character varying(50),"
+                                "runway3no character varying(50),"
+                                "runway3vr character varying(50),"
+                                "runway4no character varying(50),"
+                                "runway4vr character varying(50),"
+                                "runway5no character varying(50),"
+                                "runway5vr character varying(50),"
+                                "phenomena character varying(50),"
+                                "totalcloudcover character varying(50),"
+                                "lowcloudcover character varying(50),"
+                                "lowcloudstate1 character varying(50),"
+                                "lowcloudstate2 character varying(50),"
+                                "lowcloudstate3 character varying(50),"
+                                "lowcloudstate4 character varying(50),"
+                                "lowcloudstate5 character varying(50),"
+                                "middlecloudstate1 character varying(50),"
+                                "middlecloudstate2 character varying(50),"
+                                "middlecloudstate3 character varying(50),"
+                                "highcloudstate1 character varying(50),"
+                                "highcloudstate2 character varying(50),"
+                                "highcloudstate3 character varying(50),"
+                                "temperature character varying(50),"
+                                "relativehumidity character varying(50),"
+                                "dewpoint character varying(50),"
+                                "airdromepressure character varying(50),"
+                                "correctedseapressure character varying(50),"
+                                "CONSTRAINT %1_monthsummary_pkey PRIMARY KEY (datetime))"
+                                ).arg(code.toLower());
+    if(pgDb->createTable(createSql)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool AirportAddWidget::createExtremum(QString code){
+    QString createSql = QString("CREATE TABLE %1_extremum("
+                                "datetime timestamp(6) without time zone NOT NULL,"
+                                "hightemperature numeric(5,1),"
+                                "lowtemperature numeric(5,1),"
+                                "precipitation numeric(5,1),"
+                                "maxsnowdepth numeric(5,1),"
+                                "evolution1 character varying(255),"
+                                "evolution2 character varying(255),"
+                                "evolution3 character varying(255),"
+                                "evolution4 character varying(255),"
+                                "evolution5 character varying(255),"
+                                "evolution6 character varying(255),"
+                                "evolution7 character varying(255),"
+                                "evolution8 character varying(255),"
+                                "evolution9 character varying(255),"
+                                "evolution10 character varying(255),"
+                                "CONSTRAINT %1_extremum_pkey PRIMARY KEY (datetime))"
+                                ).arg(code.toLower());
+    if(pgDb->createTable(createSql)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool AirportAddWidget::createAutomaticWind(QString code){
+    QString createSql = QString("CREATE TABLE %1_automaticwind("
+                                "datetime timestamp(6) without time zone NOT NULL,"
+                                "runwayno character varying(5) NOT NULL,"
+                                "windspeed numeric(5,2),"
+                                "winddirection integer,"
+                                "CONSTRAINT %1_automaticwind_pkey PRIMARY KEY (datetime, runwayno))"
+                                ).arg(code.toLower());
+    if(pgDb->createTable(createSql)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool AirportAddWidget::createAutomaticTemperature(QString code){
+    QString createSql = QString("CREATE TABLE %1_automatictemperature("
+                                "datetime timestamp(6) without time zone NOT NULL,"
+                                "runwayno character varying(5) NOT NULL,"
+                                "airdromepressure numeric(6,2),"
+                                "temperature numeric(5,2),"
+                                "relativehumidity numeric(4,2),"
+                                "dewpoint numeric(5,2),"
+                                "CONSTRAINT %1_automatictemperature_pkey PRIMARY KEY (datetime, runwayno))"
+                                ).arg(code.toLower());
+    if(pgDb->createTable(createSql)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 void AirportAddWidget::onConfirmClicked(){
     if(validate()){
         //机场code
@@ -180,9 +283,18 @@ void AirportAddWidget::onConfirmClicked(){
 
         bool ret = pgDb->save(saveAirportSql, values);
         if(ret){
-            QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
-            SharedMemory::getInstance()->queryAirportInfomation();
-            emit airportChanged();
+            if(createMonthSummary(code)
+                    && createExtremum(code)
+                    && createAutomaticWind(code)
+                    && createAutomaticTemperature(code)){
+                QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
+                SharedMemory::getInstance()->queryAirportInfomation();
+                emit airportChanged();
+            }else{
+                QString deleteSql = QString("delete from airport where code = '%1'").arg(code.toUpper());
+                pgDb->deleteData(deleteSql);
+                QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
+            }
         }else{
             QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
         }
@@ -196,7 +308,9 @@ AirportModifyWidget::AirportModifyWidget(QWidget *parent)
     this->initData();
     this->initUI();
     this->initConnect();
-    this->onCodeChanged(this->codeComboBox->currentIndex());
+    if(this->codeComboBox->count() > 0){
+        this->onCodeChanged(this->codeComboBox->currentIndex());
+    }
 }
 
 AirportModifyWidget::~AirportModifyWidget(){
@@ -327,6 +441,9 @@ bool AirportModifyWidget::validate(){
 }
 
 void AirportModifyWidget::onCodeChanged(int index){
+    if(index < 0){
+        return;
+    }
     Airport airport = airportList[index];
     nameEdit->setText(airport.name());
     lonEdit->setText(QString("%1").arg(airport.longitude()));

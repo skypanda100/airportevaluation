@@ -103,6 +103,25 @@ void SjdrInputWidget::initConnect(){
  * @return
  */
 bool SjdrInputWidget::validate(){
+    //机场
+    if(airportComboBox->count() == 0){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个机场才能进行数据导入!\n请在机场设置里添加一个机场.");
+        return false;
+    }
+    //数据源
+    bool isSourceChked = false;
+    int sourceChkCount = sourceChkList.size();
+    for(int i = 0;i < sourceChkCount;i++){
+        QCheckBox *checkBox = sourceChkList[i];
+        if(checkBox->isChecked()){
+            isSourceChked = true;
+            break;
+        }
+    }
+    if(!isSourceChked){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个数据源才能进行数据导入!");
+        return false;
+    }
     return true;
 }
 
@@ -197,6 +216,9 @@ void SjdrInputWidget::browse(){
  */
 void SjdrInputWidget::execute(){
     if(executeButton->text().compare("开始") == 0){
+        if(!validate()){
+           return;
+        }
         executeButton->setText("停止");
         //清除
         sourceFileList.clear();
@@ -214,8 +236,10 @@ void SjdrInputWidget::execute(){
             }
         }
         emit executeSjdr(airportList[airportComboBox->currentIndex()], qualityControlSourceChkedList, sourceFileList);
+    }else{
+        emit stopExecuteSjdr();
+        executeButton->setText("开始");
     }
-    executeButton->setText("开始");
 }
 
 /**

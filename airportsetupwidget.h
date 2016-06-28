@@ -20,6 +20,10 @@ private:
     void initUI();
     void initConnect();
     bool validate();
+    bool createMonthSummary(QString);
+    bool createExtremum(QString);
+    bool createAutomaticWind(QString);
+    bool createAutomaticTemperature(QString);
 
 private slots:
     void onConfirmClicked();

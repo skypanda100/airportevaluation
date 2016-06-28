@@ -69,3 +69,23 @@ bool PgDataBase::save(QString insertStr, QList<QVariant> variants){
     }
     return query.exec();
 }
+
+bool PgDataBase::createTable(QString createSql){
+    QSqlQuery query(db);
+    query.exec(createSql);
+    if(query.lastError().isValid()){
+        qDebug() << query.lastError();
+        return false;
+    }
+    return true;
+}
+
+bool PgDataBase::deleteData(QString deleteSql){
+    QSqlQuery query(db);
+    query.exec(deleteSql);
+    if(query.lastError().isValid()){
+        qDebug() << query.lastError();
+        return false;
+    }
+    return true;
+}

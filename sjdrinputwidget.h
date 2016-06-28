@@ -14,6 +14,7 @@ public:
 
 signals:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);
+    void stopExecuteSjdr();
 
 private:
     void initData();

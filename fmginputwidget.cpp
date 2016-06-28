@@ -174,6 +174,9 @@ void FmgInputWidget::queryAirport(){
  */
 void FmgInputWidget::queryDate(){
     dateList.clear();
+    if(airportList.count() == 0 || runwayHash.count() == 0){
+        return;
+    }
     int airportIndex = airportComboBox->currentIndex();
     QString codeStr = airportList[airportIndex].code();
     QString runwayStr = runwayComboBox->currentText();
@@ -193,6 +196,32 @@ void FmgInputWidget::queryDate(){
  * @return
  */
 bool FmgInputWidget::validate(){
+    //机场
+    if(airportComboBox->count() == 0){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个机场才能进行数据分析!\n请在机场设置里添加一个机场.");
+        return false;
+    }
+    //跑道
+    QString runwayStr = runwayComboBox->currentText();
+    if(runwayStr.isEmpty()){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个机场跑道才能进行数据分析!\n请导入该机场的数据.");
+        return false;
+    }
+    //日期
+    bool isDateChecked = false;
+    int dateCheckBoxCount = dateCheckBoxList.size();
+    for(int i = 0;i < dateCheckBoxCount;i++){
+        QCheckBox *checkBox = dateCheckBoxList[i];
+        if(checkBox->isChecked()){
+            isDateChecked = true;
+            break;
+        }
+    }
+    if(!isDateChecked){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个日期才能进行数据分析!");
+        return false;
+    }
+
     return true;
 }
 

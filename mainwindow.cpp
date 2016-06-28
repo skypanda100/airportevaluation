@@ -372,6 +372,7 @@ void MainWindow::setupSjdr(){
     this->setupSjdrQualityWidget();
     this->setupSjdrResultWidget();
     connect(sjdrInputWidget, SIGNAL(executeSjdr(Airport,QList<QualityControlSource>,QList<QString>)), sjdrMainWidget, SLOT(executeSjdr(Airport,QList<QualityControlSource>,QList<QString>)));
+    connect(sjdrInputWidget, SIGNAL(stopExecuteSjdr()), sjdrMainWidget, SLOT(stopExecuteSjdr()));
 }
 
 void MainWindow::setupSjdrInputWidget(){

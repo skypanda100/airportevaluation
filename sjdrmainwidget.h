@@ -18,6 +18,7 @@ signals:
 
 public slots:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);
+    void stopExecuteSjdr();
     void receiveMessage(QStringList);
     void execute(bool isEnd);
     void singleExecute(bool isEnd);

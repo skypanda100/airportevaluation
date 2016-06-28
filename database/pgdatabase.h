@@ -19,6 +19,8 @@ public:
     QSqlQueryModel* queryModel(const QString &);
     QList<QVariant> queryVariant(const QString &);
     bool save(QString, QList<QVariant>);
+    bool createTable(QString);
+    bool deleteData(QString);
 
 private:
     QSqlDatabase db;

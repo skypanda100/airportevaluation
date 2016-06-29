@@ -1539,8 +1539,307 @@ QString KfttjControl::analysisMultiYlyg(const Monthsummary &monthsummary, int ro
  * @return
  */
 QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int row, int col){
-    QString resultStr("");
+    QString resultStr("3");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    bool isFindJs = false;
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        QDateTime today = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
+        QDateTime yeasterday = today.addDays(-1);
+        QHash< QString, int > jsHash;
+        //天气演变列表
+        QStringList evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+
+        for(QString evolution : evolutionList){
+            jsHash = this->analysisMultiFqjs(evolution, today, yeasterday);
+            if(!jsHash.isEmpty()){
+                QList<QString> keyList = jsHash.keys();
+                for(QString timeStr : keyList){
+                    if(timeStr.compare(monthsummary.datetime()) == 0){
+                        if(jsHash[timeStr] != 0){
+                            isFindJs = true;
+                            resultStr = QString("%1").arg(jsHash[timeStr]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(!isFindJs){
+        currentDateTime_utc = currentDateTime_utc.addDays(1);
+        index = getExtremumIndex(currentDateTime_utc);
+        if(index > -1){
+            Extremum extremum = extremumList[index];
+            QDateTime today = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
+            QDateTime yeasterday = today.addDays(-1);
+            QHash< QString, int > jsHash;
+            //天气演变列表
+            QStringList evolutionList;
+            evolutionList.append(extremum.evolution1());
+            evolutionList.append(extremum.evolution2());
+            evolutionList.append(extremum.evolution3());
+            evolutionList.append(extremum.evolution4());
+            evolutionList.append(extremum.evolution5());
+            evolutionList.append(extremum.evolution6());
+            evolutionList.append(extremum.evolution7());
+            evolutionList.append(extremum.evolution8());
+            evolutionList.append(extremum.evolution9());
+            evolutionList.append(extremum.evolution10());
+
+            for(QString evolution : evolutionList){
+                jsHash = this->analysisMultiFqjs(evolution, today, yeasterday);
+                if(!jsHash.isEmpty()){
+                    QList<QString> keyList = jsHash.keys();
+                    for(QString timeStr : keyList){
+                        if(timeStr.compare(monthsummary.datetime()) == 0){
+                            if(jsHash[timeStr] != 0){
+                                resultStr = QString("%1").arg(jsHash[timeStr]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
     return resultStr;
+}
+
+/**
+ * @brief KfttjControl::analysisMultiFqjs
+ * 存储降水量的hash(key:QString value:int -> 1:不可飞,2:限制可飞,3:可飞)
+ * @param evolution
+ * @param today
+ * @param yeasterday
+ * @return
+ */
+QHash< QString, int > KfttjControl::analysisMultiFqjs(QString evolution, QDateTime today, QDateTime yeasterday){
+    //存储降水量的hash(key:QString value:int -> 1:不可飞,2:限制可飞,3:可飞)
+    QHash< QString,  int > jsHash;
+    if(evolution.indexOf("RA", 0, Qt::CaseInsensitive) >= 0
+            || evolution.indexOf("SN", 0, Qt::CaseInsensitive) >= 0){
+        //去除降水量
+        evolution = evolution.replace(QRegExp("\\([0-9]+\\)"), "");
+        //替换开头的"--"为"-"
+        if(evolution.startsWith("--")){
+            evolution = evolution.mid(1);
+        }
+
+        //上一次天气现象(1:不可飞,2:限制可飞,3:可飞)
+        int lastWeatherDegree = 0;
+        //重组为字符串列表
+        QStringList evoLst_1 = evolution.split(" ", QString::SkipEmptyParts);
+        //解析字符串并将结果存入hash
+        for(QString evo : evoLst_1){
+            //先将"--"替换为"-*"
+            evo = evo.replace("--", "-*");
+            //再将开头的"-"替换为"*"
+            if(evo.startsWith("-")){
+                evo = evo.replace(0, 1, "*");
+            }
+            //判断是否是以降水开头的天气现象
+            QRegExp startRegExp("[\\*\\+]?(\\w*)(RA|SN)");
+            startRegExp.setMinimal(true);
+            int startPos = startRegExp.indexIn(evo);
+            if(startPos == 0){
+                //再以间隔线重组为字符串列表
+                QList<QString> elements = evo.split("-", QString::SkipEmptyParts);
+                for(QString element : elements){
+                    startPos = startRegExp.indexIn(element);
+                    if(startPos == 0){
+                        //查找时间(hhmm)
+                        QRegExp regExp("([0-9]{4})");
+                        regExp.setMinimal(true);
+                        int pos = regExp.indexIn(element, 0);
+                        if(pos != -1){
+                            //获取时间
+                            QString hhmmStr = regExp.cap(1);
+                            //给上一次天气现象赋值
+                            if(element.startsWith("*")){
+                                lastWeatherDegree = 2;
+                            }else if(element.startsWith("+")){
+                                lastWeatherDegree = 1;
+                            }else{
+                                lastWeatherDegree = 1;
+                            }
+                            int hour = hhmmStr.mid(0, 2).toInt();
+                            int minute = hhmmStr.mid(2, 2).toInt();
+                            //计算开始时间
+                            QDateTime startDate;
+                            //如果是16点以后说明是上一天的记录
+                            if(hour > 16 || hour == 16 && minute > 0){
+                                QString yeasterdayStr = QString("%1T%2:00")
+                                        .arg(yeasterday.toString("yyyy-MM-dd"))
+                                        .arg(hhmmStr);
+                                startDate = QDateTime::fromString(yeasterdayStr, "yyyy-MM-ddThhmm:ss");
+                                //降水开始往后推
+                                if(minute > 0){
+                                    QString startDateStr = startDate.toString("yyyy-MM-ddThh:00:00");
+                                    startDate = QDateTime::fromString(startDateStr, "yyyy-MM-ddThh:mm:ss");
+                                    startDate = startDate.addSecs(3600);
+                                }
+                            }else{
+                                QString todayStr = QString("%1T%2:00")
+                                        .arg(today.toString("yyyy-MM-dd"))
+                                        .arg(hhmmStr);
+                                startDate = QDateTime::fromString(todayStr, "yyyy-MM-ddThhmm:ss");
+                                //降水开始往后推
+                                if(minute > 0){
+                                    QString startDateStr = startDate.toString("yyyy-MM-ddThh:00:00");
+                                    startDate = QDateTime::fromString(startDateStr, "yyyy-MM-ddThh:mm:ss");
+                                    startDate = startDate.addSecs(3600);
+                                }
+                            }
+                            //计算结束时间
+                            QDateTime endDate = startDate;
+                            int elementCount = elements.count();
+                            QString finalElement = elements[elementCount - 1];
+                            pos = regExp.indexIn(finalElement, 0);
+                            if(pos != -1){
+                                //获取时间
+                                hhmmStr = regExp.cap(1);
+                                hour = hhmmStr.mid(0, 2).toInt();
+                                minute = hhmmStr.mid(2, 2).toInt();
+
+                                //如果是16点以后说明是上一天的记录
+                                if(hour > 16 || hour == 16 && minute > 0){
+                                    QString yeasterdayStr = QString("%1T%2:00")
+                                            .arg(yeasterday.toString("yyyy-MM-dd"))
+                                            .arg(hhmmStr);
+                                    endDate = QDateTime::fromString(yeasterdayStr, "yyyy-MM-ddThhmm:ss");
+                                }else{
+                                    QString todayStr = QString("%1T%2:00")
+                                            .arg(today.toString("yyyy-MM-dd"))
+                                            .arg(hhmmStr);
+                                    endDate = QDateTime::fromString(todayStr, "yyyy-MM-ddThhmm:ss");
+                                }
+
+                                if(evo.endsWith("-")){
+                                    //降水结束往后推
+                                    QString endDateStr = endDate.toString("yyyy-MM-ddThh:00:00");
+                                    endDate = QDateTime::fromString(endDateStr, "yyyy-MM-ddThh:mm:ss");
+                                    if(minute > 0){
+                                        endDate = endDate.addSecs(3600);
+                                    }
+                                }else{
+                                    //降水结束往前推
+                                    QString endDateStr = endDate.toString("yyyy-MM-ddThh:00:00");
+                                    endDate = QDateTime::fromString(endDateStr, "yyyy-MM-ddThh:mm:ss");
+                                }
+                            }
+                            //给hash赋值
+                            while(startDate.secsTo(endDate) >= 0){
+                                jsHash[startDate.toString("yyyy-MM-ddThh:mm:ss")] = lastWeatherDegree;
+                                startDate = startDate.addSecs(3600);
+                            }
+                        }
+                    }
+                }
+            }else{
+                if(lastWeatherDegree > 0){
+                    //再以间隔线重组为字符串列表
+                    QList<QString> elements = evo.split("-", QString::SkipEmptyParts);
+                    for(QString element : elements){
+                        //查找时间(hhmm)
+                        QRegExp regExp("([0-9]{4})");
+                        regExp.setMinimal(true);
+                        int pos = regExp.indexIn(element, 0);
+                        if(pos != -1){
+                            //获取时间
+                            QString hhmmStr = regExp.cap(1);
+                            int hour = hhmmStr.mid(0, 2).toInt();
+                            int minute = hhmmStr.mid(2, 2).toInt();
+                            //计算开始时间
+                            QDateTime startDate;
+                            //如果是16点以后说明是上一天的记录
+                            if(hour > 16 || hour == 16 && minute > 0){
+                                QString yeasterdayStr = QString("%1T%2:00")
+                                        .arg(yeasterday.toString("yyyy-MM-dd"))
+                                        .arg(hhmmStr);
+                                startDate = QDateTime::fromString(yeasterdayStr, "yyyy-MM-ddThhmm:ss");
+                                //降水开始往后推
+                                if(minute > 0){
+                                    QString startDateStr = startDate.toString("yyyy-MM-ddThh:00:00");
+                                    startDate = QDateTime::fromString(startDateStr, "yyyy-MM-ddThh:mm:ss");
+                                    startDate = startDate.addSecs(3600);
+                                }
+                            }else{
+                                QString todayStr = QString("%1T%2:00")
+                                        .arg(today.toString("yyyy-MM-dd"))
+                                        .arg(hhmmStr);
+                                startDate = QDateTime::fromString(todayStr, "yyyy-MM-ddThhmm:ss");
+                                //降水开始往后推
+                                if(minute > 0){
+                                    QString startDateStr = startDate.toString("yyyy-MM-ddThh:00:00");
+                                    startDate = QDateTime::fromString(startDateStr, "yyyy-MM-ddThh:mm:ss");
+                                    startDate = startDate.addSecs(3600);
+                                }
+                            }
+                            //计算结束时间
+                            QDateTime endDate = startDate;
+                            int elementCount = elements.count();
+                            QString finalElement = elements[elementCount - 1];
+                            pos = regExp.indexIn(finalElement, 0);
+                            if(pos != -1){
+                                //获取时间
+                                hhmmStr = regExp.cap(1);
+                                hour = hhmmStr.mid(0, 2).toInt();
+                                minute = hhmmStr.mid(2, 2).toInt();
+
+                                //如果是16点以后说明是上一天的记录
+                                if(hour > 16 || hour == 16 && minute > 0){
+                                    QString yeasterdayStr = QString("%1T%2:00")
+                                            .arg(yeasterday.toString("yyyy-MM-dd"))
+                                            .arg(hhmmStr);
+                                    endDate = QDateTime::fromString(yeasterdayStr, "yyyy-MM-ddThhmm:ss");
+                                }else{
+                                    QString todayStr = QString("%1T%2:00")
+                                            .arg(today.toString("yyyy-MM-dd"))
+                                            .arg(hhmmStr);
+                                    endDate = QDateTime::fromString(todayStr, "yyyy-MM-ddThhmm:ss");
+                                }
+
+                                if(evo.endsWith("-")){
+                                    //降水结束往后推
+                                    QString endDateStr = endDate.toString("yyyy-MM-ddThh:00:00");
+                                    endDate = QDateTime::fromString(endDateStr, "yyyy-MM-ddThh:mm:ss");
+                                    if(minute > 0){
+                                        endDate = endDate.addSecs(3600);
+                                    }
+                                }else{
+                                    //降水结束往前推
+                                    QString endDateStr = endDate.toString("yyyy-MM-ddThh:00:00");
+                                    endDate = QDateTime::fromString(endDateStr, "yyyy-MM-ddThh:mm:ss");
+                                }
+                            }
+                            //给hash赋值
+                            while(startDate.secsTo(endDate) >= 0){
+                                jsHash[startDate.toString("yyyy-MM-ddThh:mm:ss")] = lastWeatherDegree;
+                                startDate = startDate.addSecs(3600);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    }else{
+        return jsHash;
+    }
+    return jsHash;
 }
 
 /**

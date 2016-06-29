@@ -68,6 +68,8 @@ private:
     QString analysisMultiYlyg(const Monthsummary &, int, int);
     /*** 降水.非强降水模式 ***/
     QString analysisMultiFqjs(const Monthsummary &, int, int);
+    /*** 分析降水 ***/
+    QHash< QString, int > analysisMultiFqjs(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.浓积云 ***/
     QString analysisMultiNjy(const Monthsummary &, int, int);
     /*** 危险天气.积雨云 ***/

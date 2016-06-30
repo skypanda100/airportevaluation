@@ -100,6 +100,11 @@ const int DEC_DAY_W[11] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 const int HALF_DAY_W = 4;
 const int WHOLE_DAY_W = 8;
 /***影响可飞天的气象要素的各个颜色***/
-const int COLORS[4] = {0x05bc58, 0x7937ab, 0xa0bfe5, 0xff3a05};
+const int COLORS[24] = {0xDC143C, 0x7B68EE, 0xDAA520, 0x00BFFF
+                     , 0x5F9EA0, 0x008B8B, 0x2E8B57, 0x32CD32
+                     , 0xFAFAD2, 0xE0AAAA, 0xEEE8AA, 0xFFA500
+                     , 0xFF8C00, 0xFF4500, 0xCD5C5C, 0xFFB6C1
+                     , 0xFF69B4, 0xEE82EE, 0x6A5ACD, 0x6495ED
+                     , 0x4682B4, 0xB0E0E6, 0x1E90FF, 0xD2B48C};
 #endif // CTLCONS
 

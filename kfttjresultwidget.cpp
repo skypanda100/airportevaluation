@@ -96,20 +96,20 @@ void KfttjResultWidget::initUI(){
     xzkfyfbChartView = new QChartViewer;
     bkfyfbChartView = new QChartViewer;
 
-    nkfttjChartView->setFixedSize(300
-                                 , 300);
-    kftyfbChartView->setFixedSize(600
-                                 , 300);
-    zlwzdChartView->setFixedSize(300
-                                , 300);
-    xzkfnfbChartView->setFixedSize(300
-                                  , 300);
-    bkfnfbChartView->setFixedSize(300
-                                 , 300);
-    xzkfyfbChartView->setFixedSize(700
-                                  , 300);
-    bkfyfbChartView->setFixedSize(700
-                                 , 300);
+    nkfttjChartView->setFixedSize(700
+                                 , 400);
+    kftyfbChartView->setFixedSize(900
+                                 , 400);
+    zlwzdChartView->setFixedSize(700
+                                , 400);
+    xzkfnfbChartView->setFixedSize(700
+                                  , 400);
+    bkfnfbChartView->setFixedSize(700
+                                 , 400);
+    xzkfyfbChartView->setFixedSize(900
+                                  , 400);
+    bkfyfbChartView->setFixedSize(900
+                                 , 400);
 
     imageLayout->addWidget(nkfttjChartView);
     imageLayout->addWidget(kftyfbChartView);
@@ -347,16 +347,32 @@ void KfttjResultWidget::createNkfttjChart(const QHash< QString, QList<float> > &
         datas[1] += value[1];
         datas[2] += value[2];
     }
-    PieChart *pieChart = new PieChart(300, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    PieChart *pieChart = new PieChart(700, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     pieChart->setRoundedFrame(0x646464);
+    pieChart->set3D(25);
     pieChart->setDefaultFonts("msyh.ttf");
     TextBox *title = pieChart->addTitle("年可飞天统计", "msyh.ttf", 10, 0x000000);
     pieChart->addLine(10, title->getHeight(), pieChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
-    pieChart->setPieSize(150, 150, 120);
-    pieChart->setLabelPos(-40);
+    pieChart->setPieSize(210, 200, 150);
+    pieChart->setLabelLayout(Chart::SideLayout, 16);
+    pieChart->setLabelFormat("{={sector}+1}");
+
     pieChart->setData(DoubleArray(datas, (int)(sizeof(datas) / sizeof(datas[0]))), StringArray(labels, (int)(
         sizeof(labels) / sizeof(labels[0]))));
     pieChart->setColors(Chart::DataColor, IntArray(colors, (int)(sizeof(colors) / sizeof(colors[0]))));
+
+    LegendBox *b = pieChart->addLegend(400, 175, true, "msyh.ttf", 8);
+    b->setAlignment(Chart::Left);
+    b->setBackground(Chart::Transparent, 0x444444);
+    b->setRoundedCorners();
+    b->setMargin(16);
+    b->setKeySpacing(0, 5);
+    b->setKeyBorder(Chart::SameAsMainColor);
+    b->setText(
+        "<*block,valign=top*>{={sector}+1}.<*advanceTo=22*><*block,width=60*>{label}<*/*>"
+        "<*block,width=45,halign=left*>{value}<*/*>"
+        "<*block,width=45,halign=right*>{percent}%<*/*>");
+
     pieChart->makeChart();
     nkfttjChartView->setChart(pieChart);
 }
@@ -388,24 +404,29 @@ void KfttjResultWidget::createKftyfbChart(const QHash< QString, QList<float> > &
         data1[month -  1] += value[1];
         data2[month -  1] += value[2];
     }
-    XYChart *xyChart = new XYChart(600, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    XYChart *xyChart = new XYChart(900, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     xyChart->setRoundedFrame(0x646464);
 
     xyChart->setDefaultFonts("msyh.ttf");
     TextBox *title = xyChart->addTitle("可飞天月分布", "msyh.ttf", 10, 0x000000);
     xyChart->addLine(10, title->getHeight(), xyChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
-    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 35, xyChart->getHeight() -
-        title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
+    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 135, xyChart->getHeight() -
+        title->getHeight() - 35, Chart::Transparent, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
     BarLayer *layer = xyChart->addBarLayer(Chart::Percentage);
-    layer->addDataSet(DoubleArray(data0, (int)(sizeof(data0) / sizeof(data0[0]))), colors[0],
-        "<*block,valign=absmiddle*><*img=service.png*> Service<*/*>");
-    layer->addDataSet(DoubleArray(data1, (int)(sizeof(data1) / sizeof(data1[0]))), colors[1],
-        "<*block,valign=absmiddle*><*img=software.png*> Software<*/*>");
-    layer->addDataSet(DoubleArray(data2, (int)(sizeof(data2) / sizeof(data2[0]))), colors[2],
-        "<*block,valign=absmiddle*><*img=computer.png*> Hardware<*/*>");
+    layer->addDataSet(DoubleArray(data0, (int)(sizeof(data0) / sizeof(data0[0]))), colors[0]
+            , "<*block,valign=absmiddle*>完全可飞<*/*>");
+    layer->addDataSet(DoubleArray(data1, (int)(sizeof(data1) / sizeof(data1[0]))), colors[1]
+            , "<*block,valign=absmiddle*>限制可飞<*/*>");
+    layer->addDataSet(DoubleArray(data2, (int)(sizeof(data2) / sizeof(data2[0]))), colors[2]
+            , "<*block,valign=absmiddle*>不可飞<*/*>");
     layer->setBorderColor(Chart::Transparent, Chart::softLighting(Chart::Top));
     layer->setDataLabelStyle()->setAlignment(Chart::Center);
+
+    LegendBox *legendBox = xyChart->addLegend(xyChart->getWidth() - 10, title->getHeight(), true, "msyh.ttf", 8);
+    legendBox->setAlignment(Chart::TopRight);
+    legendBox->setBackground(0xeeeeee, 0x000000);
+
     xyChart->makeChart();
     kftyfbChartView->setChart(xyChart);
 }
@@ -438,16 +459,31 @@ void KfttjResultWidget::createZlwzdChart(const QHash< QString, QList<float> > &k
             datas[0] += 1;
         }
     }
-    PieChart *pieChart = new PieChart(300, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    PieChart *pieChart = new PieChart(700, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     pieChart->setRoundedFrame(0x646464);
+    pieChart->set3D(25);
     pieChart->setDefaultFonts("msyh.ttf");
     TextBox *title = pieChart->addTitle("资料完整度", "msyh.ttf", 10, 0x000000);
-    pieChart->setPieSize(150, 150, 120);
+    pieChart->setPieSize(210, 200, 150);
     pieChart->addLine(10, title->getHeight(), pieChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
-    pieChart->setLabelPos(-40);
+    pieChart->setLabelLayout(Chart::SideLayout, 16);
+    pieChart->setLabelFormat("{={sector}+1}");
     pieChart->setData(DoubleArray(datas, (int)(sizeof(datas) / sizeof(datas[0]))), StringArray(labels, (int)(
         sizeof(labels) / sizeof(labels[0]))));
     pieChart->setColors(Chart::DataColor, IntArray(colors, (int)(sizeof(colors) / sizeof(colors[0]))));
+
+    LegendBox *b = pieChart->addLegend(400, 175, true, "msyh.ttf", 8);
+    b->setAlignment(Chart::Left);
+    b->setBackground(Chart::Transparent, 0x444444);
+    b->setRoundedCorners();
+    b->setMargin(16);
+    b->setKeySpacing(0, 5);
+    b->setKeyBorder(Chart::SameAsMainColor);
+    b->setText(
+        "<*block,valign=top*>{={sector}+1}.<*advanceTo=22*><*block,width=60*>{label}<*/*>"
+        "<*block,width=45,halign=left*>{value}<*/*>"
+        "<*block,width=45,halign=right*>{percent}%<*/*>");
+
     pieChart->makeChart();
     zlwzdChartView->setChart(pieChart);
 }
@@ -496,15 +532,30 @@ void KfttjResultWidget::createXzkfNfbChart(const QHash<QString, QStringList> &ef
         colors[i] = COLORS[i];
     }
 
-    PieChart *pieChart = new PieChart(300, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    PieChart *pieChart = new PieChart(700, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     pieChart->setRoundedFrame(0x646464);
+    pieChart->set3D(25);
     pieChart->setDefaultFonts("msyh.ttf");
     TextBox *title = pieChart->addTitle("限制可飞要素的年分布", "msyh.ttf", 10, 0x000000);
     pieChart->addLine(10, title->getHeight(), pieChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
-    pieChart->setPieSize(150, 150, 120);
-    pieChart->setLabelPos(-40);
+    pieChart->setPieSize(210, 200, 150);
+    pieChart->setLabelLayout(Chart::SideLayout, 16);
+    pieChart->setLabelFormat("{={sector}+1}");
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
+
+    LegendBox *b = pieChart->addLegend(400, 175, true, "msyh.ttf", 8);
+    b->setAlignment(Chart::Left);
+    b->setBackground(Chart::Transparent, 0x444444);
+    b->setRoundedCorners();
+    b->setMargin(16);
+    b->setKeySpacing(0, 5);
+    b->setKeyBorder(Chart::SameAsMainColor);
+    b->setText(
+        "<*block,valign=top*>{={sector}+1}.<*advanceTo=22*><*block,width=135*>{label}<*/*>"
+        "<*block,width=45,halign=left*>{value}<*/*>"
+        "<*block,width=45,halign=right*>{percent}%<*/*>");
+
     pieChart->makeChart();
     xzkfnfbChartView->setChart(pieChart);
 }
@@ -553,15 +604,31 @@ void KfttjResultWidget::createBkfNfbChart(const QHash<QString, QStringList> &eff
         colors[i] = COLORS[i];
     }
 
-    PieChart *pieChart = new PieChart(300, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    PieChart *pieChart = new PieChart(700, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     pieChart->setRoundedFrame(0x646464);
+    pieChart->set3D(25);
     pieChart->setDefaultFonts("msyh.ttf");
     TextBox *title = pieChart->addTitle("不可飞要素的年分布", "msyh.ttf", 10, 0x000000);
     pieChart->addLine(10, title->getHeight(), pieChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
     pieChart->setPieSize(150, 150, 120);
-    pieChart->setLabelPos(-40);
+    pieChart->setPieSize(210, 200, 150);
+    pieChart->setLabelLayout(Chart::SideLayout, 16);
+    pieChart->setLabelFormat("{={sector}+1}");
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
+
+    LegendBox *b = pieChart->addLegend(400, 175, true, "msyh.ttf", 8);
+    b->setAlignment(Chart::Left);
+    b->setBackground(Chart::Transparent, 0x444444);
+    b->setRoundedCorners();
+    b->setMargin(16);
+    b->setKeySpacing(0, 5);
+    b->setKeyBorder(Chart::SameAsMainColor);
+    b->setText(
+        "<*block,valign=top*>{={sector}+1}.<*advanceTo=22*><*block,width=135*>{label}<*/*>"
+        "<*block,width=45,halign=left*>{value}<*/*>"
+        "<*block,width=45,halign=right*>{percent}%<*/*>");
+
     pieChart->makeChart();
     bkfnfbChartView->setChart(pieChart);
 }
@@ -616,14 +683,14 @@ void KfttjResultWidget::createXzkfYfbChart(const QHash<QString, QStringList> &ef
         colors[i] = COLORS[i];
     }
 
-    XYChart *xyChart = new XYChart(700, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    XYChart *xyChart = new XYChart(900, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     xyChart->setRoundedFrame(0x646464);
     xyChart->setDefaultFonts("msyh.ttf");
     TextBox *title = xyChart->addTitle("限制可飞要素的月分布", "msyh.ttf", 10, 0x000000);
     xyChart->addLine(10, title->getHeight(), xyChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
 
-    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 135, xyChart->getHeight() -
-        title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
+    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 220, xyChart->getHeight() -
+        title->getHeight() - 35, Chart::Transparent, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
 
     LegendBox *legendBox = xyChart->addLegend(xyChart->getWidth() - 10, title->getHeight(), true, "msyh.ttf", 8);
@@ -691,14 +758,14 @@ void KfttjResultWidget::createBkfYfbChart(const QHash<QString, QStringList> &eff
         colors[i] = COLORS[i];
     }
 
-    XYChart *xyChart = new XYChart(700, 300, Chart::brushedSilverColor(), Chart::Transparent, 2);
+    XYChart *xyChart = new XYChart(900, 400, Chart::brushedSilverColor(), Chart::Transparent, 2);
     xyChart->setRoundedFrame(0x646464);
     xyChart->setDefaultFonts("msyh.ttf");
     TextBox *title = xyChart->addTitle("不可飞要素的月分布", "msyh.ttf", 10, 0x000000);
     xyChart->addLine(10, title->getHeight(), xyChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
 
-    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 135, xyChart->getHeight() -
-        title->getHeight() - 35, 0xe8f0f8, -1, Chart::Transparent, 0xaaaaaa);
+    xyChart->setPlotArea(35, title->getHeight() + 5, xyChart->getWidth() - 220, xyChart->getHeight() -
+        title->getHeight() - 35, Chart::Transparent, -1, Chart::Transparent, 0xaaaaaa);
     xyChart->xAxis()->setLabels(StringArray(labels, (int)(sizeof(labels) / sizeof(labels[0]))));
 
     LegendBox *legendBox = xyChart->addLegend(xyChart->getWidth() - 10, title->getHeight(), true, "msyh.ttf", 8);

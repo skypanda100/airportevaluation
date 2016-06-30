@@ -3,6 +3,7 @@
 
 KfttjResultWidget::KfttjResultWidget(QWidget *parent)
     :QSplitter(parent)
+    ,tableModel(NULL)
 {
     this->initData();
     this->initUI();
@@ -58,36 +59,6 @@ KfttjResultWidget::~KfttjResultWidget(){
 }
 
 void KfttjResultWidget::initData(){
-    titleList << "日期"
-              << "气象要素"
-              << "17"
-              << "18"
-              << "19"
-              << "20"
-              << "21"
-              << "22"
-              << "23"
-              << "0"
-              << "1"
-              << "2"
-              << "3"
-              << "4"
-              << "5"
-              << "6"
-              << "7"
-              << "8"
-              << "9"
-              << "10"
-              << "11"
-              << "12"
-              << "13"
-              << "14"
-              << "15"
-              << "16"
-              << "完全可飞"
-              << "限制可飞"
-              << "不可飞"
-              << "影响原因";
     kfttjControl = new KfttjControl;
 
     excelControl = new ExcelControl;
@@ -99,14 +70,8 @@ void KfttjResultWidget::initUI(){
     this->setAutoFillBackground(true);
     this->setPalette(palette);
 
-    tableModel = new TableModel(0, titleList.size(), this, true);
-    int titleCount = titleList.size();
-    for(int i = 0;i < titleCount;i++){
-        tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);
-    }
-
     tableView = new QTableView;
-    tableView->setModel(tableModel);
+    createTable(true);
 
     this->setOrientation(Qt::Vertical);
     this->addWidget(tableView);
@@ -168,15 +133,61 @@ void KfttjResultWidget::initConnect(){
     connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
 }
 
+void KfttjResultWidget::createTable(bool isHourTable){
+    //清除table
+    if(tableModel != NULL){
+        int rowCount = tableModel->rowCount();
+        for(int i = rowCount - 1;i >= 0;i--){
+            tableModel->removeRow(i);
+        }
+    }
+    //清除title
+    titleList.clear();
+    if(isHourTable){
+        titleList << "日期" << "气象要素"
+                  << "17" << "18" << "19" << "20" << "21" << "22"
+                  << "23" << "0" << "1" << "2" << "3" << "4"
+                  << "5" << "6" << "7" << "8" << "9" << "10"
+                  << "11" << "12" << "13" << "14" << "15" << "16"
+                  << "完全可飞" << "限制可飞" << "不可飞" << "影响原因";
+    }else{
+        titleList << "日期" << "气象要素"
+                  << "17 ~ 16"
+                  << "完全可飞" << "限制可飞" << "不可飞" << "影响原因";
+    }
+    //设置tablemodel
+    if(tableModel != NULL){
+        delete tableModel;
+    }
+    tableModel = new TableModel(0, titleList.size(), this, true);
+    int titleCount = titleList.size();
+    for(int i = 0;i < titleCount;i++){
+        tableModel->setHeaderData(i, Qt::Horizontal, titleList[i]);
+    }
+    tableView->setModel(tableModel);
+}
+
 void KfttjResultWidget::executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList){
     if(kfttjControl->isRunning()){
         QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
         return;
     }
-    //清除
-    int rowCount = tableModel->rowCount();
-    for(int i = rowCount - 1;i >= 0;i--){
-        tableModel->removeRow(i);
+    //根据多要素单要素创建对应的table
+    if(isMultiWeather){
+        createTable(true);
+    }else{
+        WeatherParam weatherParam = wpList[0];
+        switch(weatherParam.id()){
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 27:
+            createTable(true);
+            break;
+        default:
+            createTable(false);
+        }
     }
     //执行可飞天统计
     int dateCount = dateList.count();
@@ -200,6 +211,7 @@ void KfttjResultWidget::executeKfttj(QString airportCode, QList<QString> dateLis
                 .arg(extremumStartDatetime)
                 .arg(extremumEndDatetime);
 
+        kfttjControl->setTitleList(titleList);
         kfttjControl->setSummarySql(summarySql);
         kfttjControl->setExtremumSql(extremumSql);
         kfttjControl->setAirportCode(airportCode);

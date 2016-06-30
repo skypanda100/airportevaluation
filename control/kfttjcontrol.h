@@ -16,6 +16,7 @@ public:
     explicit KfttjControl(QObject *parent = 0);
     ~KfttjControl();
 
+    void setTitleList(QStringList);
     void setSummarySql(QString);
     void setExtremumSql(QString);
     void setAirportCode(QString);
@@ -69,7 +70,7 @@ private:
     /*** 降水.非强降水模式 ***/
     QString analysisMultiFqjs(const Monthsummary &, int, int);
     /*** 分析降水 ***/
-    QHash< QString, int > analysisMultiFqjs(QString evolution, QDateTime today, QDateTime yeasterday);
+    QHash< QString, int > analysisJs(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.浓积云 ***/
     QString analysisMultiNjy(const Monthsummary &, int, int);
     /*** 危险天气.积雨云 ***/
@@ -149,7 +150,7 @@ private:
     //整天时
     int whole_day;
 
-    QList<QString> titleList;
+    QList<QString> m_titleList;
     QString m_summarySql;
     QString m_extremumSql;
 

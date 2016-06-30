@@ -31,6 +31,7 @@ private:
     void initUI();
     void initConnect();
     void createCharts();
+    void createTable(bool isHourTable);
     void createNkfttjChart(const QHash< QString, QList<float> >&);
     void createKftyfbChart(const QHash< QString, QList<float> >&);
     void createZlwzdChart(const QHash< QString, QList<float> >&);

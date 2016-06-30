@@ -4,41 +4,15 @@
 KfttjControl::KfttjControl(QObject *parent)
     :QThread(parent)
 {
-    titleList << "日期"
-              << "气象要素"
-              << "17"
-              << "18"
-              << "19"
-              << "20"
-              << "21"
-              << "22"
-              << "23"
-              << "0"
-              << "1"
-              << "2"
-              << "3"
-              << "4"
-              << "5"
-              << "6"
-              << "7"
-              << "8"
-              << "9"
-              << "10"
-              << "11"
-              << "12"
-              << "13"
-              << "14"
-              << "15"
-              << "16"
-              << "完全可飞"
-              << "限制可飞"
-              << "不可飞"
-              << "影响原因";
     pgdb = new PgDataBase;
 }
 
 KfttjControl::~KfttjControl(){
     delete pgdb;
+}
+
+void KfttjControl::setTitleList(QStringList titleList){
+    this->m_titleList = titleList;
 }
 
 void KfttjControl::setSummarySql(QString summarySql){
@@ -540,13 +514,13 @@ void KfttjControl::analysis(){
             //综合
             emit sendMessage("综合", dateCount * elementCount + weatherParamCount, 1, 1, 1);
             //完全可飞
-            emit sendMessage("", dateCount * elementCount, titleList.indexOf("完全可飞"), elementCount, 1);
+            emit sendMessage("", dateCount * elementCount, m_titleList.indexOf("完全可飞"), elementCount, 1);
             //限制可飞
-            emit sendMessage("", dateCount * elementCount, titleList.indexOf("限制可飞"), elementCount, 1);
+            emit sendMessage("", dateCount * elementCount, m_titleList.indexOf("限制可飞"), elementCount, 1);
             //不可飞
-            emit sendMessage("", dateCount * elementCount, titleList.indexOf("不可飞"), elementCount, 1);
+            emit sendMessage("", dateCount * elementCount, m_titleList.indexOf("不可飞"), elementCount, 1);
             //影响原因
-            emit sendMessage("", dateCount * elementCount, titleList.size() - 1, elementCount, 1);
+            emit sendMessage("", dateCount * elementCount, m_titleList.size() - 1, elementCount, 1);
 
             //日可飞天统计
             if(i > 0){
@@ -557,7 +531,7 @@ void KfttjControl::analysis(){
         lastDateTime_local = currentDateTime_local;
 
         /***数据分析***/
-        bool canExecute = isDayTime(currentDateTime_utc);
+        bool canExecute = m_isMultiWeather ? isDayTime(currentDateTime_utc) : true;
         int hour = currentDateTime_utc.toString("h").toInt();
         if(canExecute){
             QStringList results;
@@ -567,120 +541,135 @@ void KfttjControl::analysis(){
                 switch(weatherParam.id()){
                 case 0:
                     //风.非强风模式.矢量风.顺风
-                    results.append(analysisMultiSf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiSf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 1:
                     //风.非强风模式.矢量风.逆风
-                    results.append(analysisMultiNf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiNf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 2:
                     //风.非强风模式.矢量风.侧风
-                    results.append(analysisMultiCf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiCf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 3:
                     //风.非强风模式.标量风
-                    results.append(analysisMultiBlf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiBlf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 4:
                     //温度.常规温
-                    results.append(analysisMultiCgw(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiCgw(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 5:
                     //气压.场面气压
-                    results.append(analysisMultiCmqy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiCmqy(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 6:
                     //气压.修正海面气压
-                    results.append(analysisMultiXzhmqy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiXzhmqy(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 7:
                     //湿度.常规湿.比湿
-                    results.append(analysisMultiCgs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiCgs(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 8:
                     //湿度.极湿.比湿
-                    results.append(analysisMultiJs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiJs(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 9:
                     //能见度.水平能见度
-                    results.append(analysisMultiSpnjd(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiSpnjd(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 10:
                     //云
-                    results.append(analysisMultiYlyg(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiYlyg(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 11:
                     //降水.非强降水模式
-                    results.append(analysisMultiFqjs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiFqjs(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 12:
                     //危险天气.浓积云
-                    results.append(analysisMultiNjy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiNjy(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 13:
                     //危险天气.积雨云
-                    results.append(analysisMultiJyy(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiJyy(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 14:
                     //危险天气.闪电
-                    results.append(analysisMultiSd(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiSd(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 15:
                     //危险天气.雷暴
-                    results.append(analysisMultiLb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiLb(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 16:
                     //危险天气.冰雹
-                    results.append(analysisMultiBb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiBb(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 17:
                     //危险天气.飑线
-                    results.append(analysisMultiBx(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiBx(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 18:
                     //危险天气.龙卷
-                    results.append(analysisMultiLj(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiLj(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 19:
                     //危险天气.沙尘暴
-                    results.append(analysisMultiScb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiScb(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 20:
                     //危险天气.风切变
-                    results.append(analysisMultiFqb(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisMultiFqb(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 21:
                     //风.强风模式.矢量风.顺风
-                    results.append(analysisSingleSf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleSf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 22:
                     //风.强风模式.矢量风.逆风
-                    results.append(analysisSingleNf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleNf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 23:
                     //风.强风模式.矢量风.侧风
-                    results.append(analysisSingleCf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleCf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 24:
                     //风.强风模式.标量风
-                    results.append(analysisSingleBlf(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleBlf(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 case 25:
                     //温度.极高温
-                    results.append(analysisSingleJgw(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleJgw(monthsummary, dateCount * elementCount + j, 2));
                     break;
                 case 26:
                     //温度.极低温
-                    results.append(analysisSingleJdw(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleJdw(monthsummary, dateCount * elementCount + j, 2));
                     break;
                 case 27:
                     //降水.强降水模式
-                    results.append(analysisSingleQjs(monthsummary, dateCount * elementCount + j, titleList.indexOf(QString::number(hour))));
+                    results.append(analysisSingleQjs(monthsummary, dateCount * elementCount + j, m_titleList.indexOf(QString::number(hour))));
                     break;
                 }
             }
             //综合
-            analysisAll(currentDateTime_local, results, dateCount * elementCount + weatherParamCount, titleList.indexOf(QString::number(hour)));
+            if(m_isMultiWeather){
+                analysisAll(currentDateTime_local, results, dateCount * elementCount + weatherParamCount, m_titleList.indexOf(QString::number(hour)));
+            }else{
+                WeatherParam weatherParam = m_wpList[0];
+                switch(weatherParam.id()){
+                case 21:
+                case 22:
+                case 23:
+                case 24:
+                case 27:
+                    analysisAll(currentDateTime_local, results, dateCount * elementCount + weatherParamCount, m_titleList.indexOf(QString::number(hour)));
+                    break;
+                default:
+                    analysisAll(currentDateTime_local, results, dateCount * elementCount + weatherParamCount, 2);
+                }
+            }
         }else{
             resAll.append(0);
         }
@@ -1539,11 +1528,13 @@ QString KfttjControl::analysisMultiYlyg(const Monthsummary &monthsummary, int ro
  * @return
  */
 QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int row, int col){
-    QString resultStr("3");
+    QString resultStr("");
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
     int index = getExtremumIndex(currentDateTime_utc);
     bool isFindJs = false;
+    bool isMissing = true;
     if(index > -1){
+        isMissing = false;
         Extremum extremum = extremumList[index];
         QDateTime today = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
         QDateTime yeasterday = today.addDays(-1);
@@ -1562,7 +1553,7 @@ QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int ro
         evolutionList.append(extremum.evolution10());
 
         for(QString evolution : evolutionList){
-            jsHash = this->analysisMultiFqjs(evolution, today, yeasterday);
+            jsHash = this->analysisJs(evolution, today, yeasterday);
             if(!jsHash.isEmpty()){
                 QList<QString> keyList = jsHash.keys();
                 for(QString timeStr : keyList){
@@ -1581,6 +1572,7 @@ QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int ro
         currentDateTime_utc = currentDateTime_utc.addDays(1);
         index = getExtremumIndex(currentDateTime_utc);
         if(index > -1){
+            isMissing = false;
             Extremum extremum = extremumList[index];
             QDateTime today = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
             QDateTime yeasterday = today.addDays(-1);
@@ -1599,7 +1591,7 @@ QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int ro
             evolutionList.append(extremum.evolution10());
 
             for(QString evolution : evolutionList){
-                jsHash = this->analysisMultiFqjs(evolution, today, yeasterday);
+                jsHash = this->analysisJs(evolution, today, yeasterday);
                 if(!jsHash.isEmpty()){
                     QList<QString> keyList = jsHash.keys();
                     for(QString timeStr : keyList){
@@ -1614,19 +1606,26 @@ QString KfttjControl::analysisMultiFqjs(const Monthsummary &monthsummary, int ro
             }
         }
     }
+    if(isMissing){
+        return resultStr;
+    }else{
+        if(resultStr.isEmpty()){
+            resultStr = QString("3");
+        }
+    }
     emit sendMessage(resultStr, row, col, 1, 1);
     return resultStr;
 }
 
 /**
- * @brief KfttjControl::analysisMultiFqjs
+ * @brief KfttjControl::analysisJs
  * 存储降水量的hash(key:QString value:int -> 1:不可飞,2:限制可飞,3:可飞)
  * @param evolution
  * @param today
  * @param yeasterday
  * @return
  */
-QHash< QString, int > KfttjControl::analysisMultiFqjs(QString evolution, QDateTime today, QDateTime yeasterday){
+QHash< QString, int > KfttjControl::analysisJs(QString evolution, QDateTime today, QDateTime yeasterday){
     //存储降水量的hash(key:QString value:int -> 1:不可飞,2:限制可飞,3:可飞)
     QHash< QString,  int > jsHash;
     if(evolution.indexOf("RA", 0, Qt::CaseInsensitive) >= 0
@@ -1669,11 +1668,11 @@ QHash< QString, int > KfttjControl::analysisMultiFqjs(QString evolution, QDateTi
                             QString hhmmStr = regExp.cap(1);
                             //给上一次天气现象赋值
                             if(element.startsWith("*")){
-                                lastWeatherDegree = 2;
+                                lastWeatherDegree = m_isMultiWeather ? 2 : 1;
                             }else if(element.startsWith("+")){
-                                lastWeatherDegree = 1;
+                                lastWeatherDegree = m_isMultiWeather ? 1 : 3;
                             }else{
-                                lastWeatherDegree = 1;
+                                lastWeatherDegree = m_isMultiWeather ? 1 : 2;
                             }
                             int hour = hhmmStr.mid(0, 2).toInt();
                             int minute = hhmmStr.mid(2, 2).toInt();
@@ -1836,8 +1835,6 @@ QHash< QString, int > KfttjControl::analysisMultiFqjs(QString evolution, QDateTi
             }
 
         }
-    }else{
-        return jsHash;
     }
     return jsHash;
 }
@@ -2268,9 +2265,11 @@ QString KfttjControl::analysisSingleJgw(const Monthsummary &monthsummary, int ro
         return resultStr;
     }
 
-    QString temperatureStr = monthsummary.temperature().trimmed();
-    if(temperatureStr.compare("") != 0){
-        float temperature = temperatureStr.toFloat();
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        float temperature = extremum.hightemperature().toFloat();
         //常规温
         if(isMatchArgs(temperature, limitList[0], limitList[1])){
             resultStr = QString("1");
@@ -2311,9 +2310,11 @@ QString KfttjControl::analysisSingleJdw(const Monthsummary &monthsummary, int ro
         return resultStr;
     }
 
-    QString temperatureStr = monthsummary.temperature().trimmed();
-    if(temperatureStr.compare("") != 0){
-        float temperature = temperatureStr.toFloat();
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    if(index > -1){
+        Extremum extremum = extremumList[index];
+        float temperature = extremum.lowtemperature().toFloat();
         //常规温
         if(isMatchArgs(temperature, limitList[0], limitList[1])){
             resultStr = QString("1");
@@ -2341,6 +2342,91 @@ QString KfttjControl::analysisSingleJdw(const Monthsummary &monthsummary, int ro
  */
 QString KfttjControl::analysisSingleQjs(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
+    QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
+    int index = getExtremumIndex(currentDateTime_utc);
+    bool isFindJs = false;
+    bool isMissing = true;
+    if(index > -1){
+        isMissing = false;
+        Extremum extremum = extremumList[index];
+        QDateTime today = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
+        QDateTime yeasterday = today.addDays(-1);
+        QHash< QString, int > jsHash;
+        //天气演变列表
+        QStringList evolutionList;
+        evolutionList.append(extremum.evolution1());
+        evolutionList.append(extremum.evolution2());
+        evolutionList.append(extremum.evolution3());
+        evolutionList.append(extremum.evolution4());
+        evolutionList.append(extremum.evolution5());
+        evolutionList.append(extremum.evolution6());
+        evolutionList.append(extremum.evolution7());
+        evolutionList.append(extremum.evolution8());
+        evolutionList.append(extremum.evolution9());
+        evolutionList.append(extremum.evolution10());
+
+        for(QString evolution : evolutionList){
+            jsHash = this->analysisJs(evolution, today, yeasterday);
+            if(!jsHash.isEmpty()){
+                QList<QString> keyList = jsHash.keys();
+                for(QString timeStr : keyList){
+                    if(timeStr.compare(monthsummary.datetime()) == 0){
+                        if(jsHash[timeStr] != 0){
+                            isFindJs = true;
+                            resultStr = QString("%1").arg(jsHash[timeStr]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(!isFindJs){
+        currentDateTime_utc = currentDateTime_utc.addDays(1);
+        index = getExtremumIndex(currentDateTime_utc);
+        if(index > -1){
+            isMissing = false;
+            Extremum extremum = extremumList[index];
+            QDateTime today = QDateTime::fromString(extremum.datetime(), "yyyy-MM-ddThh:mm:ss");
+            QDateTime yeasterday = today.addDays(-1);
+            QHash< QString, int > jsHash;
+            //天气演变列表
+            QStringList evolutionList;
+            evolutionList.append(extremum.evolution1());
+            evolutionList.append(extremum.evolution2());
+            evolutionList.append(extremum.evolution3());
+            evolutionList.append(extremum.evolution4());
+            evolutionList.append(extremum.evolution5());
+            evolutionList.append(extremum.evolution6());
+            evolutionList.append(extremum.evolution7());
+            evolutionList.append(extremum.evolution8());
+            evolutionList.append(extremum.evolution9());
+            evolutionList.append(extremum.evolution10());
+
+            for(QString evolution : evolutionList){
+                jsHash = this->analysisJs(evolution, today, yeasterday);
+                if(!jsHash.isEmpty()){
+                    QList<QString> keyList = jsHash.keys();
+                    for(QString timeStr : keyList){
+                        if(timeStr.compare(monthsummary.datetime()) == 0){
+                            if(jsHash[timeStr] != 0){
+                                resultStr = QString("%1").arg(jsHash[timeStr]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(isMissing){
+        return resultStr;
+    }else{
+        if(resultStr.isEmpty()){
+            resultStr = QString("1");
+        }
+    }
+    emit sendMessage(resultStr, row, col, 1, 1);
     return resultStr;
 }
 
@@ -2435,70 +2521,70 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
     kfttjValue.append(0);
     kfttjValue.append(0);
     kfttjValue.append(0);
-    //取得对应月份开始统计的位置
-    int month = lastDateTime_local.toString("M").toInt();
-    int startIndex = 0;
-    switch (month) {
-    case 1:
-        startIndex = titleList.indexOf(QString("%1").arg(jan_day[0])) - 2;
-        break;
-    case 2:
-        startIndex = titleList.indexOf(QString("%1").arg(feb_day[0])) - 2;
-        break;
-    case 3:
-        startIndex = titleList.indexOf(QString("%1").arg(mar_day[0])) - 2;
-        break;
-    case 4:
-        startIndex = titleList.indexOf(QString("%1").arg(apr_day[0])) - 2;
-        break;
-    case 5:
-        startIndex = titleList.indexOf(QString("%1").arg(may_day[0])) - 2;
-        break;
-    case 6:
-        startIndex = titleList.indexOf(QString("%1").arg(jun_day[0])) - 2;
-        break;
-    case 7:
-        startIndex = titleList.indexOf(QString("%1").arg(jul_day[0])) - 2;
-        break;
-    case 8:
-        startIndex = titleList.indexOf(QString("%1").arg(aug_day[0])) - 2;
-        break;
-    case 9:
-        startIndex = titleList.indexOf(QString("%1").arg(sep_day[0])) - 2;
-        break;
-    case 10:
-        startIndex = titleList.indexOf(QString("%1").arg(oct_day[0])) - 2;
-        break;
-    case 11:
-        startIndex = titleList.indexOf(QString("%1").arg(nov_day[0])) - 2;
-        break;
-    case 12:
-        startIndex = titleList.indexOf(QString("%1").arg(dec_day[0])) - 2;
-        break;
-    default:
-        break;
-    }
-    //取得半天及整天所在的位置
-    int halfIndex = titleList.indexOf(QString("%1").arg(half_day)) - 2;
-    int wholeIndex = titleList.indexOf(QString("%1").arg(whole_day)) - 2;
-
-    //判断是采用半天的统计算法还是整天的统计算法
-    int resCount = resAll.size();
-    QStringList valueStrList;
-    for(int i = startIndex;i < resCount;i++){
-        int val = resAll[i];
-        if(val == 0){
-            break;
-        }else{
-            valueStrList.append(QString("%1").arg(val));
-        }
-    }
-    int minHalfCount = halfIndex - startIndex + 1;
-    int minWholeCount = wholeIndex - startIndex + 1;
-    int valueCount = valueStrList.size();
-    QString valueStr = valueStrList.join("");
-
     if(m_isMultiWeather){
+        //取得对应月份开始统计的位置
+        int month = lastDateTime_local.toString("M").toInt();
+        int startIndex = 0;
+        switch (month) {
+        case 1:
+            startIndex = m_titleList.indexOf(QString("%1").arg(jan_day[0])) - 2;
+            break;
+        case 2:
+            startIndex = m_titleList.indexOf(QString("%1").arg(feb_day[0])) - 2;
+            break;
+        case 3:
+            startIndex = m_titleList.indexOf(QString("%1").arg(mar_day[0])) - 2;
+            break;
+        case 4:
+            startIndex = m_titleList.indexOf(QString("%1").arg(apr_day[0])) - 2;
+            break;
+        case 5:
+            startIndex = m_titleList.indexOf(QString("%1").arg(may_day[0])) - 2;
+            break;
+        case 6:
+            startIndex = m_titleList.indexOf(QString("%1").arg(jun_day[0])) - 2;
+            break;
+        case 7:
+            startIndex = m_titleList.indexOf(QString("%1").arg(jul_day[0])) - 2;
+            break;
+        case 8:
+            startIndex = m_titleList.indexOf(QString("%1").arg(aug_day[0])) - 2;
+            break;
+        case 9:
+            startIndex = m_titleList.indexOf(QString("%1").arg(sep_day[0])) - 2;
+            break;
+        case 10:
+            startIndex = m_titleList.indexOf(QString("%1").arg(oct_day[0])) - 2;
+            break;
+        case 11:
+            startIndex = m_titleList.indexOf(QString("%1").arg(nov_day[0])) - 2;
+            break;
+        case 12:
+            startIndex = m_titleList.indexOf(QString("%1").arg(dec_day[0])) - 2;
+            break;
+        default:
+            break;
+        }
+        //取得半天及整天所在的位置
+        int halfIndex = m_titleList.indexOf(QString("%1").arg(half_day)) - 2;
+        int wholeIndex = m_titleList.indexOf(QString("%1").arg(whole_day)) - 2;
+
+        //判断是采用半天的统计算法还是整天的统计算法
+        int resCount = resAll.size();
+        QStringList valueStrList;
+        for(int i = startIndex;i < resCount;i++){
+            int val = resAll[i];
+            if(val == 0){
+                break;
+            }else{
+                valueStrList.append(QString("%1").arg(val));
+            }
+        }
+        int minHalfCount = halfIndex - startIndex + 1;
+        int minWholeCount = wholeIndex - startIndex + 1;
+        int valueCount = valueStrList.size();
+        QString valueStr = valueStrList.join("");
+
         if(valueCount < minHalfCount){
             //缺测
             kfttjHash[kfttjKey] = kfttjValue;
@@ -2513,29 +2599,29 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
             QRegExp halfRegExp2("([2|3]{4,})");
             int halfPos1 = halfRegExp1.indexIn(valueStr);
             if(halfPos1 >= 0){
-                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
+                emit sendMessage("0.5", row, m_titleList.indexOf("完全可飞"), 1, 1);
                 kfttjValue[0] = 0.5;
                 kfttjHash[kfttjKey] = kfttjValue;
             }else{
                 int halfPos2 = halfRegExp2.indexIn(valueStr);
                 if(halfPos2 >= 0){
-                    emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                    emit sendMessage("0.5", row, m_titleList.indexOf("限制可飞"), 1, 1);
                     kfttjValue[1] = 0.5;
                     kfttjHash[kfttjKey] = kfttjValue;
 
                     if(effectHash.contains(kfttjKey)){
                         QStringList xzkfEffectList = effectHash[kfttjKey][0];
-                        emit sendMessage(xzkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                        emit sendMessage(xzkfEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                         xzkfEffectHash[kfttjKey] = xzkfEffectList;
                     }
                 }else{
-                    emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                    emit sendMessage("0.5", row, m_titleList.indexOf("不可飞"), 1, 1);
                     kfttjValue[2] = 0.5;
                     kfttjHash[kfttjKey] = kfttjValue;
 
                     if(effectHash.contains(kfttjKey)){
                         QStringList bkfEffectList = effectHash[kfttjKey][1];
-                        emit sendMessage(bkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                        emit sendMessage(bkfEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                         bkfEffectHash[kfttjKey] = bkfEffectList;
                     }
                 }
@@ -2558,40 +2644,40 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
             QRegExp wholeRegExp6("[2|3]{4,}");
             int wholePos1 = wholeRegExp1.indexIn(valueStr);
             if(wholePos1 >= 0){
-                emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
+                emit sendMessage("1", row, m_titleList.indexOf("完全可飞"), 1, 1);
                 kfttjValue[0] = 1;
                 kfttjHash[kfttjKey] = kfttjValue;
             }else{
                 int wholePos2 = wholeRegExp2.indexIn(valueStr);
                 if(wholePos2 >= 0){
-                    emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
+                    emit sendMessage("1", row, m_titleList.indexOf("限制可飞"), 1, 1);
                     kfttjValue[1] = 1;
                     kfttjHash[kfttjKey] = kfttjValue;
 
                     if(effectHash.contains(kfttjKey)){
                         QStringList xzkfEffectList = effectHash[kfttjKey][0];
-                        emit sendMessage(xzkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                        emit sendMessage(xzkfEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                         xzkfEffectHash[kfttjKey] = xzkfEffectList;
                     }
                 }else{
                     int wholePos3 = wholeRegExp3.indexIn(valueStr);
                     if(wholePos3 >= 0){
-                        emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
-                        emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                        emit sendMessage("0.5", row, m_titleList.indexOf("完全可飞"), 1, 1);
+                        emit sendMessage("0.5", row, m_titleList.indexOf("不可飞"), 1, 1);
                         kfttjValue[0] = 0.5;
                         kfttjValue[2] = 0.5;
                         kfttjHash[kfttjKey] = kfttjValue;
 
                         if(effectHash.contains(kfttjKey)){
                             QStringList bkfEffectList = effectHash[kfttjKey][1];
-                            emit sendMessage(bkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                            emit sendMessage(bkfEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                             bkfEffectHash[kfttjKey] = bkfEffectList;
                         }
                     }else{
                         int wholePos4 = wholeRegExp4.indexIn(valueStr);
                         if(wholePos4 >= 0){
-                            emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
-                            emit sendMessage("0.5", row, titleList.indexOf("不可飞"), 1, 1);
+                            emit sendMessage("0.5", row, m_titleList.indexOf("限制可飞"), 1, 1);
+                            emit sendMessage("0.5", row, m_titleList.indexOf("不可飞"), 1, 1);
                             kfttjValue[1] = 0.5;
                             kfttjValue[2] = 0.5;
                             kfttjHash[kfttjKey] = kfttjValue;
@@ -2612,34 +2698,34 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
                                         sumEffectList.append(bkfEffectList[i]);
                                     }
                                 }
-                                emit sendMessage(sumEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                                emit sendMessage(sumEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                                 xzkfEffectHash[kfttjKey] = xzkfEffectList;
                                 bkfEffectHash[kfttjKey] = bkfEffectList;
                             }
                         }else{
                             int wholePos5 = wholeRegExp5.indexIn(valueStr);
                             if(wholePos5 >= 0){
-                                emit sendMessage("0.5", row, titleList.indexOf("完全可飞"), 1, 1);
-                                emit sendMessage("0.5", row, titleList.indexOf("限制可飞"), 1, 1);
+                                emit sendMessage("0.5", row, m_titleList.indexOf("完全可飞"), 1, 1);
+                                emit sendMessage("0.5", row, m_titleList.indexOf("限制可飞"), 1, 1);
                                 kfttjValue[0] = 0.5;
                                 kfttjValue[1] = 0.5;
                                 kfttjHash[kfttjKey] = kfttjValue;
 
                                 if(effectHash.contains(kfttjKey)){
                                     QStringList xzkfEffectList = effectHash[kfttjKey][0];
-                                    emit sendMessage(xzkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                                    emit sendMessage(xzkfEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                                     xzkfEffectHash[kfttjKey] = xzkfEffectList;
                                 }
                             }else{
                                 int wholePos6 = wholeRegExp6.indexIn(valueStr);
                                 if(wholePos6 < 0){
-                                    emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                                    emit sendMessage("1", row, m_titleList.indexOf("不可飞"), 1, 1);
                                     kfttjValue[2] = 1;
                                     kfttjHash[kfttjKey] = kfttjValue;
 
                                     if(effectHash.contains(kfttjKey)){
                                         QStringList bkfEffectList = effectHash[kfttjKey][1];
-                                        emit sendMessage(bkfEffectList.join("\r\n"), row, titleList.size() - 1, 1, 1);
+                                        emit sendMessage(bkfEffectList.join("\r\n"), row, m_titleList.size() - 1, 1, 1);
                                         bkfEffectHash[kfttjKey] = bkfEffectList;
                                     }
                                 }
@@ -2650,20 +2736,31 @@ void KfttjControl::analysisDay(QDateTime lastDateTime_local, int row){
             }
         }
     }else{
+        int resCount = resAll.size();
+        QStringList valueStrList;
+        for(int i = 0;i < resCount;i++){
+            int val = resAll[i];
+            if(val != 0){
+                valueStrList.append(QString("%1").arg(val));
+            }
+        }
+        int valueCount = valueStrList.size();
+        QString valueStr = valueStrList.join("");
+
         if(valueCount == 0){
             //缺测
             kfttjHash[kfttjKey] = kfttjValue;
         }else{
             if(valueStr.indexOf("3") > -1){
-                emit sendMessage("1", row, titleList.indexOf("完全可飞"), 1, 1);
+                emit sendMessage("1", row, m_titleList.indexOf("完全可飞"), 1, 1);
                 kfttjValue[0] = 1;
                 kfttjHash[kfttjKey] = kfttjValue;
             }else if(valueStr.indexOf("2") > -1){
-                emit sendMessage("1", row, titleList.indexOf("限制可飞"), 1, 1);
+                emit sendMessage("1", row, m_titleList.indexOf("限制可飞"), 1, 1);
                 kfttjValue[1] = 1;
                 kfttjHash[kfttjKey] = kfttjValue;
             }else{
-                emit sendMessage("1", row, titleList.indexOf("不可飞"), 1, 1);
+                emit sendMessage("1", row, m_titleList.indexOf("不可飞"), 1, 1);
                 kfttjValue[2] = 1;
                 kfttjHash[kfttjKey] = kfttjValue;
             }

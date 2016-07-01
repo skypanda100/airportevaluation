@@ -1,6 +1,7 @@
 #include "sjdrmainwidget.h"
 #include "database/asdatabase.h"
 #include "model/treemodel.h"
+#include "common/sharedmemory.h"
 
 SjdrMainWidget::SjdrMainWidget(QWidget *parent)
     :QTreeView(parent)
@@ -213,6 +214,8 @@ void SjdrMainWidget::execute(bool isEnd){
             this->resizeColumnToContents(column);
         }
         emit setProgressValue(100);
+        //共享区初始化
+        SharedMemory::getInstance()->queryAirportInfomation();
     }
 }
 

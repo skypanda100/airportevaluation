@@ -356,6 +356,7 @@ void KfttjResultWidget::createNkfttjChart(const QHash< QString, QList<float> > &
     pieChart->setPieSize(210, 200, 150);
     pieChart->setLabelLayout(Chart::SideLayout, 16);
     pieChart->setLabelFormat("{={sector}+1}");
+    pieChart->setLabelStyle("msyhbd.ttf", 10)->setBackground(Chart::SameAsMainColor, 0x444444);
 
     pieChart->setData(DoubleArray(datas, (int)(sizeof(datas) / sizeof(datas[0]))), StringArray(labels, (int)(
         sizeof(labels) / sizeof(labels[0]))));
@@ -468,6 +469,8 @@ void KfttjResultWidget::createZlwzdChart(const QHash< QString, QList<float> > &k
     pieChart->addLine(10, title->getHeight(), pieChart->getWidth() - 11, title->getHeight(), Chart::LineColor);
     pieChart->setLabelLayout(Chart::SideLayout, 16);
     pieChart->setLabelFormat("{={sector}+1}");
+    pieChart->setLabelStyle("msyhbd.ttf", 10)->setBackground(Chart::SameAsMainColor, 0x444444);
+
     pieChart->setData(DoubleArray(datas, (int)(sizeof(datas) / sizeof(datas[0]))), StringArray(labels, (int)(
         sizeof(labels) / sizeof(labels[0]))));
     pieChart->setColors(Chart::DataColor, IntArray(colors, (int)(sizeof(colors) / sizeof(colors[0]))));
@@ -541,6 +544,8 @@ void KfttjResultWidget::createXzkfNfbChart(const QHash<QString, QStringList> &ef
     pieChart->setPieSize(210, 200, 150);
     pieChart->setLabelLayout(Chart::SideLayout, 16);
     pieChart->setLabelFormat("{={sector}+1}");
+    pieChart->setLabelStyle("msyhbd.ttf", 10)->setBackground(Chart::SameAsMainColor, 0x444444);
+
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
 
@@ -614,6 +619,8 @@ void KfttjResultWidget::createBkfNfbChart(const QHash<QString, QStringList> &eff
     pieChart->setPieSize(210, 200, 150);
     pieChart->setLabelLayout(Chart::SideLayout, 16);
     pieChart->setLabelFormat("{={sector}+1}");
+    pieChart->setLabelStyle("msyhbd.ttf", 10)->setBackground(Chart::SameAsMainColor, 0x444444);
+
     pieChart->setData(DoubleArray(datas, dataCount), StringArray(labels, labelCount));
     pieChart->setColors(Chart::DataColor, IntArray(colors, labelCount));
 

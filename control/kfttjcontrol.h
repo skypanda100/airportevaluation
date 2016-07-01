@@ -116,6 +116,8 @@ private:
 private:
     //机场code
     QString m_airportCode;
+    //机场跑道方向
+    float m_runwayDirection;
     //是否为多要素
     bool m_isMultiWeather;
     //气象要素

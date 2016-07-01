@@ -79,6 +79,8 @@ private:
     QString analysisMultiSd(const Monthsummary &, int, int);
     /*** 危险天气.雷暴 ***/
     QString analysisMultiLb(const Monthsummary &, int, int);
+    /*** 分析雷暴 ***/
+    QHash< QString, int > analysisLb(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.冰雹 ***/
     QString analysisMultiBb(const Monthsummary &, int, int);
     /*** 危险天气.飑线 ***/

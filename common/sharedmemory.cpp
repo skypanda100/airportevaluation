@@ -3,10 +3,17 @@
 SharedMemory* SharedMemory::sm = NULL;
 QMutex SharedMemory::mutex;
 
+/**
+ * @brief SharedMemory::SharedMemory
+ */
 SharedMemory::SharedMemory(){
     pgDb = new PgDataBase;
 }
 
+/**
+ * @brief SharedMemory::getInstance
+ * @return
+ */
 SharedMemory *SharedMemory::getInstance(){
     if(!sm){
         QMutexLocker locker(&mutex);
@@ -18,23 +25,46 @@ SharedMemory *SharedMemory::getInstance(){
     return sm;
 }
 
+/**
+ * @brief SharedMemory::queryAirportInfomation
+ */
 void SharedMemory::queryAirportInfomation(){
     m_aiportList.clear();
     m_runwayHash.clear();
+    m_windHash.clear();
 
     this->queryAirport();
 
     emit airportInfoChanged(m_aiportList, m_runwayHash);
 }
 
+/**
+ * @brief SharedMemory::getAirportList
+ * @return
+ */
 QList<Airport> SharedMemory::getAirportList() const {
     return this->m_aiportList;
 }
 
+/**
+ * @brief SharedMemory::getRunwayHash
+ * @return
+ */
 QHash< QString, QList<QString> > SharedMemory::getRunwayHash() const {
     return this->m_runwayHash;
 }
 
+/**
+ * @brief SharedMemory::getWindHash
+ * @return
+ */
+QHash< QString, QList<QString> > SharedMemory::getWindHash() const {
+    return this->m_windHash;
+}
+
+/**
+ * @brief SharedMemory::queryAirport
+ */
 void SharedMemory::queryAirport(){
     QString queryStr = QString("select * from airport");
     QSqlQueryModel *plainModel = pgDb->queryModel(queryStr);
@@ -53,10 +83,20 @@ void SharedMemory::queryAirport(){
         //查找跑道
         QList<QString> runwayList = queryRunway(airport.code().toLower());
         m_runwayHash[airport.name()] = runwayList;
+        //查找自动站风
+        for(QString runwayStr : runwayList){
+            QList<QString> windList = queryWind(airport.code().toLower(), runwayStr);
+            m_windHash[QString("%1%2").arg(airport.code().toLower()).arg(runwayStr)] = windList;
+        }
     }
     delete plainModel;
 }
 
+/**
+ * @brief SharedMemory::queryRunway
+ * @param codeStr
+ * @return
+ */
 QList<QString> SharedMemory::queryRunway(QString codeStr){
     QList<QString> runwayList;
     //查找自动站风表
@@ -84,4 +124,24 @@ QList<QString> SharedMemory::queryRunway(QString codeStr){
 //        runwayList.append(resList[i].toString());
 //    }
 //    return runwayList;
+}
+
+/**
+ * @brief SharedMemory::queryWind
+ * @param codeStr
+ * @param runwayStr
+ * @return
+ */
+QList<QString> SharedMemory::queryWind(QString codeStr, QString runwayStr){
+    QList<QString> dateList;
+    //查找自动站风表
+    QString queryStr = QString("select distinct to_char(datetime, 'yyyy') as year from %1_automaticwind where runwayno = '%2' order by year desc")
+            .arg(codeStr)
+            .arg(runwayStr);
+    QList<QVariant> resList = pgDb->queryVariant(queryStr);
+    int resCount = resList.size();
+    for(int i = 0;i < resCount;i++){
+        dateList.append(resList[i].toString());
+    }
+    return dateList;
 }

@@ -181,12 +181,16 @@ void FmgInputWidget::queryDate(){
     QString codeStr = airportList[airportIndex].code();
     QString runwayStr = runwayComboBox->currentText();
     if(!codeStr.isEmpty() && !runwayStr.isEmpty()){
-        QString queryStr = QString("select distinct to_char(datetime, 'yyyy') as year from %1_automaticwind where runwayno = '%2' order by year desc").arg(codeStr).arg(runwayStr);
-        QList<QVariant> resList = pgdb->queryVariant(queryStr);
-        int resCount = resList.size();
-        for(int i = 0;i < resCount;i++){
-            dateList.append(resList[i].toString());
+        QHash< QString, QList<QString> > windHash = SharedMemory::getInstance()->getWindHash();
+        if(windHash.contains(QString("%1%2").arg(codeStr.toLower()).arg(runwayStr))){
+            dateList = windHash[QString("%1%2").arg(codeStr.toLower()).arg(runwayStr)];
         }
+//        QString queryStr = QString("select distinct to_char(datetime, 'yyyy') as year from %1_automaticwind where runwayno = '%2' order by year desc").arg(codeStr).arg(runwayStr);
+//        QList<QVariant> resList = pgdb->queryVariant(queryStr);
+//        int resCount = resList.size();
+//        for(int i = 0;i < resCount;i++){
+//            dateList.append(resList[i].toString());
+//        }
     }
 }
 

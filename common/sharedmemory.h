@@ -14,6 +14,7 @@ public:
     void queryAirportInfomation();
     QList<Airport> getAirportList() const;
     QHash< QString, QList<QString> > getRunwayHash() const;
+    QHash< QString, QList<QString> > getWindHash() const;
 
 signals:
     void airportInfoChanged(QList<Airport>, QHash< QString, QList<QString> >);
@@ -22,6 +23,7 @@ private:
     SharedMemory();
     void queryAirport();
     QList<QString> queryRunway(QString);
+    QList<QString> queryWind(QString, QString);
 
 private:
     //互斥锁
@@ -35,6 +37,9 @@ private:
     QList<Airport> m_aiportList;
     //跑道hash(key:机场code value:跑道列表)
     QHash< QString, QList<QString> > m_runwayHash;
+    //自动站风hash(key:机场code+跑道 value:年列表)
+    QHash< QString, QList<QString> > m_windHash;
+
 };
 
 #endif // SHAREDMEMORY

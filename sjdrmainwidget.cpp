@@ -136,7 +136,7 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                 QFileInfo fileInfo(file);
                 for(;j < qualityControlSourceCount;j++){
                     QualityControlSource qualityControlSource = qualityControlSourceList[j];
-                    if(title.compare(qualityControlSource.fields()) == 0){
+                    if(title.indexOf(qualityControlSource.fields()) == 0){
                         srcHash[j].append(fileInfo.fileName());
                         dataControl(fileInfo, qualityControlSource);
                         break;

@@ -172,6 +172,12 @@ void SjdrControl::run(){
     }
 }
 
+/**
+ * @brief SjdrControl::message
+ * @param info
+ * @param sjdrElement
+ * @param code
+ */
 void SjdrControl::message(const QString &info, const SjdrElement &sjdrElement, ReturnCode code){
     QStringList messages;
     if(MSG_SUCCESS == code){
@@ -205,7 +211,7 @@ void SjdrControl::controlSummary(const SjdrElement &sjdrElement){
     for(int i = 0;i < tableCount;i++){
         QStringList titleList = asdb.queryFields(tables[i]);
         QString title = titleList.join(",");
-        if(title.compare(qualityControlSource.fields()) == 0){
+        if(title.indexOf(qualityControlSource.fields()) == 0){
             QString queryStr = QString("select %1 from %2").arg(qualityControlSource.fields()).arg(tables[i]);
             QSqlQueryModel *plainModel = asdb.queryModel(queryStr);
             int rowCount = plainModel->rowCount();
@@ -244,7 +250,7 @@ void SjdrControl::controlSummary(const SjdrElement &sjdrElement){
 }
 
 /**
- * @brief SjdrControl::controlSummary
+ * @brief SjdrControl::controlExtremum
  * @param sjdrElement
  * 极值
  */
@@ -259,7 +265,7 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
     for(int i = 0;i < tableCount;i++){
         QStringList titleList = asdb.queryFields(tables[i]);
         QString title = titleList.join(",");
-        if(title.compare(qualityControlSource.fields()) == 0){
+        if(title.indexOf(qualityControlSource.fields()) == 0){
             QString queryStr = QString("select %1 from %2").arg(qualityControlSource.fields()).arg(tables[i]);
             QSqlQueryModel *plainModel = asdb.queryModel(queryStr);
             int rowCount = plainModel->rowCount();
@@ -298,7 +304,7 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
 }
 
 /**
- * @brief SjdrControl::controlSummary
+ * @brief SjdrControl::controlMainlandAutomaticWind
  * @param sjdrElement
  * 大陆自动站风
  */
@@ -364,7 +370,7 @@ void SjdrControl::controlMainlandAutomaticWind(const SjdrElement &sjdrElement){
 }
 
 /**
- * @brief SjdrControl::controlSummary
+ * @brief SjdrControl::controlMacaoAutomaticWind
  * @param sjdrElement
  * 澳门自动站风
  */
@@ -460,7 +466,7 @@ void SjdrControl::controlMacaoAutomaticWind(const SjdrElement &sjdrElement){
 }
 
 /**
- * @brief SjdrControl::controlSummary
+ * @brief SjdrControl::controlMainlandAutomaticTemperature
  * @param sjdrElement
  * 大陆自动站温度气压
  */

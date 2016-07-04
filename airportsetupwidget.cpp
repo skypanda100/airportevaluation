@@ -527,6 +527,7 @@ void AirportSetupWidget::initData(){
 }
 
 void AirportSetupWidget::initUI(){
+    this->setWindowFlags(Qt::WindowCloseButtonHint);
     this->setWindowIcon(QIcon(":/images/airport_setup.png"));
     this->setWindowTitle("机场设置");
 

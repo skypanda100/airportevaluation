@@ -87,6 +87,9 @@ void MultiWeatherParamWidget::initData(){
 void MultiWeatherParamWidget::initUI(){
     QWidget *scrollWidget = new QWidget;
     QVBoxLayout *scrollLayout = new QVBoxLayout;
+    QLabel *infoLabel = new QLabel;
+    infoLabel->setText("<font color='#E10000'>大于等于左侧阀值,小于右侧阀值.<br>如果左侧阀值为空,则大于等于无穷小.<br>如果右侧阀值为空,则小于无穷大.</font>");
+    scrollLayout->addWidget(infoLabel);
 
     editHash.clear();
     QRegExp regExp("^-?(\\d+(\\.\\d{1,2})?)$");
@@ -344,6 +347,9 @@ void SingleWeatherParamWidget::initData(){
 void SingleWeatherParamWidget::initUI(){
     QWidget *scrollWidget = new QWidget;
     QVBoxLayout *scrollLayout = new QVBoxLayout;
+    QLabel *infoLabel = new QLabel;
+    infoLabel->setText("<font color='#E10000'>大于等于左侧阀值,小于右侧阀值.<br>如果左侧阀值为空,则大于等于无穷小.<br>如果右侧阀值为空,则小于无穷大.</font>");
+    scrollLayout->addWidget(infoLabel);
 
     editHash.clear();
     QRegExp regExp("^-?(\\d+(\\.\\d{1,2})?)$");
@@ -555,6 +561,7 @@ void WeatherParamSetupWidget::initData(){
 }
 
 void WeatherParamSetupWidget::initUI(){
+    this->setWindowFlags(Qt::WindowCloseButtonHint);
     this->setFixedWidth(440);
     this->setFixedHeight(500);
 

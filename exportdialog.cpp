@@ -23,6 +23,7 @@ ExportDialog::~ExportDialog(){
 }
 
 void ExportDialog::initUI(){
+    this->setWindowFlags(Qt::WindowCloseButtonHint);
     //标题
     this->setWindowTitle("数据导出");
     //数据定义表格

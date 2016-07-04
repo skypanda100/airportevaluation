@@ -103,3 +103,25 @@ win32 {
     dst_dir ~= s,/,\\,g
     !exists($$dst_dir chartdir60.dll):system(xcopy $$src_dir $$dst_dir /Y)
 }
+win32 {
+    src_dir = $$PWD\\fonts\\msyh.ttf
+    CONFIG(debug, debug|release) {
+        dst_dir = $$OUT_PWD\\debug\\fonts\\
+    } else {
+        dst_dir = $$OUT_PWD\\release\\fonts\\
+    }
+    src_dir ~= s,/,\\,g
+    dst_dir ~= s,/,\\,g
+    !exists($$dst_dir msyh.ttf):system(xcopy $$src_dir $$dst_dir /Y)
+}
+win32 {
+    src_dir = $$PWD\\fonts\\msyhbd.ttf
+    CONFIG(debug, debug|release) {
+        dst_dir = $$OUT_PWD\\debug\\fonts\\
+    } else {
+        dst_dir = $$OUT_PWD\\release\\fonts\\
+    }
+    src_dir ~= s,/,\\,g
+    dst_dir ~= s,/,\\,g
+    !exists($$dst_dir msyhbd.ttf):system(xcopy $$src_dir $$dst_dir /Y)
+}

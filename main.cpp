@@ -4,19 +4,10 @@
 
 int main(int argc, char *argv[])
 {
-/*
-    int delay = 18;
-    int interval = 6;
-    for(int i = 0;i < 60;i++){
-        for(int j = 0;j < 60 / interval;j++){
-            int currentTime = (i + j * interval);
-            int minute = ((currentTime - delay + 60) % 60) / 6 * 6;
-            qDebug() << i << minute;
-        }
-    }
-*/
     QApplication a(argc, argv);
-
+    //添加字体
+    QFontDatabase::addApplicationFont(QApplication::applicationDirPath() + "/fonts/msyh.ttf");
+    QFontDatabase::addApplicationFont(QApplication::applicationDirPath() + "/fonts/msyhbd.ttf");
     //设置字体
     QFont font;
     font.setFamily("Microsoft Yahei");

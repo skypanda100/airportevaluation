@@ -191,28 +191,36 @@ void KfttjResultWidget::executeKfttj(QString airportCode, QList<QString> dateLis
     }
     //执行可飞天统计
     int dateCount = dateList.count();
+    QStringList summarySqlList;
+    QStringList extremumSqlList;
     for(int i = 0;i < dateCount;i++){
         int dateInt = dateList[i].toInt();
         //查询月总簿表
         QString summaryStartDatetime = QString("%1-12-31 17:00:00").arg(dateInt - 1);
         QString summaryEndDatetime = QString("%1-12-31 16:00:00").arg(dateInt);
 
-        QString summarySql = QString("select * from %1_monthsummary where datetime >= '%2' and datetime <= '%3' order by datetime")
+        QString summarySql = QString("select * from %1_monthsummary where datetime >= '%2' and datetime <= '%3'")
                 .arg(airportCode)
                 .arg(summaryStartDatetime)
                 .arg(summaryEndDatetime);
 
+        summarySqlList.append(summarySql);
         //查询极值表
         QString extremumStartDatetime = QString("%1-01-01 00:00:00").arg(dateInt);
         QString extremumEndDatetime = QString("%1-12-31 23:59:59").arg(dateInt);
 
-        QString extremumSql = QString("select * from %1_extremum where datetime >= '%2' and datetime <= '%3' order by datetime")
+        QString extremumSql = QString("select * from %1_extremum where datetime >= '%2' and datetime <= '%3'")
                 .arg(airportCode)
                 .arg(extremumStartDatetime)
                 .arg(extremumEndDatetime);
 
+        extremumSqlList.append(extremumSql);
+    }
+    if(dateCount > 0){
         kfttjControl->setTitleList(titleList);
+        QString summarySql = QString("%1 order by datetime").arg(summarySqlList.join(" union "));
         kfttjControl->setSummarySql(summarySql);
+        QString extremumSql = QString("%1 order by datetime").arg(extremumSqlList.join(" union "));
         kfttjControl->setExtremumSql(extremumSql);
         kfttjControl->setAirportCode(airportCode);
         kfttjControl->setMultiWeather(isMultiWeather);

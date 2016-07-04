@@ -11,12 +11,12 @@ KfttjInputWidget::KfttjInputWidget(QWidget *parent)
 
 KfttjInputWidget::~KfttjInputWidget(){
     delete airportComboBox;
-    int dateRadioButtonCount = dateRadioButtonList.size();
-    for(int i = 0;i < dateRadioButtonCount;i++){
-        QRadioButton *radioButton = dateRadioButtonList[i];
-        delete radioButton;
+    int dateCheckBoxCount = dateCheckBoxList.size();
+    for(int i = 0;i < dateCheckBoxCount;i++){
+        QCheckBox *checkBox = dateCheckBoxList[i];
+        delete checkBox;
     }
-    dateRadioButtonList.clear();
+    dateCheckBoxList.clear();
     delete dateLayout;
     delete qxysComboBox;
     delete slfRadioButton;
@@ -457,18 +457,18 @@ void KfttjInputWidget::onAirportChanged(int index){
  * 充值日期区域
  */
 void KfttjInputWidget::resetDateArea(){
-    int dateRadioButtonCount = dateRadioButtonList.size();
-    for(int i = 0;i < dateRadioButtonCount;i++){
-        QRadioButton *radioButton = dateRadioButtonList[i];
-        delete radioButton;
+    int dateCheckBoxCount = dateCheckBoxList.size();
+    for(int i = 0;i < dateCheckBoxCount;i++){
+        QCheckBox *checkBox = dateCheckBoxList[i];
+        delete checkBox;
     }
-    dateRadioButtonList.clear();
+    dateCheckBoxList.clear();
 
     int dateCount = dateList.size();
     for(int i = 0;i < dateCount;i++){
-        QRadioButton *radioButton = new QRadioButton(dateList[i]);
-        dateLayout->addWidget(radioButton, i / 3 , i % 3);
-        dateRadioButtonList.append(radioButton);
+        QCheckBox *checkBox = new QCheckBox(dateList[i]);
+        dateLayout->addWidget(checkBox, i / 3 , i % 3);
+        dateCheckBoxList.append(checkBox);
     }
 }
 
@@ -501,13 +501,13 @@ bool KfttjInputWidget::validate(){
         return false;
     }
     //检查日期
-    if(dateRadioButtonList.count() == 0){
+    if(dateCheckBoxList.count() == 0){
         QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个日期才能进行可飞天统计!\n请在数据导入里导入月总簿.");
         return false;
     }
     bool isDateChecked = false;
-    for(QRadioButton *radioButton : dateRadioButtonList){
-        if(radioButton->isChecked()){
+    for(QCheckBox *checkBox : dateCheckBoxList){
+        if(checkBox->isChecked()){
             isDateChecked = true;
             break;
         }
@@ -609,9 +609,9 @@ void KfttjInputWidget::execute(){
         QString airportCode = airportList[airportComboBox->currentIndex()].code();
         //日期
         QList<QString> dateList;
-        for(QRadioButton *radioButton : dateRadioButtonList){
-            if(radioButton->isChecked()){
-                dateList.append(radioButton->text());
+        for(QCheckBox *checkBox : dateCheckBoxList){
+            if(checkBox->isChecked()){
+                dateList.append(checkBox->text());
             }
         }
         //气象要素

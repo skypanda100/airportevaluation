@@ -83,12 +83,20 @@ private:
     QHash< QString, int > analysisLb(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.冰雹 ***/
     QString analysisMultiBb(const Monthsummary &, int, int);
+    /*** 分析冰雹 ***/
+    QHash< QString, int > analysisBb(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.飑线 ***/
     QString analysisMultiBx(const Monthsummary &, int, int);
+    /*** 分析飑线 ***/
+    QHash< QString, int > analysisBx(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.龙卷 ***/
     QString analysisMultiLj(const Monthsummary &, int, int);
+    /*** 分析龙卷 ***/
+    QHash< QString, int > analysisLj(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.沙尘暴 ***/
     QString analysisMultiScb(const Monthsummary &, int, int);
+    /*** 分析沙尘暴 ***/
+    QHash< QString, int > analysisScb(QString evolution, QDateTime today, QDateTime yeasterday);
     /*** 危险天气.风切变 ***/
     QString analysisMultiFqb(const Monthsummary &, int, int);
     /*** 风.强风模式.矢量风.顺风 ***/
@@ -106,7 +114,6 @@ private:
     /*** 降水.强降水 ***/
     QString analysisSingleQjs(const Monthsummary &, int, int);
 
-    /////////
     QString analysisAll(QDateTime, QStringList, int, int);
     void analysisDay(QDateTime, int);
 

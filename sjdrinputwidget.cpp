@@ -209,7 +209,7 @@ int SjdrInputWidget::findFiles(QString path){
         i++;
     } while(i < list.size());
 
-    return i;
+    return sourceFileList.count();
 }
 
 /**

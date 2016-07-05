@@ -63,7 +63,6 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
     }
 
     //给数据源分类
-    emit setProgressValue(1);
     assortSource(qualityControlSourceList, fileList);
     sumCount = fileList.count();
     executeCount = 0;

@@ -430,6 +430,9 @@ void KfttjInputWidget::resetAirportComboBox(QList<Airport> apList, bool isSave){
                 }
             }
         }
+        if(airportComboBox->currentIndex() > -1){
+            onAirportChanged(airportComboBox->currentIndex());
+        }
     }
     connect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
 }

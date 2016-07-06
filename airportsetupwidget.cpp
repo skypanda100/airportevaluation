@@ -484,6 +484,8 @@ void AirportModifyWidget::onConfirmClicked(){
         if(ret){
             SharedMemory::getInstance()->queryAirportInfomation();
             QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
+            //机场code
+            airportList = SharedMemory::getInstance()->getAirportList();
         }else{
             QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
         }

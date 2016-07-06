@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include "database/pgdatabase.h"
+#define PI 3.1415926
 
 class RckqControl : public QThread{
     Q_OBJECT

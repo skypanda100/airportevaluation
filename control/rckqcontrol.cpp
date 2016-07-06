@@ -131,7 +131,7 @@ void RckqControl::run(){
 
                         runwayStr = runwayStr.replace(QRegExp("\\w+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
-                        windSpeed = qAbs(qSin(winddir - runwayAngle) * windSpeed);
+                        windSpeed = qAbs(qSin((winddir - runwayAngle) * PI / 180) * windSpeed);
                         valueList[min] = QString("%1").arg(windSpeed);
 
                         if(ymdhStr.compare("") == 0){
@@ -180,7 +180,7 @@ void RckqControl::run(){
 
                         runwayStr = runwayStr.replace(QRegExp("\\w+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
-                        windSpeed = -(qCos(winddir - runwayAngle) * windSpeed);
+                        windSpeed = -(qCos((winddir - runwayAngle) * PI / 180) * windSpeed);
                         valueList[min] = QString("%1").arg(windSpeed);
 
                         if(ymdhStr.compare("") == 0){
@@ -229,7 +229,7 @@ void RckqControl::run(){
 
                         runwayStr = runwayStr.replace(QRegExp("\\w+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
-                        windSpeed = qCos(winddir - runwayAngle) * windSpeed;
+                        windSpeed = qCos((winddir - runwayAngle) * PI / 180) * windSpeed;
                         valueList[min] = QString("%1").arg(windSpeed);
 
                         if(ymdhStr.compare("") == 0){

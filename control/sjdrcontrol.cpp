@@ -212,7 +212,7 @@ void SjdrControl::controlSummary(const SjdrElement &sjdrElement){
         QStringList titleList = asdb.queryFields(tables[i]);
         QString title = titleList.join(",");
         if(title.indexOf(qualityControlSource.fields()) == 0){
-            QString queryStr = QString("select %1 from %2").arg(qualityControlSource.fields()).arg(tables[i]);
+            QString queryStr = QString("select %1 from %2 order by 日期时间 asc").arg(qualityControlSource.fields()).arg(tables[i]);
             QSqlQueryModel *plainModel = asdb.queryModel(queryStr);
             int rowCount = plainModel->rowCount();
             bool isAllDone = true;
@@ -266,7 +266,7 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
         QStringList titleList = asdb.queryFields(tables[i]);
         QString title = titleList.join(",");
         if(title.indexOf(qualityControlSource.fields()) == 0){
-            QString queryStr = QString("select %1 from %2").arg(qualityControlSource.fields()).arg(tables[i]);
+            QString queryStr = QString("select %1 from %2 order by 日期 asc").arg(qualityControlSource.fields()).arg(tables[i]);
             QSqlQueryModel *plainModel = asdb.queryModel(queryStr);
             int rowCount = plainModel->rowCount();
             bool isAllDone = true;

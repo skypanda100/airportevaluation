@@ -68,7 +68,7 @@ void KfttjControl::initData(){
         }
     }
     //跑道方向
-    m_runwayDirection = currentAirport.direction();
+    m_runwayDirection = currentAirport.direction() * PI / 180;
     //白天,整天,半天
     if(currentAirport.longitude() >= 110){
         //东经110度以东
@@ -848,6 +848,7 @@ QString KfttjControl::analysisMultiSf(const Monthsummary &monthsummary, int row,
     QString windspeedStr = monthsummary.windspeed().trimmed();
     QString gustspeedStr = monthsummary.gustspeed().trimmed();
     QString winddirectionStr = monthsummary.winddirection().trimmed();
+
     if(windspeedStr.compare("") != 0 || gustspeedStr.compare("") != 0){
         float windspeed = windspeedStr.toFloat();
         float gustspeed = gustspeedStr.toFloat();
@@ -855,6 +856,7 @@ QString KfttjControl::analysisMultiSf(const Monthsummary &monthsummary, int row,
         float tailspeed = speed;
         if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
             float winddirection = winddirectionStr.toFloat();
+            winddirection = winddirection * PI / 180;
             tailspeed = qCos(winddirection - m_runwayDirection) * speed;
         }
         //顺风
@@ -907,6 +909,7 @@ QString KfttjControl::analysisMultiNf(const Monthsummary &monthsummary, int row,
         float headspeed = speed;
         if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
             float winddirection = winddirectionStr.toFloat();
+            winddirection = winddirection * PI / 180;
             headspeed = qCos(winddirection - m_runwayDirection) * speed;
         }
         //逆风
@@ -959,6 +962,7 @@ QString KfttjControl::analysisMultiCf(const Monthsummary &monthsummary, int row,
         float crossspeed = speed;
         if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
             float winddirection = winddirectionStr.toFloat();
+            winddirection = winddirection * PI / 180;
             crossspeed = qAbs(qSin(winddirection - m_runwayDirection) * speed);
         }
         //侧风
@@ -3630,6 +3634,7 @@ QString KfttjControl::analysisSingleSf(const Monthsummary &monthsummary, int row
         float tailspeed = speed;
         if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
             float winddirection = winddirectionStr.toFloat();
+            winddirection = winddirection * PI / 180;
             tailspeed = qCos(winddirection - m_runwayDirection) * speed;
         }
         //顺风
@@ -3682,6 +3687,7 @@ QString KfttjControl::analysisSingleNf(const Monthsummary &monthsummary, int row
         float headspeed = speed;
         if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
             float winddirection = winddirectionStr.toFloat();
+            winddirection = winddirection * PI / 180;
             headspeed = qCos(winddirection - m_runwayDirection) * speed;
         }
         //逆风
@@ -3734,6 +3740,7 @@ QString KfttjControl::analysisSingleCf(const Monthsummary &monthsummary, int row
         float crossspeed = speed;
         if(winddirectionStr.compare("C") != 0 && winddirectionStr.compare("VRB") != 0){
             float winddirection = winddirectionStr.toFloat();
+            winddirection = winddirection * PI / 180;
             crossspeed = qAbs(qSin(winddirection - m_runwayDirection) * speed);
         }
         //侧风

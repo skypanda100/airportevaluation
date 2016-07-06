@@ -9,6 +9,8 @@
 #include "bean/weatherparam.h"
 #include "bean/weatherparamsetup.h"
 
+#define PI 3.1415926
+
 class KfttjControl : public QThread{
     Q_OBJECT
 

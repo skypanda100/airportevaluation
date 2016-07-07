@@ -282,9 +282,9 @@ void RckqResultWidget::createCharts(){
         LineLayer *layer = c->addLineLayer();
         layer->setXData(DoubleArray(dataX, xDataCount));
 
-        layer->addDataSet(DoubleArray(datas, xDataCount), colors[i], key.toStdString().c_str())->setDataSymbol(Chart::NoShape);
+        layer->addDataSet(DoubleArray(datas, xDataCount), colors[i % 12], key.toStdString().c_str())->setDataSymbol(Chart::NoShape);
         layer->setLineWidth(2);
-        layer->setGapColor(c->dashLineColor(colors[i]));
+        layer->setGapColor(c->dashLineColor(colors[i % 12]));
     }
     c->layoutLegend();
     c->packPlotArea(15, legendBox->getTopY() + legendBox->getHeight(), c->getWidth() - 16,

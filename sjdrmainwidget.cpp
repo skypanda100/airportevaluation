@@ -58,9 +58,9 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
         connect(sjdrControl, SIGNAL(sendMessage(QStringList)), this, SLOT(receiveMessage(QStringList)), Qt::QueuedConnection);
         connect(sjdrControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
         connect(sjdrControl, SIGNAL(singleExecute(bool)), this, SLOT(singleExecute(bool)), Qt::QueuedConnection);
-        sjdrControl->setAirport(currentAirport);
         sjdrControl->start();
     }
+    sjdrControl->setAirport(currentAirport);
 
     //设置进度
     emit setProgressValue(1);

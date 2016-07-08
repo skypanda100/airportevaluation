@@ -52,9 +52,9 @@ void FmgControl::setData(QString code, QString runway, QString fspeed, QString t
 }
 
 void FmgControl::run(){
-    emit setProgressValue(1);
     int yearCount = m_years.size();
     int totalProgress = yearCount * 12;
+    emit setProgressValue(1, totalProgress);
     int currentProgress = 0;
     for(int i = 0;i < yearCount;i++){
         QString yearStr = m_years[i];
@@ -75,7 +75,7 @@ void FmgControl::run(){
             }
             delete plainModel;
             emit sendMessage(i * 12 + j, yearStr, windCountArg);
-            emit setProgressValue((int)(((qreal)(currentProgress)/(qreal)totalProgress) * 100));
+            emit setProgressValue(currentProgress, totalProgress);
         }
     }
     emit execute(true);

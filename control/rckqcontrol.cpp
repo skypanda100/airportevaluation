@@ -43,7 +43,6 @@ QList<QString> RckqControl::createDatetimeSql(QString dateStr, int fhour, int th
 }
 
 void RckqControl::run(){
-    emit setProgressValue(1);
     int weatherCount = m_weatherList.size();
     int sumCount = 0;
     if(m_fhour > m_thour){
@@ -51,6 +50,7 @@ void RckqControl::run(){
     }else{
         sumCount = weatherCount * m_dateList.size() * (m_thour - m_fhour + 1);
     }
+    emit setProgressValue(1, sumCount);
     int row = 0;
     for(int i = 0;i < weatherCount;i++){
         QString weatherStr = m_weatherList[i];
@@ -94,7 +94,7 @@ void RckqControl::run(){
                     //通知显示信息
                     emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
-                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                    emit setProgressValue(row, sumCount);
                 }
             }
         }else if(weatherStr.compare("侧风速") == 0){
@@ -143,7 +143,7 @@ void RckqControl::run(){
                     //通知显示信息
                     emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
-                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                    emit setProgressValue(row, sumCount);
                 }
             }
         }else if(weatherStr.compare("顺风速") == 0){
@@ -192,7 +192,7 @@ void RckqControl::run(){
                     //通知显示信息
                     emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
-                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                    emit setProgressValue(row, sumCount);
                 }
             }
         }else if(weatherStr.compare("逆风速") == 0){
@@ -241,7 +241,7 @@ void RckqControl::run(){
                     //通知显示信息
                     emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
-                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                    emit setProgressValue(row, sumCount);
                 }
             }
         }else if(weatherStr.compare("气温") == 0){
@@ -284,7 +284,7 @@ void RckqControl::run(){
                     //通知显示信息
                     emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
-                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                    emit setProgressValue(row, sumCount);
                 }
             }
         }else if(weatherStr.compare("比湿") == 0){
@@ -359,7 +359,7 @@ void RckqControl::run(){
                     //通知显示信息
                     emit sendMessage(row, weatherStr, ymdhStr, valueList, dateStr);
                     row += 1;
-                    emit setProgressValue((int)(((qreal)(row)/(qreal)sumCount) * 100));
+                    emit setProgressValue(row, sumCount);
                 }
             }
         }

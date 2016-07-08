@@ -14,7 +14,7 @@ public:
     ~SjdrMainWidget();
 
 signals:
-    void setProgressValue(int);
+    void setProgressValue(int,int);
 
 public slots:
     void executeSjdr(Airport, QList<QualityControlSource>, QList<QString>);

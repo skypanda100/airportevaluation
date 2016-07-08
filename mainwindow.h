@@ -24,7 +24,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void setProgressValue(int);
+    void setProgressValue(int value, int maxValue = 100);
 
 private:
     void initData();

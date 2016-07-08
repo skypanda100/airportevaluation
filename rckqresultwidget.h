@@ -15,7 +15,7 @@ public:
     ~RckqResultWidget();
 
 signals:
-    void setProgressValue(int);
+    void setProgressValue(int,int);
 
 public slots:
     void executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList);

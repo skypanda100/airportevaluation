@@ -95,9 +95,9 @@ void FmgResultWidget::initConnect(){
     connect(fmgControl, SIGNAL(sendMessage(int,QString,QList<QString>)), this, SLOT(receiveMessage(int,QString,QList<QString>)), Qt::QueuedConnection);
     connect(fmgControl, SIGNAL(sendMessage(int,QString)), this, SLOT(receiveMessage(int,QString)), Qt::QueuedConnection);
     connect(fmgControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
-    connect(fmgControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(fmgControl, SIGNAL(setProgressValue(int,int)), this, SIGNAL(setProgressValue(int,int)));
     connect(excelControl, SIGNAL(execute(bool)), this, SLOT(xlsExecute(bool)));
-    connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(excelControl, SIGNAL(setProgressValue(int,int)), this, SIGNAL(setProgressValue(int,int)));
 }
 
 void FmgResultWidget::executeFmg(QString code, QString runway, QString fspeed, QString tspeed, QList<QString> years){
@@ -156,14 +156,14 @@ void FmgResultWidget::receiveMessage(int row, QString year, QList<QString> windC
 
 void FmgResultWidget::execute(bool isEnd){
     if(isEnd){
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         createCharts();
     }
 }
 
 void FmgResultWidget::xlsExecute(bool isEnd){
     if(isEnd){
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
     }
 }

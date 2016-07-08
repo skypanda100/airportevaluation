@@ -18,7 +18,7 @@ public:
 
 signals:
     void sendMessage(int row, QString weather, QString dateStr, QList<QString> valueList, QString keyStr);
-    void setProgressValue(int);
+    void setProgressValue(int,int);
     void execute(bool isEnd);
 
 private:

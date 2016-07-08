@@ -18,7 +18,7 @@ public:
     void setExportPath(QString path);
 
 signals:
-    void setProgressValue(int);
+    void setProgressValue(int,int);
     void execute(bool isEnd);
 
 private:

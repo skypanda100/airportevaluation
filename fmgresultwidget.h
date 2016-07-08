@@ -15,7 +15,7 @@ public:
     ~FmgResultWidget();
 
 signals:
-    void setProgressValue(int);
+    void setProgressValue(int,int);
 
 public slots:
     void executeFmg(QString code, QString runway, QString fspeed, QString tspeed, QList<QString> years);

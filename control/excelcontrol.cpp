@@ -85,8 +85,7 @@ void ExcelControl::run(){
                     xlsx.write(i + 2, j + 1, "", cellFormat);
                 }
             }
-            int progress = (int)((i * colCount + j + 1) / (qreal)(rowCount * colCount) * 100);
-            emit setProgressValue(progress);
+            emit setProgressValue(i * colCount + j + 1, rowCount * colCount);
         }
     }
     //保存excel

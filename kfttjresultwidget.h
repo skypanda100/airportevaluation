@@ -15,7 +15,7 @@ public:
     KfttjResultWidget(QWidget *parent = 0);
     ~KfttjResultWidget();
 signals:
-    void setProgressValue(int);
+    void setProgressValue(int,int);
 
 public slots:
     void executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);

@@ -35,7 +35,7 @@ signals:
     void sendMessage(int, int);
     void execute(bool isEnd);
     void singleExecute(bool isEnd);
-    void setProgressValue(int);
+    void setProgressValue(int,int);
 
 private:
     void initData();

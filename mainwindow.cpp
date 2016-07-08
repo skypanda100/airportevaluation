@@ -184,17 +184,20 @@ void MainWindow::createStatusBar(){
     this->statusBar()->addPermanentWidget(progressBar);
 }
 
-void MainWindow::setProgressValue(int value){
+void MainWindow::setProgressValue(int value, int maxValue){
     if(progressBar != NULL){
+        if(progressBar->maximum() != maxValue){
+            progressBar->setRange(0, maxValue);
+        }
         progressBar->setValue(value);
-        if(value < 100){
+        if(value < progressBar->maximum()){
             this->statusBar()->showMessage(tr("正在处理......"));
         }else{
             this->statusBar()->showMessage(tr("处理完成"));
         }
         if(value <= 0){
             progressBar->setVisible(false);
-        }else if(value > 0 && value < 100){
+        }else if(value > 0 && value < progressBar->maximum()){
             progressBar->setVisible(true);
         }else{
             progressBar->setVisible(false);
@@ -396,7 +399,7 @@ void MainWindow::setupSjdrResultWidget(){
         delete sjdrMainWidget;
     }
     sjdrMainWidget = new SjdrMainWidget;
-    connect(sjdrMainWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+    connect(sjdrMainWidget, SIGNAL(setProgressValue(int,int)), this, SLOT(setProgressValue(int,int)));
     resultWidget->addWidget(sjdrMainWidget);
     resultWidget->setCurrentWidget(sjdrMainWidget);
 }
@@ -424,7 +427,7 @@ void MainWindow::setupKfttjResultWidget(){
         delete kfttjResultWidget;
     }
     kfttjResultWidget = new KfttjResultWidget;
-    connect(kfttjResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+    connect(kfttjResultWidget, SIGNAL(setProgressValue(int,int)), this, SLOT(setProgressValue(int,int)));
     resultWidget->addWidget(kfttjResultWidget);
     resultWidget->setCurrentWidget(kfttjResultWidget);
 }
@@ -452,7 +455,7 @@ void MainWindow::setupFmgResultWidget(){
         delete fmgResultWidget;
     }
     fmgResultWidget = new FmgResultWidget;
-    connect(fmgResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+    connect(fmgResultWidget, SIGNAL(setProgressValue(int,int)), this, SLOT(setProgressValue(int,int)));
     resultWidget->addWidget(fmgResultWidget);
     resultWidget->setCurrentWidget(fmgResultWidget);
 }
@@ -483,7 +486,7 @@ void MainWindow::setupRckqResultWidget(){
         delete rckqResultWidget;
     }
     rckqResultWidget = new RckqResultWidget;
-    connect(rckqResultWidget, SIGNAL(setProgressValue(int)), this, SLOT(setProgressValue(int)));
+    connect(rckqResultWidget, SIGNAL(setProgressValue(int,int)), this, SLOT(setProgressValue(int,int)));
     resultWidget->addWidget(rckqResultWidget);
     resultWidget->setCurrentWidget(rckqResultWidget);
 

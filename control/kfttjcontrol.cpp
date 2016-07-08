@@ -172,7 +172,7 @@ void KfttjControl::initData(){
 
 void KfttjControl::run(){
     //更新进度
-    emit setProgressValue(1);
+    emit setProgressValue(1, 100);
     //初始化
     initData();
     //查询月总薄及极值
@@ -677,7 +677,7 @@ void KfttjControl::analysis(){
             resAll.append(0);
         }
         //更新进度
-        emit setProgressValue((int)(((qreal)(i + 1)/(qreal)summaryCount) * 100));
+        emit setProgressValue(i + 1, summaryCount);
     }
     //日可飞天统计
     analysisDay(lastDateTime_local, dateCount * elementCount);

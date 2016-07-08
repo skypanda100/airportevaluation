@@ -128,9 +128,9 @@ void KfttjResultWidget::initConnect(){
     connect(kfttjControl, SIGNAL(sendMessage(int,int)), this, SLOT(receiveMessage(int,int)), Qt::QueuedConnection);
     connect(kfttjControl, SIGNAL(sendMessage(QString,int,int,int,int)), this, SLOT(receiveMessage(QString,int,int,int,int)), Qt::QueuedConnection);
     connect(kfttjControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
-    connect(kfttjControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)), Qt::QueuedConnection);
+    connect(kfttjControl, SIGNAL(setProgressValue(int,int)), this, SIGNAL(setProgressValue(int,int)), Qt::QueuedConnection);
     connect(excelControl, SIGNAL(execute(bool)), this, SLOT(xlsExecute(bool)));
-    connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(excelControl, SIGNAL(setProgressValue(int,int)), this, SIGNAL(setProgressValue(int,int)));
 }
 
 void KfttjResultWidget::createTable(bool isHourTable){
@@ -249,14 +249,14 @@ void KfttjResultWidget::receiveMessage(int row, int count){
 
 void KfttjResultWidget::execute(bool isEnd){
     if(isEnd){
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         this->createCharts();
     }
 }
 
 void KfttjResultWidget::xlsExecute(bool isEnd){
     if(isEnd){
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
     }
 }

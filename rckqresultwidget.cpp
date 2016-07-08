@@ -98,9 +98,9 @@ void RckqResultWidget::initConnect(){
             , SLOT(receiveMessage(int,QString,QString,QList<QString>,QString))
             , Qt::QueuedConnection);
     connect(rckqControl, SIGNAL(execute(bool)), this, SLOT(execute(bool)), Qt::QueuedConnection);
-    connect(rckqControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(rckqControl, SIGNAL(setProgressValue(int,int)), this, SIGNAL(setProgressValue(int,int)));
     connect(excelControl, SIGNAL(execute(bool)), this, SLOT(xlsExecute(bool)));
-    connect(excelControl, SIGNAL(setProgressValue(int)), this, SIGNAL(setProgressValue(int)));
+    connect(excelControl, SIGNAL(setProgressValue(int,int)), this, SIGNAL(setProgressValue(int,int)));
 }
 
 void RckqResultWidget::executeRckq(QString code, QString runway, int type, int fhour, int thour, QList<QString> dateList, QList<QString> weatherList){
@@ -160,14 +160,14 @@ void RckqResultWidget::receiveMessage(int row, QString weather, QString dateStr,
 
 void RckqResultWidget::execute(bool isEnd){
     if(isEnd){
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         createCharts();
     }
 }
 
 void RckqResultWidget::xlsExecute(bool isEnd){
     if(isEnd){
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         QMessageBox::information(this, tr("消息提示"), tr("数据导出完成"));
     }
 }

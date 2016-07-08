@@ -63,7 +63,7 @@ void SjdrMainWidget::executeSjdr(Airport airport, QList<QualityControlSource> qu
     sjdrControl->setAirport(currentAirport);
 
     //设置进度
-    emit setProgressValue(1);
+    emit setProgressValue(1,100);
     //给数据源分类
     assortSource(qualityControlSourceList, fileList);
     sumCount = fileList.count();
@@ -214,7 +214,7 @@ void SjdrMainWidget::execute(bool isEnd){
         for (int column = 0; column < model->columnCount(); ++column){
             this->resizeColumnToContents(column);
         }
-        emit setProgressValue(100);
+        emit setProgressValue(100,100);
         //共享区初始化
         SharedMemory::getInstance()->queryAirportInfomation();
     }
@@ -226,7 +226,6 @@ void SjdrMainWidget::singleExecute(bool isEnd){
         if(executeCount >= sumCount){
             executeCount = sumCount - 1;
         }
-        int value = (int)(((qreal)executeCount / (qreal)sumCount) * 100);
-        emit setProgressValue(value);
+        emit setProgressValue(executeCount, sumCount);
     }
 }

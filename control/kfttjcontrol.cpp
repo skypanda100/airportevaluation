@@ -1657,7 +1657,7 @@ QHash< QString, int > KfttjControl::analysisJs(QString evolution, QDateTime toda
                 evo = evo.replace(0, 1, "*");
             }
             //判断是否是以降水开头的天气现象
-            QRegExp startRegExp("[\\*\\+]?(\\w*)(RA|SN)");
+            QRegExp startRegExp("[\\*\\+]?([a-zA-Z]*)(RA|SN)");
             startRegExp.setMinimal(true);
             int startPos = startRegExp.indexIn(evo);
             if(startPos == 0){
@@ -2121,7 +2121,7 @@ QHash< QString, int > KfttjControl::analysisLb(QString evolution, QDateTime toda
     QHash< QString,  int > jsHash;
     if(evolution.indexOf("TS", 0, Qt::CaseInsensitive) >= 0){
         //去除方位
-        evolution = evolution.replace(QRegExp("([0-9]{4})\\w{1,2}"), "\\1");
+        evolution = evolution.replace(QRegExp("([0-9]{4})[a-zA-Z]{1,2}"), "\\1");
         //替换开头的"--"为"-"
         if(evolution.startsWith("--")){
             evolution = evolution.mid(1);
@@ -2436,7 +2436,7 @@ QHash< QString, int > KfttjControl::analysisBb(QString evolution, QDateTime toda
     if(evolution.indexOf("GR", 0, Qt::CaseInsensitive) >= 0
             || evolution.indexOf("GS", 0, Qt::CaseInsensitive) >= 0){
         //去除方位
-        evolution = evolution.replace(QRegExp("([0-9]{4})\\w{1,2}"), "\\1");
+        evolution = evolution.replace(QRegExp("([0-9]{4})[a-zA-Z]{1,2}"), "\\1");
         //替换开头的"--"为"-"
         if(evolution.startsWith("--")){
             evolution = evolution.mid(1);
@@ -2749,7 +2749,7 @@ QHash< QString, int > KfttjControl::analysisBx(QString evolution, QDateTime toda
     QHash< QString,  int > jsHash;
     if(evolution.indexOf("SQ", 0, Qt::CaseInsensitive) >= 0){
         //去除方位
-        evolution = evolution.replace(QRegExp("([0-9]{4})\\w{1,2}"), "\\1");
+        evolution = evolution.replace(QRegExp("([0-9]{4})[a-zA-Z]{1,2}"), "\\1");
         //替换开头的"--"为"-"
         if(evolution.startsWith("--")){
             evolution = evolution.mid(1);
@@ -3062,7 +3062,7 @@ QHash< QString, int > KfttjControl::analysisLj(QString evolution, QDateTime toda
     QHash< QString,  int > jsHash;
     if(evolution.indexOf("FC", 0, Qt::CaseInsensitive) >= 0){
         //去除方位
-        evolution = evolution.replace(QRegExp("([0-9]{4})\\w{1,2}"), "\\1");
+        evolution = evolution.replace(QRegExp("([0-9]{4})[a-zA-Z]{1,2}"), "\\1");
         //替换开头的"--"为"-"
         if(evolution.startsWith("--")){
             evolution = evolution.mid(1);
@@ -3376,7 +3376,7 @@ QHash< QString, int > KfttjControl::analysisScb(QString evolution, QDateTime tod
     if(evolution.indexOf("SS", 0, Qt::CaseInsensitive) >= 0
             || evolution.indexOf("DS", 0, Qt::CaseInsensitive) >= 0){
         //去除方位
-        evolution = evolution.replace(QRegExp("([0-9]{4})\\w{1,2}"), "\\1");
+        evolution = evolution.replace(QRegExp("([0-9]{4})[a-zA-Z]{1,2}"), "\\1");
         //替换开头的"--"为"-"
         if(evolution.startsWith("--")){
             evolution = evolution.mid(1);

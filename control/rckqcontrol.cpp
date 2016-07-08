@@ -129,7 +129,7 @@ void RckqControl::run(){
                         QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
                         int min = dateTime.toString("m").toInt();
 
-                        runwayStr = runwayStr.replace(QRegExp("\\w+"), "");
+                        runwayStr = runwayStr.replace(QRegExp("[A-Za-z]+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
                         windSpeed = qAbs(qSin((winddir - runwayAngle) * PI / 180) * windSpeed);
                         valueList[min] = QString("%1").arg(windSpeed);
@@ -178,7 +178,7 @@ void RckqControl::run(){
                         QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
                         int min = dateTime.toString("m").toInt();
 
-                        runwayStr = runwayStr.replace(QRegExp("\\w+"), "");
+                        runwayStr = runwayStr.replace(QRegExp("[A-Za-z]+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
                         windSpeed = -(qCos((winddir - runwayAngle) * PI / 180) * windSpeed);
                         valueList[min] = QString("%1").arg(windSpeed);
@@ -227,7 +227,7 @@ void RckqControl::run(){
                         QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
                         int min = dateTime.toString("m").toInt();
 
-                        runwayStr = runwayStr.replace(QRegExp("\\w+"), "");
+                        runwayStr = runwayStr.replace(QRegExp("[A-Za-z]+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
                         windSpeed = qCos((winddir - runwayAngle) * PI / 180) * windSpeed;
                         valueList[min] = QString("%1").arg(windSpeed);

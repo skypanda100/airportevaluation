@@ -83,7 +83,7 @@ void RckqControl::run(){
 
                         QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
                         int min = dateTime.toString("m").toInt();
-                        valueList[min] = QString("%1").arg(windSpeed);
+                        valueList[min] = QString::number(windSpeed, 'f', 2);
 
                         if(ymdhStr.compare("") == 0){
                             ymdhStr = dateTime.toString("yyyy年MM月dd日 hh时");
@@ -132,7 +132,7 @@ void RckqControl::run(){
                         runwayStr = runwayStr.replace(QRegExp("[A-Za-z]+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
                         windSpeed = qAbs(qSin((winddir - runwayAngle) * PI / 180) * windSpeed);
-                        valueList[min] = QString("%1").arg(windSpeed);
+                        valueList[min] = QString::number(windSpeed, 'f', 2);
 
                         if(ymdhStr.compare("") == 0){
                             ymdhStr = dateTime.toString("yyyy年MM月dd日 hh时");
@@ -181,7 +181,7 @@ void RckqControl::run(){
                         runwayStr = runwayStr.replace(QRegExp("[A-Za-z]+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
                         windSpeed = -(qCos((winddir - runwayAngle) * PI / 180) * windSpeed);
-                        valueList[min] = QString("%1").arg(windSpeed);
+                        valueList[min] = QString::number(windSpeed, 'f', 2);
 
                         if(ymdhStr.compare("") == 0){
                             ymdhStr = dateTime.toString("yyyy年MM月dd日 hh时");
@@ -230,7 +230,7 @@ void RckqControl::run(){
                         runwayStr = runwayStr.replace(QRegExp("[A-Za-z]+"), "");
                         int runwayAngle = runwayStr.toInt() * 10;
                         windSpeed = qCos((winddir - runwayAngle) * PI / 180) * windSpeed;
-                        valueList[min] = QString("%1").arg(windSpeed);
+                        valueList[min] = QString::number(windSpeed, 'f', 2);
 
                         if(ymdhStr.compare("") == 0){
                             ymdhStr = dateTime.toString("yyyy年MM月dd日 hh时");
@@ -273,7 +273,7 @@ void RckqControl::run(){
 
                         QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
                         int min = dateTime.toString("m").toInt();
-                        valueList[min] = QString("%1").arg(temperature);
+                        valueList[min] = QString::number(temperature, 'f', 2);
 
                         if(ymdhStr.compare("") == 0){
                             ymdhStr = dateTime.toString("yyyy年MM月dd日 hh时");
@@ -325,7 +325,8 @@ void RckqControl::run(){
                             double es = qPow(es0, a * temperature / (273.15 + temperature - b));
                             double e = es * humidity;
                             double q = 0.622 * e / (pressure - 0.378 * e) * 1000;
-                            valueList[min] = QString("%1").arg(q);
+                            valueList[min] = QString::number(q, 'f', 2);
+
                         }else if(temperature < -40){
                             double a = 21.8746;
                             double b = 7.66;
@@ -333,7 +334,7 @@ void RckqControl::run(){
                             double es = qPow(es0, a * temperature / (273.15 + temperature - b));
                             double e = es * humidity;
                             double q = 0.622 * e / (pressure - 0.378 * e) * 1000;
-                            valueList[min] = QString("%1").arg(q);
+                            valueList[min] = QString::number(q, 'f', 2);
                         }else{
                             double a_water = 17.269;
                             double b_water = 35.86;
@@ -346,7 +347,7 @@ void RckqControl::run(){
                             double es = 0.002 * ((80 + 2 * temperature) * es_water - (30 + 2 * temperature) * es_ice);
                             double e = es * humidity;
                             double q = 0.622 * e / (pressure - 0.378 * e) * 1000;
-                            valueList[min] = QString("%1").arg(q);
+                            valueList[min] = QString::number(q, 'f', 2);
                         }
 
                         if(ymdhStr.compare("") == 0){

@@ -27,6 +27,11 @@ void AsDataBase::openDb(QString filePath){
 
 //关于access数据库得好好想想
 void AsDataBase::closeDb(){
+    if(db.isOpen()){
+        QString name = db.connectionName();
+        qDebug() << name;
+        QSqlDatabase::removeDatabase(name);
+    }
 //    db.close();
 }
 

@@ -1686,7 +1686,7 @@ QHash< QString, int > KfttjControl::analysisJs(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -1721,7 +1721,7 @@ QHash< QString, int > KfttjControl::analysisJs(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -1771,7 +1771,7 @@ QHash< QString, int > KfttjControl::analysisJs(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -1806,7 +1806,7 @@ QHash< QString, int > KfttjControl::analysisJs(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -2163,7 +2163,7 @@ QHash< QString, int > KfttjControl::analysisLb(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -2198,7 +2198,7 @@ QHash< QString, int > KfttjControl::analysisLb(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -2248,7 +2248,7 @@ QHash< QString, int > KfttjControl::analysisLb(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -2283,7 +2283,7 @@ QHash< QString, int > KfttjControl::analysisLb(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -2478,7 +2478,7 @@ QHash< QString, int > KfttjControl::analysisBb(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -2513,7 +2513,7 @@ QHash< QString, int > KfttjControl::analysisBb(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -2563,7 +2563,7 @@ QHash< QString, int > KfttjControl::analysisBb(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -2598,7 +2598,7 @@ QHash< QString, int > KfttjControl::analysisBb(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -2791,7 +2791,7 @@ QHash< QString, int > KfttjControl::analysisBx(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -2826,7 +2826,7 @@ QHash< QString, int > KfttjControl::analysisBx(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -2876,7 +2876,7 @@ QHash< QString, int > KfttjControl::analysisBx(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -2911,7 +2911,7 @@ QHash< QString, int > KfttjControl::analysisBx(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -3104,7 +3104,7 @@ QHash< QString, int > KfttjControl::analysisLj(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -3139,7 +3139,7 @@ QHash< QString, int > KfttjControl::analysisLj(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -3189,7 +3189,7 @@ QHash< QString, int > KfttjControl::analysisLj(QString evolution, QDateTime toda
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -3224,7 +3224,7 @@ QHash< QString, int > KfttjControl::analysisLj(QString evolution, QDateTime toda
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -3422,7 +3422,7 @@ QHash< QString, int > KfttjControl::analysisScb(QString evolution, QDateTime tod
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -3457,7 +3457,7 @@ QHash< QString, int > KfttjControl::analysisScb(QString evolution, QDateTime tod
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);
@@ -3507,7 +3507,7 @@ QHash< QString, int > KfttjControl::analysisScb(QString evolution, QDateTime tod
                             //计算开始时间
                             QDateTime startDate;
                             //如果是16点以后说明是上一天的记录
-                            if(hour > 16 || hour == 16 && minute > 0){
+                            if(hour >= 16){
                                 QString yeasterdayStr = QString("%1T%2:00")
                                         .arg(yeasterday.toString("yyyy-MM-dd"))
                                         .arg(hhmmStr);
@@ -3542,7 +3542,7 @@ QHash< QString, int > KfttjControl::analysisScb(QString evolution, QDateTime tod
                                 minute = hhmmStr.mid(2, 2).toInt();
 
                                 //如果是16点以后说明是上一天的记录
-                                if(hour > 16 || hour == 16 && minute > 0){
+                                if(hour >= 16){
                                     QString yeasterdayStr = QString("%1T%2:00")
                                             .arg(yeasterday.toString("yyyy-MM-dd"))
                                             .arg(hhmmStr);

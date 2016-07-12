@@ -442,7 +442,7 @@ void KfttjInputWidget::onAirportChanged(int index){
     if(index < airportList.count()){
         Airport airport = airportList[index];
         QString apCode = airport.code();
-        QString dateSql = QString("select distinct to_char(datetime, 'yyyy') from %1_monthsummary "
+        QString dateSql = QString("select distinct to_char(datetime + interval '8 hours', 'yyyy') from %1_monthsummary "
                                      "union "
                                      "select distinct to_char(datetime, 'yyyy') from %1_extremum").arg(apCode);
         QList<QVariant> resList = pgDb->queryVariant(dateSql);

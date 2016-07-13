@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
+#include <QProcess>
 #include "sjdrinputwidget.h"
 #include "sjdrqualitywidget.h"
 #include "sjdrmainwidget.h"
@@ -73,6 +74,8 @@ private slots:
     void onRckqTriggered();
     void onAirportSetupTriggered();
     void onWeatherSetupTriggered();
+    void onHelpTriggered();
+    void onAboutTriggered();
 
 private:
     bool isSjdrInit;
@@ -90,6 +93,8 @@ private:
     QAction *fmgAction;
     QAction *airportAction;
     QAction *weatherAction;
+    QAction *helpAction;
+    QAction *aboutAction;
 
     QProgressBar *progressBar;
 

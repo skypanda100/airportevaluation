@@ -125,3 +125,14 @@ win32 {
     dst_dir ~= s,/,\\,g
     !exists($$dst_dir msyhbd.ttf):system(xcopy $$src_dir $$dst_dir /Y)
 }
+win32 {
+    src_dir = $$PWD\\help\\help.chm
+    CONFIG(debug, debug|release) {
+        dst_dir = $$OUT_PWD\\debug\\help\\
+    } else {
+        dst_dir = $$OUT_PWD\\release\\help\\
+    }
+    src_dir ~= s,/,\\,g
+    dst_dir ~= s,/,\\,g
+    !exists($$dst_dir help.chm):system(xcopy $$src_dir $$dst_dir /Y)
+}

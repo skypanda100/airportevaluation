@@ -36,6 +36,8 @@ MainWindow::~MainWindow()
     delete fmgAction;
     delete airportAction;
     delete weatherAction;
+    delete helpAction;
+    delete aboutAction;
 
     delete viewMenu;
 
@@ -103,6 +105,8 @@ void MainWindow::initConnect(){
     connect(rckqAction, SIGNAL(triggered()), this, SLOT(onRckqTriggered()));
     connect(airportAction, SIGNAL(triggered()), this, SLOT(onAirportSetupTriggered()));
     connect(weatherAction, SIGNAL(triggered()), this, SLOT(onWeatherSetupTriggered()));
+    connect(helpAction, SIGNAL(triggered()), this, SLOT(onHelpTriggered()));
+    connect(aboutAction, SIGNAL(triggered()), this, SLOT(onAboutTriggered()));
 }
 
 void MainWindow::setupCentralWidget(){
@@ -172,6 +176,14 @@ void MainWindow::setupSettingActions(){
 void MainWindow::setupHelpActions(){
     QMenu *menu = new QMenu("帮助", this);
     this->menuBar()->addMenu(menu);
+
+    //帮助内容
+    helpAction = new QAction("帮助内容", this);
+    menu->addAction(helpAction);
+
+    //关于
+    aboutAction = new QAction("关于", this);
+//    menu->addAction(aboutAction);
 }
 
 void MainWindow::createStatusBar(){
@@ -368,6 +380,24 @@ void MainWindow::onWeatherSetupTriggered(){
     WeatherParamSetupWidget *weatherParamSetupWidget = new WeatherParamSetupWidget;
     weatherParamSetupWidget->exec();
     delete weatherParamSetupWidget;
+}
+
+/**
+ * @brief MainWindow::onHelpTriggered
+ * 帮助内容模块
+ */
+void MainWindow::onHelpTriggered(){
+    QProcess *helpProcess = new QProcess(this);
+    QStringList argument(QApplication::applicationDirPath() + "/help/help.chm");
+    helpProcess->start("hh.exe", argument);
+}
+
+/**
+ * @brief MainWindow::onAboutTriggered
+ * 关于模块
+ */
+void MainWindow::onAboutTriggered(){
+
 }
 
 void MainWindow::setupSjdr(){

@@ -10,10 +10,10 @@
 class AsDataBase{
 
 public:
-    AsDataBase(QString);
+    AsDataBase(QString, QString);
     ~AsDataBase();
 
-    void openDb(QString);
+    void openDb(QString, QString);
     void closeDb();
 
     QSqlQueryModel* queryModel(const QString &);
@@ -22,7 +22,7 @@ public:
     QStringList queryFields(QString);
 
 private:
-    QSqlDatabase db;
+    QString current_con;
 };
 
 #endif // ASDATABASE

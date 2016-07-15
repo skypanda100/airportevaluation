@@ -204,7 +204,7 @@ void SjdrControl::controlSummary(const SjdrElement &sjdrElement){
     QFileInfo fileInfo = sjdrElement.m_fileInfo;
     QualityControlSource qualityControlSource = sjdrElement.m_qualityControlSource;
 
-    AsDataBase asdb(fileInfo.absoluteFilePath());
+    AsDataBase asdb(fileInfo.absoluteFilePath(), "access_2");
 
     QStringList tables = asdb.queryTables();
     int tableCount = tables.count();
@@ -258,7 +258,7 @@ void SjdrControl::controlExtremum(const SjdrElement &sjdrElement){
     QFileInfo fileInfo = sjdrElement.m_fileInfo;
     QualityControlSource qualityControlSource = sjdrElement.m_qualityControlSource;
 
-    AsDataBase asdb(fileInfo.absoluteFilePath());
+    AsDataBase asdb(fileInfo.absoluteFilePath(), "access_2");
 
     QStringList tables = asdb.queryTables();
     int tableCount = tables.count();

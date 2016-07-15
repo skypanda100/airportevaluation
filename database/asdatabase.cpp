@@ -1,20 +1,22 @@
 #include "database/asdatabase.h"
 
-AsDataBase::AsDataBase(QString filePath)
+AsDataBase::AsDataBase(QString filePath, QString con)
+    :current_con(con)
 {
-    this->openDb(filePath);
+    this->openDb(filePath, con);
 }
 
 AsDataBase::~AsDataBase(){
     this->closeDb();
 }
 
-void AsDataBase::openDb(QString filePath){
+void AsDataBase::openDb(QString filePath, QString con){
     QString dsn = QString("DRIVER={Microsoft Access Driver (*.mdb)};FIL={MS Access};DBQ=%1").arg(filePath);
-    if(QSqlDatabase::contains("access")){
-      db = QSqlDatabase::database("access");
+    QSqlDatabase db;
+    if(QSqlDatabase::contains(con)){
+      db = QSqlDatabase::database(con);
     }else{
-      db = QSqlDatabase::addDatabase("QODBC", "access");
+      db = QSqlDatabase::addDatabase("QODBC", con);
     }
     db.setDatabaseName(dsn);
     if(!db.isOpen()){
@@ -27,20 +29,11 @@ void AsDataBase::openDb(QString filePath){
 
 //关于access数据库得好好想想
 void AsDataBase::closeDb(){
-    if(db.isOpen()){
-        QString name = db.connectionName();
-        qDebug() << name;
-        QSqlDatabase::removeDatabase(name);
-    }
-//    db.close();
+    QSqlDatabase::removeDatabase(current_con);
 }
 
 QSqlQueryModel* AsDataBase::queryModel(const QString &queryStr){
-    if(!db.isOpen()){
-        if(!db.open()){
-
-        }
-    }
+    QSqlDatabase db = QSqlDatabase::database(current_con);
     QSqlQueryModel *plainModel = new QSqlQueryModel;
     plainModel->setQuery(queryStr, db);
     while(plainModel->canFetchMore()){
@@ -50,11 +43,7 @@ QSqlQueryModel* AsDataBase::queryModel(const QString &queryStr){
 }
 
 QList<QVariant> AsDataBase::queryVariant(const QString &queryStr){
-    if(!db.isOpen()){
-        if(!db.open()){
-
-        }
-    }
+    QSqlDatabase db = QSqlDatabase::database(current_con);
     QList<QVariant> variants;
     QSqlQueryModel *plainModel = new QSqlQueryModel;
     plainModel->setQuery(queryStr, db);
@@ -67,21 +56,13 @@ QList<QVariant> AsDataBase::queryVariant(const QString &queryStr){
 }
 
 QStringList AsDataBase::queryTables(){
-    if(!db.isOpen()){
-        if(!db.open()){
-
-        }
-    }
+    QSqlDatabase db = QSqlDatabase::database(current_con);
     QStringList tableList = db.tables();
     return tableList;
 }
 
 QStringList AsDataBase::queryFields(QString tableStr){
-    if(!db.isOpen()){
-        if(!db.open()){
-
-        }
-    }
+    QSqlDatabase db = QSqlDatabase::database(current_con);
     QString queryStr = QString("select * from %1").arg(tableStr);
     QSqlQuery query(queryStr, db);
     QSqlRecord record = query.record();

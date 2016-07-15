@@ -129,7 +129,7 @@ void SjdrMainWidget::assortSource(QList<QualityControlSource> qualityControlSour
                 dataControl(fileInfo, qcs);
             }
         }else if(path.endsWith(".mdb", Qt::CaseInsensitive)){
-            AsDataBase asdb(path);
+            AsDataBase asdb(path, "access_1");
             QStringList tables = asdb.queryTables();
             int tableCount = tables.count();
             for(int k = 0;k < tableCount;k++){

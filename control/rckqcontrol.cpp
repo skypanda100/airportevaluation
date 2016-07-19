@@ -312,9 +312,9 @@ void RckqControl::run(){
                     int rowCount = plainModel->rowCount();
                     for(int row_i = 0;row_i < rowCount;row_i++){
                         QString dateTimeStr = plainModel->record(row_i).value(0).toString();
-                        float pressure = plainModel->record(row_i).value(1).toFloat();
-                        float humidity = plainModel->record(row_i).value(2).toFloat();
+                        float pressure = plainModel->record(row_i).value(2).toFloat();
                         float temperature = plainModel->record(row_i).value(3).toFloat();
+                        float humidity = plainModel->record(row_i).value(4).toFloat();
 
                         QDateTime dateTime = QDateTime::fromString(dateTimeStr, "yyyy-MM-ddThh:mm:ss");
                         int min = dateTime.toString("m").toInt();

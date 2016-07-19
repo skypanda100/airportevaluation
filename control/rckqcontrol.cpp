@@ -322,8 +322,8 @@ void RckqControl::run(){
                             double a = 17.269;
                             double b = 35.86;
                             double es0 = 6.1078;
-                            double es = qPow(es0, a * temperature / (273.15 + temperature - b));
-                            double e = es * humidity;
+                            double es = es0 * qExp(a * temperature / (273.15 + temperature - b));
+                            double e = es * humidity / 100;
                             double q = 0.622 * e / (pressure - 0.378 * e) * 1000;
                             valueList[min] = QString::number(q, 'f', 2);
 
@@ -331,21 +331,21 @@ void RckqControl::run(){
                             double a = 21.8746;
                             double b = 7.66;
                             double es0 = 6.1078;
-                            double es = qPow(es0, a * temperature / (273.15 + temperature - b));
-                            double e = es * humidity;
+                            double es = es0 * qExp(a * temperature / (273.15 + temperature - b));
+                            double e = es * humidity / 100;
                             double q = 0.622 * e / (pressure - 0.378 * e) * 1000;
                             valueList[min] = QString::number(q, 'f', 2);
                         }else{
                             double a_water = 17.269;
                             double b_water = 35.86;
                             double es0_water = 6.1078;
-                            double es_water = qPow(es0_water, a_water * temperature / (273.15 + temperature - b_water));
+                            double es_water = es0_water * qExp(a_water * temperature / (273.15 + temperature - b_water));
                             double a_ice = 21.8746;
                             double b_ice = 7.66;
                             double es0_ice = 6.1078;
-                            double es_ice = qPow(es0_ice, a_ice * temperature / (273.15 + temperature - b_ice));
+                            double es_ice = es0_ice * qExp(a_ice * temperature / (273.15 + temperature - b_ice));
                             double es = 0.002 * ((80 + 2 * temperature) * es_water - (30 + 2 * temperature) * es_ice);
-                            double e = es * humidity;
+                            double e = es * humidity / 100;
                             double q = 0.622 * e / (pressure - 0.378 * e) * 1000;
                             valueList[min] = QString::number(q, 'f', 2);
                         }

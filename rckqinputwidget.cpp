@@ -161,7 +161,7 @@ void RckqInputWidget::initUI(){
     dateListWidget = new QListWidget;
     dateListWidget->setFixedWidth(200);
     dateListWidget->setContentsMargins(2, 2, 2, 2);
-    dateListWidget->setFrameShape(QListWidget::NoFrame);
+    dateListWidget->setFrameShape(QListWidget::Box);
     dateListWidget->setViewMode(QListView::ListMode);
     dateListWidget->setDragEnabled(false);
 

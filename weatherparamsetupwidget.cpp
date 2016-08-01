@@ -99,6 +99,8 @@ void MultiWeatherParamWidget::initUI(){
         int key = weatherParam.id();
 
         QString title = weatherParam.name();
+        title = getTitle(title);
+
         int limitType = weatherParam.limit_type();
         QGridLayout *gridLayout = new QGridLayout;
         //不可飞
@@ -217,6 +219,38 @@ QList<QString> MultiWeatherParamWidget::getDataFromJson(QString jsonStr){
         }
     }
     return valueList;
+}
+
+QString MultiWeatherParamWidget::getTitle(const QString &name){
+    QString title;
+    if(name.indexOf("风") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("m/s");
+    }else if(name.indexOf("温度") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("℃");
+    }else if(name.indexOf("气压") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("hPa");
+    }else if(name.indexOf("能见度") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("m");
+    }else if(name.indexOf("云") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("m");
+    }else if(name.indexOf("比湿") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("g/kg");
+    }else{
+        title = name;
+    }
+    return title;
 }
 
 void MultiWeatherParamWidget::onConfirmClicked(){
@@ -359,6 +393,7 @@ void SingleWeatherParamWidget::initUI(){
         int key = weatherParam.id();
 
         QString title = weatherParam.name();
+        title = getTitle(title);
         int limitType = weatherParam.limit_type();
         QGridLayout *gridLayout = new QGridLayout;
         //不可飞
@@ -479,6 +514,37 @@ QList<QString> SingleWeatherParamWidget::getDataFromJson(QString jsonStr){
     return valueList;
 }
 
+QString SingleWeatherParamWidget::getTitle(const QString &name){
+    QString title;
+    if(name.indexOf("风") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("m/s");
+    }else if(name.indexOf("温度") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("℃");
+    }else if(name.indexOf("气压") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("hPa");
+    }else if(name.indexOf("能见度") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("m");
+    }else if(name.indexOf("云") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("m");
+    }else if(name.indexOf("比湿") >= 0){
+        title = QString("%1(%2)")
+                .arg(name)
+                .arg("g/kg");
+    }else{
+        title = name;
+    }
+    return title;
+}
 
 void SingleWeatherParamWidget::onConfirmClicked(){
     QList<int> keyList = editHash.keys();

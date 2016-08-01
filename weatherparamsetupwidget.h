@@ -22,6 +22,7 @@ private:
     void initUI();
     void initConnect();
     QList<QString> getDataFromJson(QString);
+    QString getTitle(const QString &);
 
 private slots:
     void onConfirmClicked();
@@ -54,6 +55,7 @@ private:
     void initUI();
     void initConnect();
     QList<QString> getDataFromJson(QString);
+    QString getTitle(const QString &);
 
 private slots:
     void onConfirmClicked();

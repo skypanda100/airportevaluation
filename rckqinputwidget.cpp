@@ -25,14 +25,17 @@ void RckqDateWidget::changeEditType(int editType){
     }else if(m_EditType == 1){
         dateEditButton->setVisible(true);
         dateEditButton->setIcon(QIcon(":/images/minus.png"));
+        dateEditButton->setToolTip("删除日期");
     }else if(m_EditType == 2){
         dateEditButton->setVisible(true);
         dateEditButton->setIcon(QIcon(":/images/plus.png"));
+        dateEditButton->setToolTip("添加日期");
     }
 }
 
 void RckqDateWidget::initUI(){
     dateEdit = new QLineEdit;
+    dateEdit->setPlaceholderText("格式:yyyy-mm-dd");
     dateEditButton = new QPushButton;
     dateEditButton->setVisible(true);
     dateEditButton->setToolTip("添加日期");

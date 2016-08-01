@@ -1,6 +1,65 @@
 #include "rckqinputwidget.h"
 #include "common/sharedmemory.h"
 
+RckqDateWidget::RckqDateWidget(QWidget *parent)
+    :QWidget(parent)
+    ,m_EditType(2)
+{
+    this->initUI();
+    this->initConnect();
+}
+
+RckqDateWidget::~RckqDateWidget(){
+    delete dateEdit;
+    delete dateEditButton;
+}
+
+QString RckqDateWidget::text(){
+    return dateEdit->text();
+}
+
+void RckqDateWidget::changeEditType(int editType){
+    this->m_EditType = editType;
+    if(m_EditType == 0){
+        dateEditButton->setVisible(false);
+    }else if(m_EditType == 1){
+        dateEditButton->setVisible(true);
+        dateEditButton->setIcon(QIcon(":/images/minus.png"));
+    }else if(m_EditType == 2){
+        dateEditButton->setVisible(true);
+        dateEditButton->setIcon(QIcon(":/images/plus.png"));
+    }
+}
+
+void RckqDateWidget::initUI(){
+    dateEdit = new QLineEdit;
+    dateEditButton = new QPushButton;
+    dateEditButton->setVisible(true);
+    dateEditButton->setToolTip("添加日期");
+    dateEditButton->setIcon(QIcon(":/images/plus.png"));
+    dateEditButton->setFixedSize(25, 25);
+
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    mainLayout->setContentsMargins(2, 2, 2, 2);
+    mainLayout->setSpacing(10);
+    mainLayout->addWidget(dateEdit);
+    mainLayout->addWidget(dateEditButton);
+    this->setLayout(mainLayout);
+}
+
+void RckqDateWidget::initConnect(){
+    connect(dateEditButton, SIGNAL(clicked()), this, SLOT(onEditButtonClicked()));
+}
+
+void RckqDateWidget::onEditButtonClicked(){
+    if(m_EditType == 1){
+        emit deleteDate();
+    }else if(m_EditType == 2){
+        emit addDate();
+    }
+}
+
+
 RckqInputWidget::RckqInputWidget(QWidget *parent)
     :QWidget(parent)
 {
@@ -16,13 +75,12 @@ RckqInputWidget::~RckqInputWidget(){
     delete typeComboBox;
     delete fhourComboBox;
     delete thourComboBox;
-    delete addDateButton;
     int dateEditCount = dateEditList.size();
     for(int i = 0;i < dateEditCount;i++){
-        QLineEdit *dateEdit = dateEditList[i];
+        RckqDateWidget *dateEdit = dateEditList[i];
         delete dateEdit;
     }
-    delete dateGLayout;
+    delete dateListWidget;
     int weatherCheckBoxCount = weatherCheckBoxList.size();
     for(int i = 0;i < weatherCheckBoxCount;i++){
         QCheckBox *checkBox = weatherCheckBoxList[i];
@@ -49,6 +107,7 @@ void RckqInputWidget::initData(){
 }
 
 void RckqInputWidget::initUI(){
+    this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
     //机场(机场和跑道)
     queryAirport();
     airportComboBox = new QComboBox;
@@ -95,22 +154,23 @@ void RckqInputWidget::initUI(){
     hourLayout->addStretch(1);
     hourLayout->addWidget(thourComboBox);
 
-    QLineEdit *dateEdit = new QLineEdit;
-    dateEditList.append(dateEdit);
-    addDateButton = new QPushButton;
-    addDateButton->setVisible(false);
-    addDateButton->setToolTip("添加日期");
-    addDateButton->setIcon(QIcon(":/images/plus.png"));
-    addDateButton->setFixedSize(25, 25);
 
-    dateGLayout = new QGridLayout;
-    dateGLayout->addLayout(hourLayout, 0, 0, 1, 2);
-    dateGLayout->addWidget(dateEdit, 1, 0);
-    dateGLayout->addWidget(addDateButton, 1, 1);
+    dateListWidget = new QListWidget;
+    dateListWidget->setFixedWidth(200);
+    dateListWidget->setContentsMargins(2, 2, 2, 2);
+    dateListWidget->setFrameShape(QListWidget::NoFrame);
+    dateListWidget->setViewMode(QListView::ListMode);
+    dateListWidget->setDragEnabled(false);
+
+    onAddDateClicked();
+
+    QVBoxLayout *dateVLayout = new QVBoxLayout;
+    dateVLayout->addLayout(hourLayout);
+    dateVLayout->addWidget(dateListWidget);
 
     QGroupBox *dateGroup = new QGroupBox;
     dateGroup->setTitle("日期");
-    dateGroup->setLayout(dateGLayout);
+    dateGroup->setLayout(dateVLayout);
     //气象要素
     weatherGLayout = new QGridLayout;
     int weatherCount = weatherList.size();
@@ -155,7 +215,6 @@ void RckqInputWidget::initUI(){
 void RckqInputWidget::initConnect(){
     connect(airportComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onAirportChanged(const QString &)));
     connect(typeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onTypeChanged(int)));
-    connect(addDateButton, SIGNAL(clicked()), this, SLOT(onAddDateClicked()));
     connect(executeButton, SIGNAL(clicked()), this, SLOT(execute()));
     connect(SharedMemory::getInstance()
             , SIGNAL(airportInfoChanged(QList<Airport>,QHash<QString,QList<QString> >))
@@ -191,12 +250,7 @@ void RckqInputWidget::onAirportChanged(const QString &name){
  */
 void RckqInputWidget::onTypeChanged(int index){
     if(index == 0){
-        addDateButton->setVisible(false);
-        int dateEditCount = dateEditList.size();
-        for(int i = 1;i < dateEditCount;i++){
-            QLineEdit *dateEdit = dateEditList[i];
-            dateEdit->setVisible(false);
-        }
+        this->resetDate();
 
         int weatherCount = weatherList.size();
         for(int i = 0;i < weatherCount;i++){
@@ -206,12 +260,7 @@ void RckqInputWidget::onTypeChanged(int index){
             weatherCheckBoxList[i]->setVisible(true);
         }
     }else{
-        addDateButton->setVisible(true);
-        int dateEditCount = dateEditList.size();
-        for(int i = 1;i < dateEditCount;i++){
-            QLineEdit *dateEdit = dateEditList[i];
-            dateEdit->setVisible(true);
-        }
+        this->resetDate();
 
         int weatherCount = weatherList.size();
         for(int i = 0;i < weatherCount;i++){
@@ -225,14 +274,43 @@ void RckqInputWidget::onTypeChanged(int index){
 
 /**
  * @brief RckqInputWidget::onAddDateClicked
- * 添加日期edit并且加号移动位置
+ * 添加日期edit
  */
 void RckqInputWidget::onAddDateClicked(){
-    QLineEdit *dateEdit = new QLineEdit;
-    dateEditList.append(dateEdit);
-    dateGLayout->removeWidget(addDateButton);
-    dateGLayout->addWidget(dateEdit, dateEditList.size(), 0);
-    dateGLayout->addWidget(addDateButton, dateEditList.size(), 1);
+    RckqDateWidget *rckqDateWidget = new RckqDateWidget;
+    dateEditList.append(rckqDateWidget);
+    QListWidgetItem *listItem = new QListWidgetItem(dateListWidget);
+    listItem->setSizeHint(QSize(150, 30));
+    dateListWidget->setItemWidget(listItem, rckqDateWidget);
+
+    connect(rckqDateWidget, SIGNAL(addDate()), this, SLOT(onAddDateClicked()));
+    connect(rckqDateWidget, SIGNAL(deleteDate()), this, SLOT(onDelDateClicked()));
+
+    resetDate();
+}
+
+/**
+ * @brief RckqInputWidget::onDelDateClicked
+ * 删除日期edit
+ */
+void RckqInputWidget::onDelDateClicked(){
+    QObject *object = this->sender();
+    int dateCount = dateEditList.count();
+    int i = 0;
+    for(;i < dateCount;i++){
+        RckqDateWidget *rckqDateWidget = dateEditList[i];
+        if(rckqDateWidget == object){
+            break;
+        }
+    }
+    if(i < dateCount){
+        RckqDateWidget *rckqDateWidget = dateEditList.takeAt(i);
+        delete rckqDateWidget;
+        QListWidgetItem *listItem = dateListWidget->takeItem(i);
+        delete listItem;
+    }
+
+    resetDate();
 }
 
 /**
@@ -490,6 +568,31 @@ void RckqInputWidget::resetAirportComboBox(QList<Airport> apList, QHash<QString,
     }
 }
 
+void RckqInputWidget::resetDate(){
+    int dateCount = dateEditList.count();
+    if(typeComboBox->currentIndex() == 0){
+        for(int i = dateCount - 1;i >= 0;i--){
+            RckqDateWidget *rckqDateWidget = dateEditList[i];
+            if(i == dateCount - 1){
+                rckqDateWidget->changeEditType(0);
+            }else{
+                RckqDateWidget *rckqDateWidget = dateEditList.takeAt(i);
+                delete rckqDateWidget;
+                QListWidgetItem *listItem = dateListWidget->takeItem(i);
+                delete listItem;
+            }
+        }
+    }else{
+        for(int i = 0;i < dateCount;i++){
+            RckqDateWidget *rckqDateWidget = dateEditList[i];
+            if(i == dateCount - 1){
+                rckqDateWidget->changeEditType(2);
+            }else{
+                rckqDateWidget->changeEditType(1);
+            }
+        }
+    }
+}
 
 void RckqInputWidget::execute(){
     if(!validate()){

@@ -5,6 +5,32 @@
 #include "database/pgdatabase.h"
 #include "bean/airport.h"
 
+class RckqDateWidget : public QWidget{
+    Q_OBJECT
+public:
+    RckqDateWidget(QWidget *parent = 0);
+    ~RckqDateWidget();
+
+    QString text();
+    void changeEditType(int editType = 0);
+
+signals:
+    void deleteDate();
+    void addDate();
+
+private:
+    void initUI();
+    void initConnect();
+
+private slots:
+    void onEditButtonClicked();
+
+private:
+    int m_EditType;
+    QLineEdit *dateEdit;
+    QPushButton *dateEditButton;
+};
+
 class RckqInputWidget : public QWidget{
     Q_OBJECT
 public:
@@ -19,6 +45,7 @@ private slots:
     void onAirportChanged(const QString &);
     void onTypeChanged(int index);
     void onAddDateClicked();
+    void onDelDateClicked();
     void execute();
     void onAirportInfoChanged(QList<Airport>, QHash< QString, QList<QString> >);
 
@@ -31,6 +58,7 @@ private:
     bool validate();
     //重置机场列表
     void resetAirportComboBox(QList<Airport> apList, QHash< QString, QList<QString> > rwHash, bool isSave = false);
+    void resetDate();
 
 private:
     PgDataBase *pgdb;
@@ -42,9 +70,8 @@ private:
     QComboBox *typeComboBox;
     QComboBox *fhourComboBox;
     QComboBox *thourComboBox;
-    QList<QLineEdit *> dateEditList;
-    QPushButton *addDateButton;
-    QGridLayout *dateGLayout;
+    QListWidget *dateListWidget;
+    QList<RckqDateWidget *> dateEditList;
     QList<QString> weatherList;
     QList<QCheckBox *> weatherCheckBoxList;
     QList<QRadioButton *> weatherRadioButtonList;

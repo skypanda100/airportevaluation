@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     this->initData();
     this->initUI();
-    this->initGuide();
     this->initConnect();
 }
 
@@ -100,6 +99,13 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::showGuide(){
+    guide_airportSetupWidget = new AirportSetupWidget;
+    guide_airportSetupWidget->setWindowFlags((guide_airportSetupWidget->windowFlags()
+                                              & ~Qt::WindowCloseButtonHint)
+                                             /*| Qt::WindowStaysOnTopHint*/);
+
+    connect(guide_airportSetupWidget, SIGNAL(nextClicked()), this, SLOT(onNextClicked()));
+
     guide_airportSetupWidget->show();
 }
 
@@ -128,21 +134,6 @@ void MainWindow::initConnect(){
     connect(weatherAction, SIGNAL(triggered()), this, SLOT(onWeatherSetupTriggered()));
     connect(helpAction, SIGNAL(triggered()), this, SLOT(onHelpTriggered()));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(onAboutTriggered()));
-    connect(guide_airportSetupWidget, SIGNAL(nextClicked()), this, SLOT(onNextClicked()));
-    connect(guide_weatherParamSetupWidget, SIGNAL(nextClicked()), this, SLOT(onNextClicked()));
-    connect(guide_weatherParamSetupWidget, SIGNAL(previousClicked()), this, SLOT(onPreviousClicked()));
-}
-
-void MainWindow::initGuide(){
-    guide_airportSetupWidget = new AirportSetupWidget;
-    guide_airportSetupWidget->setWindowFlags((guide_airportSetupWidget->windowFlags()
-                                              & ~Qt::WindowCloseButtonHint)
-                                             | Qt::WindowStaysOnTopHint);
-
-    guide_weatherParamSetupWidget = new WeatherParamSetupWidget;
-    guide_weatherParamSetupWidget->setWindowFlags((guide_weatherParamSetupWidget->windowFlags()
-                                                   & ~Qt::WindowCloseButtonHint)
-                                                  | Qt::WindowStaysOnTopHint);
 }
 
 void MainWindow::setupCentralWidget(){
@@ -447,6 +438,14 @@ void MainWindow::onAboutTriggered(){
 void MainWindow::onNextClicked(){
     if(this->sender() == guide_airportSetupWidget){
         guide_airportSetupWidget->close();
+
+        guide_weatherParamSetupWidget = new WeatherParamSetupWidget;
+        guide_weatherParamSetupWidget->setWindowFlags((guide_weatherParamSetupWidget->windowFlags()
+                                                       & ~Qt::WindowCloseButtonHint)
+                                                      /*| Qt::WindowStaysOnTopHint*/);
+        connect(guide_weatherParamSetupWidget, SIGNAL(nextClicked()), this, SLOT(onNextClicked()));
+        connect(guide_weatherParamSetupWidget, SIGNAL(previousClicked()), this, SLOT(onPreviousClicked()));
+
         guide_weatherParamSetupWidget->show();
     }else{
         delete guide_airportSetupWidget;
@@ -467,6 +466,9 @@ void MainWindow::onNextClicked(){
 void MainWindow::onPreviousClicked(){
     if(this->sender() == guide_weatherParamSetupWidget){
         guide_weatherParamSetupWidget->close();
+        delete guide_weatherParamSetupWidget;
+        guide_weatherParamSetupWidget = NULL;
+
         guide_airportSetupWidget->show();
     }
 }

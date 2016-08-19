@@ -36,7 +36,6 @@ private:
     void initData();
     void initUI();
     void initConnect();
-    void initGuide();
     //菜单栏及工具栏
     void setupModuleActions();
     void setupViewActions();

@@ -456,6 +456,7 @@ void MainWindow::onNextClicked(){
         SharedMemory::isWelcome = false;
         this->setupActivity();
         this->onSjdrTriggered();
+        this->show();
     }
 }
 

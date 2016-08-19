@@ -7,6 +7,8 @@ MainWindow::MainWindow(QWidget *parent)
     ,isFmgInit(false)
     ,isRckqInit(false)
     ,welcomeWidget(NULL)
+    ,guide_airportSetupWidget(NULL)
+    ,guide_weatherParamSetupWidget(NULL)
     ,resultWidget(NULL)
     ,sjdrInputDock(NULL)
     ,sjdrInputWidget(NULL)
@@ -26,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     this->initData();
     this->initUI();
+    this->initGuide();
     this->initConnect();
 }
 
@@ -44,6 +47,12 @@ MainWindow::~MainWindow()
 
     if(welcomeWidget != NULL){
         delete welcomeWidget;
+    }
+    if(guide_airportSetupWidget != NULL){
+        delete guide_airportSetupWidget;
+    }
+    if(guide_weatherParamSetupWidget != NULL){
+        delete guide_weatherParamSetupWidget;
     }
 
     if(sjdrInputDock != NULL){
@@ -90,6 +99,10 @@ MainWindow::~MainWindow()
     }
 }
 
+void MainWindow::showGuide(){
+    guide_airportSetupWidget->show();
+}
+
 void MainWindow::initData(){
 }
 
@@ -102,6 +115,8 @@ void MainWindow::initUI(){
     this->setupHelpActions();
     this->setupCentralWidget();
     this->createStatusBar();
+    //设置是否活性
+    this->setupActivity();
 }
 
 void MainWindow::initConnect(){
@@ -113,6 +128,21 @@ void MainWindow::initConnect(){
     connect(weatherAction, SIGNAL(triggered()), this, SLOT(onWeatherSetupTriggered()));
     connect(helpAction, SIGNAL(triggered()), this, SLOT(onHelpTriggered()));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(onAboutTriggered()));
+    connect(guide_airportSetupWidget, SIGNAL(nextClicked()), this, SLOT(onNextClicked()));
+    connect(guide_weatherParamSetupWidget, SIGNAL(nextClicked()), this, SLOT(onNextClicked()));
+    connect(guide_weatherParamSetupWidget, SIGNAL(previousClicked()), this, SLOT(onPreviousClicked()));
+}
+
+void MainWindow::initGuide(){
+    guide_airportSetupWidget = new AirportSetupWidget;
+    guide_airportSetupWidget->setWindowFlags((guide_airportSetupWidget->windowFlags()
+                                              & ~Qt::WindowCloseButtonHint)
+                                             | Qt::WindowStaysOnTopHint);
+
+    guide_weatherParamSetupWidget = new WeatherParamSetupWidget;
+    guide_weatherParamSetupWidget->setWindowFlags((guide_weatherParamSetupWidget->windowFlags()
+                                                   & ~Qt::WindowCloseButtonHint)
+                                                  | Qt::WindowStaysOnTopHint);
 }
 
 void MainWindow::setupCentralWidget(){
@@ -135,28 +165,24 @@ void MainWindow::setupModuleActions(){
     //数据导入模块
     QIcon sjdrIcon = QIcon(":/images/sjdr.png");
     sjdrAction = new QAction(sjdrIcon, "数据导入", this);
-//    sjdrAction->setDisabled(true);
     menu->addAction(sjdrAction);
     toolBar->addAction(sjdrAction);
 
     //可飞天统计模块
     QIcon kfttjIcon = QIcon(":/images/kfttj.png");
     kfttjAction = new QAction(kfttjIcon, "可飞天统计", this);
-//    kfttjAction->setDisabled(true);
     menu->addAction(kfttjAction);
     toolBar->addAction(kfttjAction);
 
     //日窗口期模块
     QIcon rckqIcon = QIcon(":/images/rckq.png");
     rckqAction = new QAction(rckqIcon, "日窗口期", this);
-//    rckqAction->setDisabled(true);
     menu->addAction(rckqAction);
     toolBar->addAction(rckqAction);
 
     //风玫瑰模块
     QIcon fmgIcon = QIcon(":/images/fmg.png");
     fmgAction = new QAction(fmgIcon, "风玫瑰", this);
-//    fmgAction->setDisabled(true);
     menu->addAction(fmgAction);
     toolBar->addAction(fmgAction);
 }
@@ -177,14 +203,12 @@ void MainWindow::setupSettingActions(){
     //机场设置
     QIcon airportSetupIcon = QIcon(":/images/airport_setup.png");
     airportAction = new QAction(airportSetupIcon, "机场设置", this);
-//    airportAction->setDisabled(true);
     menu->addAction(airportAction);
     toolBar->addAction(airportAction);
 
     //气象要素阀值设置
     QIcon weatherSetupIcon = QIcon(":/images/weather_setup.png");
     weatherAction = new QAction(weatherSetupIcon, "阀值设置", this);
-//    weatherAction->setDisabled(true);
     menu->addAction(weatherAction);
     toolBar->addAction(weatherAction);
 }
@@ -416,6 +440,36 @@ void MainWindow::onAboutTriggered(){
 
 }
 
+/**
+ * @brief MainWindow::onNextClicked
+ * 响应下一步
+ */
+void MainWindow::onNextClicked(){
+    if(this->sender() == guide_airportSetupWidget){
+        guide_airportSetupWidget->close();
+        guide_weatherParamSetupWidget->show();
+    }else{
+        delete guide_airportSetupWidget;
+        guide_airportSetupWidget = NULL;
+        delete guide_weatherParamSetupWidget;
+        guide_weatherParamSetupWidget = NULL;
+        SharedMemory::isWelcome = false;
+        this->setupActivity();
+        this->onSjdrTriggered();
+    }
+}
+
+/**
+ * @brief MainWindow::onPreviousClicked
+ * 响应上一步
+ */
+void MainWindow::onPreviousClicked(){
+    if(this->sender() == guide_weatherParamSetupWidget){
+        guide_weatherParamSetupWidget->close();
+        guide_airportSetupWidget->show();
+    }
+}
+
 void MainWindow::setupSjdr(){
     this->setupSjdrInputWidget();
     this->setupSjdrQualityWidget();
@@ -536,4 +590,17 @@ void MainWindow::setupRckqResultWidget(){
     resultWidget->addWidget(rckqResultWidget);
     resultWidget->setCurrentWidget(rckqResultWidget);
 
+}
+
+void MainWindow::setupActivity(){
+    bool isDisabled = false;
+    if(SharedMemory::isWelcome){
+        isDisabled = true;
+    }
+    sjdrAction->setDisabled(isDisabled);
+    kfttjAction->setDisabled(isDisabled);
+    rckqAction->setDisabled(isDisabled);
+    fmgAction->setDisabled(isDisabled);
+    airportAction->setDisabled(isDisabled);
+    weatherAction->setDisabled(isDisabled);
 }

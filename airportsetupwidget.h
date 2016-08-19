@@ -87,6 +87,10 @@ public:
     AirportSetupWidget(QWidget *parent = 0);
     ~AirportSetupWidget();
 
+signals:
+    void previousClicked();
+    void nextClicked();
+
 private:
     void initData();
     void initUI();
@@ -96,6 +100,8 @@ private:
     QTabWidget *tabWidget;
     AirportAddWidget *airportAddWidget;
     AirportModifyWidget *airportModifyWidget;
+    QPushButton *previousButton;
+    QPushButton *nextButton;
 };
 
 #endif // AIRPORTSETUPWIDGET

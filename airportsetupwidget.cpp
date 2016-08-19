@@ -513,6 +513,8 @@ void AirportModifyWidget::onAirportChanged(){
 /*** 机场设置widget ***/
 AirportSetupWidget::AirportSetupWidget(QWidget *parent)
     :QDialog(parent)
+    ,previousButton(NULL)
+    ,nextButton(NULL)
 {
     this->initData();
     this->initUI();
@@ -523,6 +525,12 @@ AirportSetupWidget::~AirportSetupWidget(){
     delete airportAddWidget;
     delete airportModifyWidget;
     delete tabWidget;
+    if(previousButton != NULL){
+        delete previousButton;
+    }
+    if(nextButton != NULL){
+        delete nextButton;
+    }
 }
 
 void AirportSetupWidget::initData(){
@@ -543,9 +551,31 @@ void AirportSetupWidget::initUI(){
     //布局
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(tabWidget);
+
+    //设置上一步下一步按钮
+    if(SharedMemory::isWelcome){
+        previousButton = new QPushButton;
+        previousButton->setText("上一步");
+        previousButton->setDisabled(true);
+
+        nextButton = new QPushButton;
+        nextButton->setText("下一步");
+
+        QHBoxLayout *hlayout = new QHBoxLayout;
+        hlayout->addWidget(previousButton);
+        hlayout->addStretch();
+        hlayout->addWidget(nextButton);
+
+        mainLayout->addLayout(hlayout);
+    }
+
     this->setLayout(mainLayout);
 }
 
 void AirportSetupWidget::initConnect(){
     connect(airportAddWidget, SIGNAL(airportChanged()), airportModifyWidget, SLOT(onAirportChanged()));
+    if(SharedMemory::isWelcome){
+        connect(previousButton, SIGNAL(clicked()), this, SIGNAL(previousClicked()));
+        connect(nextButton, SIGNAL(clicked()), this, SIGNAL(nextClicked()));
+    }
 }

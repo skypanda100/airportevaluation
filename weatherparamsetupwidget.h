@@ -81,6 +81,10 @@ public:
     WeatherParamSetupWidget(QWidget *parent = 0);
     ~WeatherParamSetupWidget();
 
+signals:
+    void previousClicked();
+    void nextClicked();
+
 private:
     void initData();
     void initUI();
@@ -101,6 +105,9 @@ private:
 
     MultiWeatherParamWidget *multiWeatherParamWidget;
     SingleWeatherParamWidget *singleWeatherParamWidget;
+
+    QPushButton *previousButton;
+    QPushButton *nextButton;
 };
 
 #endif // WEATHERPARAMSETUPWIDGET

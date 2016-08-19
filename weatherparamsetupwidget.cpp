@@ -593,6 +593,8 @@ WeatherParamSetupWidget::WeatherParamSetupWidget(QWidget *parent)
     :QDialog(parent)
     ,multiWeatherParamWidget(NULL)
     ,singleWeatherParamWidget(NULL)
+    ,previousButton(NULL)
+    ,nextButton(NULL)
 {
     this->initData();
     this->initUI();
@@ -606,6 +608,12 @@ WeatherParamSetupWidget::~WeatherParamSetupWidget(){
     }
     if(singleWeatherParamWidget != NULL){
         delete singleWeatherParamWidget;
+    }
+    if(previousButton != NULL){
+        delete previousButton;
+    }
+    if(nextButton != NULL){
+        delete nextButton;
     }
     delete tabWidget;
     delete pgDb;
@@ -652,11 +660,32 @@ void WeatherParamSetupWidget::initUI(){
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(airportComboBox);
     mainLayout->addWidget(tabWidget);
+
+    //设置上一步下一步按钮
+    if(SharedMemory::isWelcome){
+        previousButton = new QPushButton;
+        previousButton->setText("上一步");
+
+        nextButton = new QPushButton;
+        nextButton->setText("下一步");
+
+        QHBoxLayout *hlayout = new QHBoxLayout;
+        hlayout->addWidget(previousButton);
+        hlayout->addStretch();
+        hlayout->addWidget(nextButton);
+
+        mainLayout->addLayout(hlayout);
+    }
+
     this->setLayout(mainLayout);
 }
 
 void WeatherParamSetupWidget::initConnect(){
     connect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
+    if(SharedMemory::isWelcome){
+        connect(previousButton, SIGNAL(clicked()), this, SIGNAL(previousClicked()));
+        connect(nextButton, SIGNAL(clicked()), this, SIGNAL(nextClicked()));
+    }
 }
 
 void WeatherParamSetupWidget::onAirportChanged(int index){

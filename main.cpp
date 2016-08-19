@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.resize(1100,600);
     w.show();
+    w.showGuide();
 
     return a.exec();
 }

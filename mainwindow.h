@@ -16,6 +16,7 @@
 #include "rckqresultwidget.h"
 #include "airportsetupwidget.h"
 #include "weatherparamsetupwidget.h"
+#include "common/sharedmemory.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,6 +26,9 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    //显示引导界面
+    void showGuide();
+
 public slots:
     void setProgressValue(int value, int maxValue = 100);
 
@@ -32,6 +36,7 @@ private:
     void initData();
     void initUI();
     void initConnect();
+    void initGuide();
     //菜单栏及工具栏
     void setupModuleActions();
     void setupViewActions();
@@ -67,6 +72,8 @@ private:
     void setupRckqInputWidget();
     //设置日窗口期模块的结果区
     void setupRckqResultWidget();
+    //设置功能模块是否活性
+    void setupActivity();
 
 private slots:
     void onSjdrTriggered();
@@ -77,6 +84,8 @@ private slots:
     void onWeatherSetupTriggered();
     void onHelpTriggered();
     void onAboutTriggered();
+    void onNextClicked();
+    void onPreviousClicked();
 
 private:
     bool isSjdrInit;
@@ -100,6 +109,8 @@ private:
     QProgressBar *progressBar;
 
     WelcomeWidget *welcomeWidget;
+    AirportSetupWidget *guide_airportSetupWidget;
+    WeatherParamSetupWidget *guide_weatherParamSetupWidget;
 
     QDockWidget *sjdrInputDock;
     SjdrInputWidget *sjdrInputWidget;

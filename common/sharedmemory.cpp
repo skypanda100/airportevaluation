@@ -1,6 +1,7 @@
 #include "sharedmemory.h"
 
 SharedMemory* SharedMemory::sm = NULL;
+bool SharedMemory::isWelcome = true;
 QMutex SharedMemory::mutex;
 
 /**

@@ -19,6 +19,9 @@ public:
 signals:
     void airportInfoChanged(QList<Airport>, QHash< QString, QList<QString> >);
 
+public:
+    static bool isWelcome;
+
 private:
     SharedMemory();
     void queryAirport();

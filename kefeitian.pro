@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     kfttjinputwidget.cpp \
     bean/weatherparam.cpp \
     bean/weatherparamsetup.cpp \
-    weatherparamsetupwidget.cpp
+    weatherparamsetupwidget.cpp \
+    welcomewidget.cpp
 
 HEADERS  += mainwindow.h \
     database/pgdatabase.h \
@@ -82,7 +83,8 @@ HEADERS  += mainwindow.h \
     kfttjinputwidget.h \
     bean/weatherparam.h \
     bean/weatherparamsetup.h \
-    weatherparamsetupwidget.h
+    weatherparamsetupwidget.h \
+    welcomewidget.h
 
 RESOURCES += \
     res.qrc

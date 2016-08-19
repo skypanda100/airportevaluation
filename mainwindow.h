@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QProcess>
+#include "welcomewidget.h"
 #include "sjdrinputwidget.h"
 #include "sjdrqualitywidget.h"
 #include "sjdrmainwidget.h"
@@ -97,6 +98,8 @@ private:
     QAction *aboutAction;
 
     QProgressBar *progressBar;
+
+    WelcomeWidget *welcomeWidget;
 
     QDockWidget *sjdrInputDock;
     SjdrInputWidget *sjdrInputWidget;

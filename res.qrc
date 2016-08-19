@@ -13,5 +13,6 @@
         <file>images/airport_setup.png</file>
         <file>images/weather_setup.png</file>
         <file>images/minus.png</file>
+        <file>images/cloud.jpg</file>
     </qresource>
 </RCC>

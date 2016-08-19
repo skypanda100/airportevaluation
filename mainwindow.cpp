@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     ,isKfttjInit(false)
     ,isFmgInit(false)
     ,isRckqInit(false)
+    ,welcomeWidget(NULL)
     ,resultWidget(NULL)
     ,sjdrInputDock(NULL)
     ,sjdrInputWidget(NULL)
@@ -40,6 +41,10 @@ MainWindow::~MainWindow()
     delete aboutAction;
 
     delete viewMenu;
+
+    if(welcomeWidget != NULL){
+        delete welcomeWidget;
+    }
 
     if(sjdrInputDock != NULL){
         delete sjdrInputDock;
@@ -89,6 +94,7 @@ void MainWindow::initData(){
 }
 
 void MainWindow::initUI(){
+    //设置各个功能模块
     this->setWindowTitle("民机试飞气象条件统计与评价研究系统");
     this->setupModuleActions();
     this->setupViewActions();
@@ -110,7 +116,11 @@ void MainWindow::initConnect(){
 }
 
 void MainWindow::setupCentralWidget(){
+    welcomeWidget = new WelcomeWidget;
+
     resultWidget = new QStackedWidget;
+    resultWidget->addWidget(welcomeWidget);
+
     this->setCentralWidget(resultWidget);
 }
 
@@ -125,24 +135,28 @@ void MainWindow::setupModuleActions(){
     //数据导入模块
     QIcon sjdrIcon = QIcon(":/images/sjdr.png");
     sjdrAction = new QAction(sjdrIcon, "数据导入", this);
+//    sjdrAction->setDisabled(true);
     menu->addAction(sjdrAction);
     toolBar->addAction(sjdrAction);
 
     //可飞天统计模块
     QIcon kfttjIcon = QIcon(":/images/kfttj.png");
     kfttjAction = new QAction(kfttjIcon, "可飞天统计", this);
+//    kfttjAction->setDisabled(true);
     menu->addAction(kfttjAction);
     toolBar->addAction(kfttjAction);
 
     //日窗口期模块
     QIcon rckqIcon = QIcon(":/images/rckq.png");
     rckqAction = new QAction(rckqIcon, "日窗口期", this);
+//    rckqAction->setDisabled(true);
     menu->addAction(rckqAction);
     toolBar->addAction(rckqAction);
 
     //风玫瑰模块
     QIcon fmgIcon = QIcon(":/images/fmg.png");
     fmgAction = new QAction(fmgIcon, "风玫瑰", this);
+//    fmgAction->setDisabled(true);
     menu->addAction(fmgAction);
     toolBar->addAction(fmgAction);
 }
@@ -163,12 +177,14 @@ void MainWindow::setupSettingActions(){
     //机场设置
     QIcon airportSetupIcon = QIcon(":/images/airport_setup.png");
     airportAction = new QAction(airportSetupIcon, "机场设置", this);
+//    airportAction->setDisabled(true);
     menu->addAction(airportAction);
     toolBar->addAction(airportAction);
 
     //气象要素阀值设置
     QIcon weatherSetupIcon = QIcon(":/images/weather_setup.png");
     weatherAction = new QAction(weatherSetupIcon, "阀值设置", this);
+//    weatherAction->setDisabled(true);
     menu->addAction(weatherAction);
     toolBar->addAction(weatherAction);
 }

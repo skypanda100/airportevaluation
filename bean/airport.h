@@ -12,9 +12,6 @@ public:
     QString code() const;
     void setCode(const QString &code);
 
-    int planeCode() const;
-    void setPlaneCode(int planeCode);
-
     QString name() const;
     void setName(const QString &name);
 
@@ -38,7 +35,6 @@ public:
 
 private:
     QString m_code;
-    int m_planeCode;
     QString m_name;
     QString m_planeName;
     float m_longitude;

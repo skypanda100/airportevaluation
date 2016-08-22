@@ -18,16 +18,6 @@ void Airport::setCode(const QString &code)
     m_code = code;
 }
 
-int Airport::planeCode() const
-{
-    return m_planeCode;
-}
-
-void Airport::setPlaneCode(int planeCode)
-{
-    m_planeCode = planeCode;
-}
-
 QString Airport::name() const
 {
     return m_name;

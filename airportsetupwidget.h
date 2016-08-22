@@ -12,6 +12,7 @@ public:
     PlaneItemWidget(QWidget *parent = 0);
     ~PlaneItemWidget();
     void setText(QString);
+    QString text();
 
 signals:
     void deleteItem();

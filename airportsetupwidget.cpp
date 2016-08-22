@@ -19,6 +19,10 @@ void PlaneItemWidget::setText(QString text){
     valueEdit->setText(text);
 }
 
+QString PlaneItemWidget::text(){
+    return valueEdit->text().trimmed();
+}
+
 void PlaneItemWidget::initUI(){
     valueEdit = new QLineEdit;
 
@@ -212,8 +216,17 @@ bool AirportAddWidget::validate(){
         return false;
     }
     //check机型
-    int planeNameCount = planeNameComboBox->count();
-    if(planeNameCount == 0){
+    QStringList planeNameList;
+    int listItemCount = planeNameListWidget->count();
+    for(int i = 0;i < listItemCount;i++){
+        QListWidgetItem *item = planeNameListWidget->item(i);
+        PlaneItemWidget *planeItemWidget = (PlaneItemWidget *)(planeNameListWidget->itemWidget(item));
+        QString planeName = planeItemWidget->text();
+        if(!planeName.isEmpty()){
+            planeNameList.append(planeName);
+        }
+    }
+    if(planeNameList.count() == 0){
         QMessageBox::critical(0, QObject::tr("错误提示"), "机型不能为空!");
         return false;
     }
@@ -356,9 +369,14 @@ void AirportAddWidget::onConfirmClicked(){
         QString name = nameEdit->text().trimmed();
         //机型
         QStringList planeNameList;
-        int planeNameCount = planeNameComboBox->count();
-        for(int i = 0;i < planeNameCount;i++){
-            planeNameList.append(planeNameComboBox->itemText(i));
+        int listItemCount = planeNameListWidget->count();
+        for(int i = 0;i < listItemCount;i++){
+            QListWidgetItem *item = planeNameListWidget->item(i);
+            PlaneItemWidget *planeItemWidget = (PlaneItemWidget *)(planeNameListWidget->itemWidget(item));
+            QString planeName = planeItemWidget->text();
+            if(!planeName.isEmpty()){
+                planeNameList.append(planeName);
+            }
         }
         //经度
         QString longitude = lonEdit->text();

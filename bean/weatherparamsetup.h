@@ -11,6 +11,9 @@ public:
     QString code() const;
     void setCode(const QString &code);
 
+    int planeCode() const;
+    void setPlaneCode(int planeCode);
+
     int paramid() const;
     void setParamid(int paramid);
 
@@ -19,6 +22,7 @@ public:
 
 private:
     QString m_code;
+    int m_planeCode;
     int m_paramid;
     QString m_limits;
 };

@@ -18,6 +18,16 @@ void Airport::setCode(const QString &code)
     m_code = code;
 }
 
+int Airport::planeCode() const
+{
+    return m_planeCode;
+}
+
+void Airport::setPlaneCode(int planeCode)
+{
+    m_planeCode = planeCode;
+}
+
 QString Airport::name() const
 {
     return m_name;
@@ -26,6 +36,16 @@ QString Airport::name() const
 void Airport::setName(const QString &name)
 {
     m_name = name;
+}
+
+QString Airport::planeName() const
+{
+    return m_planeName;
+}
+
+void Airport::setPlaneName(const QString &planeName)
+{
+    m_planeName = planeName;
 }
 
 float Airport::longitude() const

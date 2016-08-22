@@ -18,6 +18,16 @@ void WeatherParamSetup::setCode(const QString &code)
     m_code = code;
 }
 
+int WeatherParamSetup::planeCode() const
+{
+    return m_planeCode;
+}
+
+void WeatherParamSetup::setPlaneCode(int planeCode)
+{
+    m_planeCode = planeCode;
+}
+
 int WeatherParamSetup::paramid() const
 {
     return m_paramid;

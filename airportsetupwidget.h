@@ -5,6 +5,33 @@
 #include "database/pgdatabase.h"
 #include "bean/airport.h"
 
+/*** 机型ComboBox的Item ***/
+class PlaneItemWidget : public QWidget{
+    Q_OBJECT
+public:
+    PlaneItemWidget(QWidget *parent = 0);
+    ~PlaneItemWidget();
+    void setText(QString);
+
+signals:
+    void deleteItem();
+    void showText(QString);
+
+protected:
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+
+private:
+    void initUI();
+    void initConnect();
+
+private:
+    QLineEdit *valueEdit;
+    QPushButton *deleteButton;
+    bool mousePress;
+};
+
+
 /*** 机场添加widget ***/
 class AirportAddWidget : public QWidget{
     Q_OBJECT
@@ -14,6 +41,9 @@ public:
 
 signals:
     void airportChanged();
+
+protected:
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
 
 private:
     void initData();
@@ -27,6 +57,9 @@ private:
 
 private slots:
     void onConfirmClicked();
+    void onPlaneChanged(int);
+    void onItemDelete();
+    void onItemShow(QString);
 
 private:
     PgDataBase *pgDb;
@@ -35,6 +68,8 @@ private:
 
     QLineEdit *codeEdit;
     QLineEdit *nameEdit;
+    QComboBox *planeNameComboBox;
+    QListWidget *planeNameListWidget;
     QLineEdit *lonEdit;
     QLineEdit *latEdit;
     QLineEdit *altEdit;

@@ -74,11 +74,12 @@ void SharedMemory::queryAirport(){
         Airport airport;
         airport.setCode(plainModel->record(i).value(0).toString());
         airport.setName(plainModel->record(i).value(1).toString());
-        airport.setLongitude(plainModel->record(i).value(2).toFloat());
-        airport.setLatitude(plainModel->record(i).value(3).toFloat());
-        airport.setAltitude(plainModel->record(i).value(4).toFloat());
-        airport.setDirection(plainModel->record(i).value(5).toFloat());
-        airport.setType(plainModel->record(i).value(6).toString());
+        airport.setPlaneName(plainModel->record(i).value(2).toString());
+        airport.setLongitude(plainModel->record(i).value(3).toFloat());
+        airport.setLatitude(plainModel->record(i).value(4).toFloat());
+        airport.setAltitude(plainModel->record(i).value(5).toFloat());
+        airport.setDirection(plainModel->record(i).value(6).toFloat());
+        airport.setType(plainModel->record(i).value(7).toString());
         m_aiportList.append(airport);
 
         //查找跑道

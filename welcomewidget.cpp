@@ -16,7 +16,8 @@ WelcomeWidget::~WelcomeWidget(){
 }
 
 void WelcomeWidget::initData(){
-    welcomePixmap = new QPixmap(":/images/cloud.jpg");
+//    welcomePixmap = new QPixmap(":/images/cloud.jpg");
+    welcomePixmap = new QPixmap(":/images/C919.jpg");
 }
 
 void WelcomeWidget::initUI(){

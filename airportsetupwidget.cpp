@@ -1,6 +1,58 @@
 #include "airportsetupwidget.h"
 #include "common/sharedmemory.h"
 
+/*** 机型ComboBox的Item ***/
+PlaneItemWidget::PlaneItemWidget(QWidget *parent)
+    :QWidget(parent)
+    ,mousePress(false)
+{
+    this->initUI();
+    this->initConnect();
+}
+
+PlaneItemWidget::~PlaneItemWidget(){
+    delete valueEdit;
+    delete deleteButton;
+}
+
+void PlaneItemWidget::setText(QString text){
+    valueEdit->setText(text);
+}
+
+void PlaneItemWidget::initUI(){
+    valueEdit = new QLineEdit;
+
+    deleteButton = new QPushButton;
+    deleteButton->setIcon(QIcon(":/images/delete.png"));
+    deleteButton->setIconSize(QSize(15, 15));
+    deleteButton->setFlat(true);
+    deleteButton->setStyleSheet("background:transparent;");
+
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    mainLayout->addWidget(valueEdit, 1);
+    mainLayout->addWidget(deleteButton);
+
+    this->setLayout(mainLayout);
+}
+
+void PlaneItemWidget::initConnect(){
+    connect(deleteButton, SIGNAL(clicked()), this, SIGNAL(deleteItem()));
+}
+
+void PlaneItemWidget::mousePressEvent(QMouseEvent *e){
+    if(Qt::LeftButton == e->button()){
+        mousePress = true;
+    }
+}
+
+void PlaneItemWidget::mouseReleaseEvent(QMouseEvent *e){
+    if(mousePress && (this->rect()).contains(e->pos()))
+    {
+        emit showText(valueEdit->text());
+    }
+    mousePress = false;
+}
+
 /*** 机场添加widget ***/
 AirportAddWidget::AirportAddWidget(QWidget *parent)
     :QWidget(parent)
@@ -13,6 +65,8 @@ AirportAddWidget::AirportAddWidget(QWidget *parent)
 AirportAddWidget::~AirportAddWidget(){
     delete codeEdit;
     delete nameEdit;
+    delete planeNameListWidget;
+    delete planeNameComboBox;
     delete lonEdit;
     delete latEdit;
     delete altEdit;
@@ -20,6 +74,26 @@ AirportAddWidget::~AirportAddWidget(){
     delete typeComboBox;
     delete confirmButton;
     delete pgDb;
+}
+
+bool AirportAddWidget::eventFilter(QObject *sender, QEvent *event){
+    if(sender == planeNameComboBox && event->type() == QEvent::KeyPress){
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return){
+            QString currentText = planeNameComboBox->currentText().trimmed();
+            if(currentText.isEmpty()){
+                return true;
+            }
+            PlaneItemWidget *planeItem = new PlaneItemWidget;
+            planeItem->setText(currentText);
+            QListWidgetItem *listItem = new QListWidgetItem(planeNameListWidget);
+            planeNameListWidget->setItemWidget(listItem, planeItem);
+            connect(planeItem, SIGNAL(deleteItem()), this, SLOT(onItemDelete()));
+            connect(planeItem, SIGNAL(showText(QString)), this, SLOT(onItemShow(QString)));
+            return true;
+        }
+    }
+    return QWidget::eventFilter(sender, event);
 }
 
 void AirportAddWidget::initData(){
@@ -41,6 +115,17 @@ void AirportAddWidget::initUI(){
     QLabel *nameLabel = new QLabel;
     nameLabel->setText("机场名称");
     nameEdit = new QLineEdit;
+    //机型
+    QLabel *planeNameLabel = new QLabel;
+    planeNameLabel->setText("机型");
+    planeNameListWidget = new QListWidget;
+    planeNameListWidget->setFixedSize(200, 200);
+    planeNameComboBox = new QComboBox;
+    planeNameComboBox->setStyleSheet("QComboBox QAbstractItemView::item { min-height: 40px; min-width: 200px; }");
+    planeNameComboBox->setEditable(true);
+    planeNameComboBox->setModel(planeNameListWidget->model());
+    planeNameComboBox->setView(planeNameListWidget);
+    planeNameComboBox->installEventFilter(this);
     //经度
     QLabel *lonLabel = new QLabel;
     lonLabel->setText("经度");
@@ -83,22 +168,25 @@ void AirportAddWidget::initUI(){
     mainLayout->addWidget(codeEdit, 0, 1);
     mainLayout->addWidget(nameLabel, 1, 0);
     mainLayout->addWidget(nameEdit, 1, 1);
-    mainLayout->addWidget(lonLabel, 2, 0);
-    mainLayout->addWidget(lonEdit, 2, 1);
-    mainLayout->addWidget(latLabel, 3, 0);
-    mainLayout->addWidget(latEdit, 3, 1);
-    mainLayout->addWidget(altLabel, 4, 0);
-    mainLayout->addWidget(altEdit, 4, 1);
-    mainLayout->addWidget(dirLabel, 5, 0);
-    mainLayout->addWidget(dirEdit, 5, 1);
-    mainLayout->addWidget(typeLabel, 6, 0);
-    mainLayout->addWidget(typeComboBox, 6, 1);
-    mainLayout->addWidget(confirmButton, 7, 0, 1, 2);
+    mainLayout->addWidget(planeNameLabel, 2, 0);
+    mainLayout->addWidget(planeNameComboBox, 2, 1);
+    mainLayout->addWidget(lonLabel, 3, 0);
+    mainLayout->addWidget(lonEdit, 3, 1);
+    mainLayout->addWidget(latLabel, 4, 0);
+    mainLayout->addWidget(latEdit, 4, 1);
+    mainLayout->addWidget(altLabel, 5, 0);
+    mainLayout->addWidget(altEdit, 5, 1);
+    mainLayout->addWidget(dirLabel, 6, 0);
+    mainLayout->addWidget(dirEdit, 6, 1);
+    mainLayout->addWidget(typeLabel, 7, 0);
+    mainLayout->addWidget(typeComboBox, 7, 1);
+    mainLayout->addWidget(confirmButton, 8, 0, 1, 2);
     this->setLayout(mainLayout);
 }
 
 void AirportAddWidget::initConnect(){
     connect(confirmButton, SIGNAL(clicked()), this, SLOT(onConfirmClicked()));
+    connect(planeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onPlaneChanged(int)));
 }
 
 bool AirportAddWidget::validate(){
@@ -121,6 +209,12 @@ bool AirportAddWidget::validate(){
     QString nameStr = nameEdit->text().trimmed();
     if(nameStr.isEmpty()){
         QMessageBox::critical(0, QObject::tr("错误提示"), "机场名称不能为空!");
+        return false;
+    }
+    //check机型
+    int planeNameCount = planeNameComboBox->count();
+    if(planeNameCount == 0){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "机型不能为空!");
         return false;
     }
     //check经度
@@ -260,6 +354,12 @@ void AirportAddWidget::onConfirmClicked(){
         QString code = codeEdit->text().trimmed().toUpper();
         //机场名称
         QString name = nameEdit->text().trimmed();
+        //机型
+        QStringList planeNameList;
+        int planeNameCount = planeNameComboBox->count();
+        for(int i = 0;i < planeNameCount;i++){
+            planeNameList.append(planeNameComboBox->itemText(i));
+        }
         //经度
         QString longitude = lonEdit->text();
         //纬度
@@ -271,10 +371,11 @@ void AirportAddWidget::onConfirmClicked(){
         //机场类型
         QString type = typeComboBox->currentText();
         //构造插入语句
-        QString saveAirportSql("insert into airport values(?,?,?,?,?,?,?)");
+        QString saveAirportSql("insert into airport values(?,?,?,?,?,?,?,?)");
         QList<QVariant> values;
         values.append(code);
         values.append(name);
+        values.append(planeNameList.join(","));
         values.append(longitude);
         values.append(latitude);
         values.append(altitude);
@@ -299,6 +400,28 @@ void AirportAddWidget::onConfirmClicked(){
             QMessageBox::critical(0, QObject::tr("错误提示"), "机场保存失败!");
         }
     }
+}
+
+void AirportAddWidget::onPlaneChanged(int index){
+    Q_UNUSED(index);
+}
+
+void AirportAddWidget::onItemDelete(){
+    int listItemCount = planeNameListWidget->count();
+    for(int i = 0;i < listItemCount;i++){
+        QListWidgetItem *item = planeNameListWidget->item(i);
+        PlaneItemWidget *planeItemWidget = (PlaneItemWidget *)(planeNameListWidget->itemWidget(item));
+        if(this->sender() == planeItemWidget){
+            planeNameListWidget->takeItem(i);
+            delete item;
+            break;
+        }
+    }
+}
+
+void AirportAddWidget::onItemShow(QString text){
+    planeNameComboBox->setEditText(text);
+    planeNameComboBox->hidePopup();
 }
 
 /*** 机场修改widget ***/

@@ -223,7 +223,12 @@ bool AirportAddWidget::validate(){
         PlaneItemWidget *planeItemWidget = (PlaneItemWidget *)(planeNameListWidget->itemWidget(item));
         QString planeName = planeItemWidget->text();
         if(!planeName.isEmpty()){
-            planeNameList.append(planeName);
+            if(planeNameList.contains(planeName)){
+                QMessageBox::critical(0, QObject::tr("错误提示"), "机型不能重复!");
+                return false;
+            }else{
+                planeNameList.append(planeName);
+            }
         }
     }
     if(planeNameList.count() == 0){
@@ -593,7 +598,12 @@ bool AirportModifyWidget::validate(){
         PlaneItemWidget *planeItemWidget = (PlaneItemWidget *)(planeNameListWidget->itemWidget(item));
         QString planeName = planeItemWidget->text();
         if(!planeName.isEmpty()){
-            planeNameList.append(planeName);
+            if(planeNameList.contains(planeName)){
+                QMessageBox::critical(0, QObject::tr("错误提示"), "机型不能重复!");
+                return false;
+            }else{
+                planeNameList.append(planeName);
+            }
         }
     }
     if(planeNameList.count() == 0){
@@ -696,6 +706,20 @@ void AirportModifyWidget::onConfirmClicked(){
 
         bool ret = pgDb->save(saveAirportSql, values);
         if(ret){
+            Airport airport = airportList[codeComboBox->currentIndex()];
+            QString deleteParamSql("delete from weatherparamsetup where code='%1' and planename in (%2)");
+            QStringList planeNameListOld = airport.planeName().split(",", QString::SkipEmptyParts);
+            QStringList deletePlaneNameList;
+            for(QString planeNameOld : planeNameListOld){
+                if(!(planeNameList.contains(planeNameOld))){
+                    deletePlaneNameList.append(QString("'%1'").arg(planeNameOld));
+                }
+            }
+            if(deletePlaneNameList.count() > 0){
+                deleteParamSql = deleteParamSql.arg(airport.code()).arg(deletePlaneNameList.join(","));
+                pgDb->deleteData(deleteParamSql);
+            }
+
             SharedMemory::getInstance()->queryAirportInfomation();
             QMessageBox::information(0, QObject::tr("消息提示"), "机场保存成功!");
             //机场code

@@ -58,7 +58,6 @@ private:
 
 private slots:
     void onConfirmClicked();
-    void onPlaneChanged(int);
     void onItemDelete();
     void onItemShow(QString);
 
@@ -89,6 +88,9 @@ public:
 public slots:
     void onAirportChanged();
 
+protected:
+    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
+
 private:
     void initData();
     void initUI();
@@ -98,6 +100,8 @@ private:
 private slots:
     void onCodeChanged(int);
     void onConfirmClicked();
+    void onItemDelete();
+    void onItemShow(QString);
 
 private:
     PgDataBase *pgDb;
@@ -108,6 +112,8 @@ private:
 
     QComboBox *codeComboBox;
     QLineEdit *nameEdit;
+    QComboBox *planeNameComboBox;
+    QListWidget *planeNameListWidget;
     QLineEdit *lonEdit;
     QLineEdit *latEdit;
     QLineEdit *altEdit;

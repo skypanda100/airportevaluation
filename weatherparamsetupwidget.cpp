@@ -15,7 +15,7 @@ MultiWeatherParamWidget::~MultiWeatherParamWidget(){
     delete confirmButton;
 }
 
-void MultiWeatherParamWidget::onAirportChanged(QString apCode){
+void MultiWeatherParamWidget::onAirportChanged(QString apCode, QString pName){
     //清空
     QList<int> keyList = editHash.keys();
     for(int key : keyList){
@@ -27,15 +27,19 @@ void MultiWeatherParamWidget::onAirportChanged(QString apCode){
 
     //赋值
     currentApCode = apCode;
+    currentPName = pName;
     weatherParamSetupList.clear();
-    QString queryStr = QString("select * from weatherparamsetup where code = '%1' order by paramid").arg(currentApCode);
+    QString queryStr = QString("select * from weatherparamsetup where code = '%1' and planename = '%2' order by paramid")
+            .arg(currentApCode)
+            .arg(currentPName);
     QSqlQueryModel *plainModel = pgDb->queryModel(queryStr);
     int rowCount = plainModel->rowCount();
     for(int i = 0;i < rowCount;i++){
         WeatherParamSetup weatherParamSetup;
         weatherParamSetup.setCode(plainModel->record(i).value(0).toString());
-        weatherParamSetup.setParamid(plainModel->record(i).value(1).toInt());
-        weatherParamSetup.setLimits(plainModel->record(i).value(2).toString());
+        weatherParamSetup.setPlaneName(plainModel->record(i).value(1).toString());
+        weatherParamSetup.setParamid(plainModel->record(i).value(2).toInt());
+        weatherParamSetup.setLimits(plainModel->record(i).value(3).toString());
         bool isExist = false;
         for(WeatherParam weatherParam : weatherParamList){
             if(weatherParam.id() == weatherParamSetup.paramid()){
@@ -275,17 +279,19 @@ void MultiWeatherParamWidget::onConfirmClicked(){
             }
         }
         if(isExist){
-            QString updateSql = QString("update weatherparamsetup set limits = ? where code = ? and paramid = ?");
+            QString updateSql = QString("update weatherparamsetup set limits = ? where code = ? and planename = ? and paramid = ?");
             QList<QVariant> valList;
             valList.append(limits);
             valList.append(currentApCode);
+            valList.append(currentPName);
             valList.append(id);
 
             pgDb->save(updateSql, valList);
         }else{
-            QString insertSql = QString("insert into weatherparamsetup values(?, ?, ?)");
+            QString insertSql = QString("insert into weatherparamsetup values(?, ?, ?, ?)");
             QList<QVariant> valList;
             valList.append(currentApCode);
+            valList.append(currentPName);
             valList.append(id);
             valList.append(limits);
 
@@ -309,7 +315,7 @@ SingleWeatherParamWidget::~SingleWeatherParamWidget(){
     delete confirmButton;
 }
 
-void SingleWeatherParamWidget::onAirportChanged(QString apCode){
+void SingleWeatherParamWidget::onAirportChanged(QString apCode, QString pName){
     //清空
     QList<int> keyList = editHash.keys();
     for(int key : keyList){
@@ -321,15 +327,19 @@ void SingleWeatherParamWidget::onAirportChanged(QString apCode){
 
     //赋值
     currentApCode = apCode;
+    currentPName = pName;
     weatherParamSetupList.clear();
-    QString queryStr = QString("select * from weatherparamsetup where code = '%1' order by paramid").arg(currentApCode);
+    QString queryStr = QString("select * from weatherparamsetup where code = '%1' and planename = '%2' order by paramid")
+            .arg(currentApCode)
+            .arg(currentPName);
     QSqlQueryModel *plainModel = pgDb->queryModel(queryStr);
     int rowCount = plainModel->rowCount();
     for(int i = 0;i < rowCount;i++){
         WeatherParamSetup weatherParamSetup;
         weatherParamSetup.setCode(plainModel->record(i).value(0).toString());
-        weatherParamSetup.setParamid(plainModel->record(i).value(1).toInt());
-        weatherParamSetup.setLimits(plainModel->record(i).value(2).toString());
+        weatherParamSetup.setPlaneName(plainModel->record(i).value(1).toString());
+        weatherParamSetup.setParamid(plainModel->record(i).value(2).toInt());
+        weatherParamSetup.setLimits(plainModel->record(i).value(3).toString());
         bool isExist = false;
         for(WeatherParam weatherParam : weatherParamList){
             if(weatherParam.id() == weatherParamSetup.paramid()){
@@ -568,17 +578,19 @@ void SingleWeatherParamWidget::onConfirmClicked(){
             }
         }
         if(isExist){
-            QString updateSql = QString("update weatherparamsetup set limits = ? where code = ? and paramid = ?");
+            QString updateSql = QString("update weatherparamsetup set limits = ? where code = ? and planename = ? and paramid = ?");
             QList<QVariant> valList;
             valList.append(limits);
             valList.append(currentApCode);
+            valList.append(currentPName);
             valList.append(id);
 
             pgDb->save(updateSql, valList);
         }else{
-            QString insertSql = QString("insert into weatherparamsetup values(?, ?, ?)");
+            QString insertSql = QString("insert into weatherparamsetup values(?, ?, ?, ?)");
             QList<QVariant> valList;
             valList.append(currentApCode);
+            valList.append(currentPName);
             valList.append(id);
             valList.append(limits);
 
@@ -603,6 +615,7 @@ WeatherParamSetupWidget::WeatherParamSetupWidget(QWidget *parent)
 
 WeatherParamSetupWidget::~WeatherParamSetupWidget(){
     delete airportComboBox;
+    delete planeNameComboBox;
     if(multiWeatherParamWidget != NULL){
         delete multiWeatherParamWidget;
     }
@@ -645,20 +658,28 @@ void WeatherParamSetupWidget::initUI(){
     //设置机场
     airportComboBox = new QComboBox;
     airportComboBox->addItems(apNameList);
+    //设置机型
+    planeNameComboBox = new QComboBox;
+    if(airportList.size() > 0){
+        Airport airport = airportList[airportComboBox->currentIndex()];
+        QStringList planeNameList = airport.planeName().split(",", QString::SkipEmptyParts);
+        planeNameComboBox->addItems(planeNameList);
+    }
     //设置标签
     tabWidget = new QTabWidget;
     tabWidget->setContentsMargins(5, 5, 5, 5);
     if(apNameList.size() > 0){
         multiWeatherParamWidget = new MultiWeatherParamWidget;
-        multiWeatherParamWidget->onAirportChanged(apCodeList[airportComboBox->currentIndex()]);
+        multiWeatherParamWidget->onAirportChanged(apCodeList[airportComboBox->currentIndex()], planeNameComboBox->currentText());
         tabWidget->addTab(multiWeatherParamWidget, "多要素");
         singleWeatherParamWidget = new SingleWeatherParamWidget;
-        singleWeatherParamWidget->onAirportChanged(apCodeList[airportComboBox->currentIndex()]);
+        singleWeatherParamWidget->onAirportChanged(apCodeList[airportComboBox->currentIndex()], planeNameComboBox->currentText());
         tabWidget->addTab(singleWeatherParamWidget, "单要素");
     }
     //布局
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(airportComboBox);
+    mainLayout->addWidget(planeNameComboBox);
     mainLayout->addWidget(tabWidget);
 
     //设置上一步下一步按钮
@@ -682,6 +703,7 @@ void WeatherParamSetupWidget::initUI(){
 
 void WeatherParamSetupWidget::initConnect(){
     connect(airportComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onAirportChanged(int)));
+    connect(planeNameComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(onPlaneNameChanged(QString)));
     if(SharedMemory::isWelcome){
         connect(previousButton, SIGNAL(clicked()), this, SIGNAL(previousClicked()));
         connect(nextButton, SIGNAL(clicked()), this, SIGNAL(nextClicked()));
@@ -689,6 +711,16 @@ void WeatherParamSetupWidget::initConnect(){
 }
 
 void WeatherParamSetupWidget::onAirportChanged(int index){
-    multiWeatherParamWidget->onAirportChanged(apCodeList[index]);
-    singleWeatherParamWidget->onAirportChanged(apCodeList[index]);
+    disconnect(planeNameComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(onPlaneNameChanged(QString)));
+    planeNameComboBox->clear();
+    Airport airport = airportList[index];
+    QStringList planeNameList = airport.planeName().split(",", QString::SkipEmptyParts);
+    planeNameComboBox->addItems(planeNameList);
+    connect(planeNameComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(onPlaneNameChanged(QString)));
+    this->onPlaneNameChanged(planeNameList[0]);
+}
+
+void WeatherParamSetupWidget::onPlaneNameChanged(QString planeName){
+    multiWeatherParamWidget->onAirportChanged(apCodeList[airportComboBox->currentIndex()], planeName);
+    singleWeatherParamWidget->onAirportChanged(apCodeList[airportComboBox->currentIndex()], planeName);
 }

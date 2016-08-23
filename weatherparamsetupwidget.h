@@ -15,7 +15,7 @@ public:
     ~MultiWeatherParamWidget();
 
 public slots:
-    void onAirportChanged(QString);
+    void onAirportChanged(QString, QString);
 
 private:
     void initData();
@@ -38,6 +38,7 @@ private:
     QPushButton *confirmButton;
 
     QString currentApCode;
+    QString currentPName;
 };
 
 /*** 单要素阀值设置widget ***/
@@ -48,7 +49,7 @@ public:
     ~SingleWeatherParamWidget();
 
 public slots:
-    void onAirportChanged(QString);
+    void onAirportChanged(QString, QString);
 
 private:
     void initData();
@@ -71,6 +72,7 @@ private:
     QPushButton *confirmButton;
 
     QString currentApCode;
+    QString currentPName;
 };
 
 
@@ -92,11 +94,13 @@ private:
 
 private slots:
     void onAirportChanged(int);
+    void onPlaneNameChanged(QString);
 
 private:
     PgDataBase *pgDb;
 
     QComboBox *airportComboBox;
+    QComboBox *planeNameComboBox;
     QTabWidget *tabWidget;
 
     QList<Airport> airportList;

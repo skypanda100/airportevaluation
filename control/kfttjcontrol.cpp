@@ -27,6 +27,10 @@ void KfttjControl::setAirportCode(QString airportCode){
     this->m_airportCode = airportCode;
 }
 
+void KfttjControl::setPlaneName(QString planeName){
+    this->m_planeName = planeName;
+}
+
 void KfttjControl::setMultiWeather(bool isMultiWeather){
     this->m_isMultiWeather = isMultiWeather;
 }
@@ -157,14 +161,17 @@ void KfttjControl::initData(){
     }
     //气象要素阀值
     weatherParamSetupList.clear();
-    QString queryStr = QString("select * from weatherparamsetup where code = '%1' order by paramid").arg(currentAirport.code());
+    QString queryStr = QString("select * from weatherparamsetup where code = '%1' and planename = '%2' order by paramid")
+            .arg(currentAirport.code())
+            .arg(currentAirport.planeName());
     QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
     int rowCount = plainModel->rowCount();
     for(int i = 0;i < rowCount;i++){
         WeatherParamSetup weatherParamSetup;
         weatherParamSetup.setCode(plainModel->record(i).value(0).toString());
-        weatherParamSetup.setParamid(plainModel->record(i).value(1).toInt());
-        weatherParamSetup.setLimits(plainModel->record(i).value(2).toString());
+        weatherParamSetup.setPlaneName(plainModel->record(i).value(1).toString());
+        weatherParamSetup.setParamid(plainModel->record(i).value(2).toInt());
+        weatherParamSetup.setLimits(plainModel->record(i).value(3).toString());
         weatherParamSetupList.append(weatherParamSetup);
     }
     delete plainModel;

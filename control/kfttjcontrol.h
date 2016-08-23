@@ -22,6 +22,7 @@ public:
     void setSummarySql(QString);
     void setExtremumSql(QString);
     void setAirportCode(QString);
+    void setPlaneName(QString);
     void setMultiWeather(bool);
     void setWeatherParamList(QList<WeatherParam>);
 
@@ -125,6 +126,8 @@ private:
 private:
     //机场code
     QString m_airportCode;
+    //机型
+    QString m_planeName;
     //机场跑道方向
     float m_runwayDirection;
     //是否为多要素

@@ -18,7 +18,7 @@ signals:
     void setProgressValue(int,int);
 
 public slots:
-    void executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);
+    void executeKfttj(QString airportCode, QString planeName, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);
     void executeExport();
     void receiveMessage(const QString &message, int row, int col, int rows = 1, int cols = 1);
     void receiveMessage(int row, int count);

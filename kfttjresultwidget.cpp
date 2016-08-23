@@ -167,7 +167,7 @@ void KfttjResultWidget::createTable(bool isHourTable){
     tableView->setModel(tableModel);
 }
 
-void KfttjResultWidget::executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList){
+void KfttjResultWidget::executeKfttj(QString airportCode, QString planeName, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList){
     if(kfttjControl->isRunning()){
         QMessageBox::information(this, tr("消息提示"), tr("正在处理数据......\n请稍后操作"));
         return;

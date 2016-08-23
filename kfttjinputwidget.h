@@ -13,7 +13,7 @@ public:
     ~KfttjInputWidget();
 
 signals:
-    void executeKfttj(QString airportCode, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);
+    void executeKfttj(QString airportCode, QString planeName, QList<QString> dateList, bool isMultiWeather, QList<WeatherParam> wpList);
     void executeExport();
 
 private slots:
@@ -44,6 +44,7 @@ private:
     QHash< int, QList<WeatherParam> > wpHash;
 
     QComboBox *airportComboBox;
+    QComboBox *planeNameComboBox;
     QList<QCheckBox *> dateCheckBoxList;
     QGridLayout *dateLayout;
     QComboBox *qxysComboBox;

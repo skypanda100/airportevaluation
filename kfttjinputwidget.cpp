@@ -11,6 +11,7 @@ KfttjInputWidget::KfttjInputWidget(QWidget *parent)
 
 KfttjInputWidget::~KfttjInputWidget(){
     delete airportComboBox;
+    delete planeNameComboBox;
     int dateCheckBoxCount = dateCheckBoxList.size();
     for(int i = 0;i < dateCheckBoxCount;i++){
         QCheckBox *checkBox = dateCheckBoxList[i];
@@ -92,7 +93,6 @@ void KfttjInputWidget::initUI(){
     this->setMinimumWidth(290);
     //机场
     airportComboBox = new QComboBox;
-    queryAirport();
 
     QVBoxLayout *airportLayout = new QVBoxLayout;
     airportLayout->addWidget(airportComboBox);
@@ -100,6 +100,17 @@ void KfttjInputWidget::initUI(){
     QGroupBox *airportGroupBox = new QGroupBox;
     airportGroupBox->setTitle("机场");
     airportGroupBox->setLayout(airportLayout);
+
+    //机型
+    planeNameComboBox = new QComboBox;
+    queryAirport();
+
+    QVBoxLayout *planeLayout = new QVBoxLayout;
+    planeLayout->addWidget(planeNameComboBox);
+
+    QGroupBox *planeGroupBox = new QGroupBox;
+    planeGroupBox->setTitle("机型");
+    planeGroupBox->setLayout(planeLayout);
 
     //日期
     dateLayout = new QGridLayout;
@@ -362,10 +373,10 @@ void KfttjInputWidget::initUI(){
     executeLayout->addWidget(executeButton);
     executeLayout->addWidget(exportButton);
 
-
     //主界面
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(airportGroupBox);
+    mainLayout->addWidget(planeGroupBox);
     mainLayout->addWidget(dateGroupBox);
     mainLayout->addWidget(qxysGroupBox);
     mainLayout->addLayout(executeLayout);
@@ -439,9 +450,12 @@ void KfttjInputWidget::resetAirportComboBox(QList<Airport> apList, bool isSave){
 
 void KfttjInputWidget::onAirportChanged(int index){
     dateList.clear();
+    planeNameComboBox->clear();
     if(index < airportList.count()){
         Airport airport = airportList[index];
         QString apCode = airport.code();
+        QStringList pNameList = airport.planeName().split(",", QString::SkipEmptyParts);
+        planeNameComboBox->addItems(pNameList);
         QString dateSql = QString("select distinct to_char(datetime + interval '8 hours', 'yyyy') from %1_monthsummary "
                                      "union "
                                      "select distinct to_char(datetime, 'yyyy') from %1_extremum").arg(apCode);
@@ -501,6 +515,11 @@ bool KfttjInputWidget::validate(){
     //检查机场
     if(airportComboBox->count() == 0){
         QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个机场才能进行可飞天统计!\n请在机场设置里添加一个机场.");
+        return false;
+    }
+    //检查机型
+    if(planeNameComboBox->count() == 0){
+        QMessageBox::critical(0, QObject::tr("错误提示"), "必须选择一个机型才能进行可飞天统计!\n请在机场设置里添加一个机型.");
         return false;
     }
     //检查日期
@@ -610,6 +629,8 @@ void KfttjInputWidget::execute(){
         //机场
         QList<Airport> airportList = SharedMemory::getInstance()->getAirportList();
         QString airportCode = airportList[airportComboBox->currentIndex()].code();
+        //机型
+        QString planeName = planeNameComboBox->currentText();
         //日期
         QList<QString> dateList;
         for(QCheckBox *checkBox : dateCheckBoxList){
@@ -734,7 +755,7 @@ void KfttjInputWidget::execute(){
                 wpList.append(weatherParamList[6]);
             }
         }
-        emit executeKfttj(airportCode, dateList, isMultiWeather, wpList);
+        emit executeKfttj(airportCode, planeName, dateList, isMultiWeather, wpList);
     }
 }
 

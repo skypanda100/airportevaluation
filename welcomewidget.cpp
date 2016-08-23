@@ -30,6 +30,7 @@ void WelcomeWidget::initConnect(){
 
 void WelcomeWidget::paintEvent(QPaintEvent *){
     QPainter painter(this);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     QRectF target = this->rect();
     QRectF source = welcomePixmap->rect();

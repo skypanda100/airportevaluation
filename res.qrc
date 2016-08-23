@@ -14,8 +14,8 @@
         <file>images/weather_setup.png</file>
         <file>images/minus.png</file>
         <file>images/cloud.jpg</file>
-        <file>images/C919.jpg</file>
         <file>images/delete.png</file>
         <file>images/modify.png</file>
+        <file>images/C919.jpg</file>
     </qresource>
 </RCC>

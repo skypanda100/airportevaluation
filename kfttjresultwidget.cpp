@@ -223,6 +223,7 @@ void KfttjResultWidget::executeKfttj(QString airportCode, QString planeName, QLi
         QString extremumSql = QString("%1 order by datetime").arg(extremumSqlList.join(" union "));
         kfttjControl->setExtremumSql(extremumSql);
         kfttjControl->setAirportCode(airportCode);
+        kfttjControl->setPlaneName(planeName);
         kfttjControl->setMultiWeather(isMultiWeather);
         kfttjControl->setWeatherParamList(wpList);
         kfttjControl->start();

@@ -162,8 +162,8 @@ void KfttjControl::initData(){
     //气象要素阀值
     weatherParamSetupList.clear();
     QString queryStr = QString("select * from weatherparamsetup where code = '%1' and planename = '%2' order by paramid")
-            .arg(currentAirport.code())
-            .arg(currentAirport.planeName());
+            .arg(m_airportCode)
+            .arg(m_planeName);
     QSqlQueryModel *plainModel = pgdb->queryModel(queryStr);
     int rowCount = plainModel->rowCount();
     for(int i = 0;i < rowCount;i++){

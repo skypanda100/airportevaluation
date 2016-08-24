@@ -433,7 +433,7 @@ QList<QString> KfttjControl::getDataFromJson(QString jsonStr){
  */
 bool KfttjControl::isMatchArgs(float value, QString fromStr, QString toStr){
     if(fromStr.isEmpty() && toStr.isEmpty()){
-        return true;
+        return false;
     }else if(!fromStr.isEmpty() && toStr.isEmpty()){
         float fromValue = fromStr.toFloat();
         if(value >= fromValue){

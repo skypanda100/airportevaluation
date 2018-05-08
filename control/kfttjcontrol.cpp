@@ -3837,7 +3837,8 @@ QString KfttjControl::analysisSingleJgw(const Monthsummary &monthsummary, int ro
     }
 
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
+    QDateTime currentDateTime_local = currentDateTime_utc.addSecs(3600 * 8 - 1);
+    int index = getExtremumIndex(currentDateTime_local);
     if(index > -1){
         Extremum extremum = extremumList[index];
         float temperature = extremum.hightemperature().toFloat();
@@ -3882,7 +3883,8 @@ QString KfttjControl::analysisSingleJdw(const Monthsummary &monthsummary, int ro
     }
 
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
+    QDateTime currentDateTime_local = currentDateTime_utc.addSecs(3600 * 8 - 1);
+    int index = getExtremumIndex(currentDateTime_local);
     if(index > -1){
         Extremum extremum = extremumList[index];
         float temperature = extremum.lowtemperature().toFloat();
@@ -3914,7 +3916,8 @@ QString KfttjControl::analysisSingleJdw(const Monthsummary &monthsummary, int ro
 QString KfttjControl::analysisSingleQjs(const Monthsummary &monthsummary, int row, int col){
     QString resultStr("");
     QDateTime currentDateTime_utc = QDateTime::fromString(monthsummary.datetime(), "yyyy-MM-ddThh:mm:ss");
-    int index = getExtremumIndex(currentDateTime_utc);
+    QDateTime currentDateTime_local = currentDateTime_utc.addSecs(3600 * 8 - 1);
+    int index = getExtremumIndex(currentDateTime_local);
     bool isFindJs = false;
     bool isMissing = true;
     if(index > -1){
@@ -3954,7 +3957,8 @@ QString KfttjControl::analysisSingleQjs(const Monthsummary &monthsummary, int ro
     }
     if(!isFindJs){
         currentDateTime_utc = currentDateTime_utc.addDays(1);
-        index = getExtremumIndex(currentDateTime_utc);
+        currentDateTime_local = currentDateTime_utc.addSecs(3600 * 8 - 1);
+        int index = getExtremumIndex(currentDateTime_local);
         if(index > -1){
             isMissing = false;
             Extremum extremum = extremumList[index];
